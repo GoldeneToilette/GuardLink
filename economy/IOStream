@@ -1,0 +1,232 @@
+local utils = require("Utils")
+local sha256 = require("sha256")
+
+function initializeAccountsDirectory()
+    local guardlinkDir = "/guardlink"
+    local economyDir = guardlinkDir .. "/economy"
+    local accountsDir = economyDir .. "/accounts"
+
+    if not fs.exists(guardlinkDir) then
+        fs.makeDir(accountsDir)
+        print("Accounts directory created successfully.")
+    end
+end
+
+
+function createAccount(name, password)
+    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    if doesAccountExist(name) then
+        print("Account '" .. name .. "' already exists!")
+        return
+    end
+
+    if name ~= "" and password ~= "" then
+        local salt = utils.generateSalt(16)
+        local saltedPassword = salt .. password
+
+
+        local hashedPassword = sha256.digest(saltedPassword):toHex()
+
+        local uuid = utils.generateUUID()
+        local currentDate = os.date("%Y-%m-%d")
+        local currentTime = os.date("%H:%M:%S")
+
+        local accountData = {
+            name = name,
+            uuid = uuid,
+            creationDate = currentDate,
+            creationTime = currentTime,
+            balance = 0,
+            banned = false,
+            password = hashedPassword,
+            salt = salt
+        }
+
+        local file = fs.open(filePath, "w")
+        file.write(textutils.serialize(accountData))
+        file.close()
+
+        print("Account '" .. name .. "' created successfully!")
+    else
+        print("Both name and password cannot be empty!")
+    end
+end
+
+
+function deleteAccount(name)
+    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+
+    if doesAccountExist(name) then
+        fs.delete(filePath)
+        print("Account '" .. name .. "' deleted successfully!")
+    end
+end
+
+
+function getAccountValues(name)
+    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+
+    if doesAccountExist(name) then
+        local file = fs.open(filePath, "r")
+        if file then
+            local contents = file.readAll()
+            file.close()
+
+            local success, values = pcall(textutils.unserialize, contents)
+            if success then
+                return values
+            else
+                print("Error deserializing account data for '" .. name .. "': " .. values)
+                return nil
+            end
+        else
+            print("Error opening file for account '" .. name .. "'")
+            return nil
+        end
+    else
+        print("Account '" .. name .. "' does not exist!")
+        return nil
+    end
+end
+
+
+
+function doesAccountExist(name)
+    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    return fs.exists(filePath)
+end
+
+
+function setAccountBalance(name, newBalance)
+    local accountValues = getAccountValues(name)
+
+    if accountValues then
+        accountValues.balance = newBalance
+
+        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local file = fs.open(filePath, "w")
+        file.write(textutils.serialize(accountValues))
+        file.close()
+    else
+        print("Account '" .. name .. "' does not exist.")
+    end
+end
+
+
+function addAccountBalance(name, value)
+    local accountValues = getAccountValues(name)
+    if value <= 0 and Utils.isInteger(value) == false then
+        print("Invalid transfer amount.")
+        return
+    end
+
+    if accountValues then
+        accountValues.balance = accountValues.balance + value
+
+        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local file = fs.open(filePath, "w")
+        file.write(textutils.serialize(accountValues))
+        file.close()
+    else
+        print("Account '" .. name .. "' does not exist.")
+    end
+end
+
+
+function subtractAccountBalance(name, value)
+    local accountValues = getAccountValues(name)
+    if value <= 0 and Utils.isInteger(value) == false then
+        print("Invalid transfer amount.")
+        return
+    end
+
+    if accountValues then
+        if accountValues.balance - value >= 0 then
+            accountValues.balance = accountValues.balance - value
+
+            local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+            local file = fs.open(filePath, "w")
+            file.write(textutils.serialize(accountValues))
+            file.close()
+        else
+            print("Balance cannot be negative or result in a negative balance!")
+        end
+    else
+        print("Account '" .. name .. "' does not exist.")
+    end
+end
+
+
+function setBanStatus(name, isBanned)
+    local accountValues = getAccountValues(name)
+
+    if accountValues then
+        accountValues.banned = isBanned
+
+        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local file = fs.open(filePath, "w")
+        file.write(textutils.serialize(accountValues))
+        file.close()
+    else
+        print("Account '" .. name .. "' does not exist.")
+    end
+end
+
+
+function transferBalance(sender, receiver, value)
+    if value <= 0 and Utils.isInteger(value) == false then
+        print("Invalid transfer amount.")
+        return
+    end
+
+    local senderValues = getAccountValues(sender)
+    local receiverValues = getAccountValues(receiver)
+
+    if senderValues and receiverValues then
+        if senderValues.balance >= value then
+            senderValues.balance = senderValues.balance - value
+            receiverValues.balance = receiverValues.balance + value
+
+            setAccountBalance(sender, senderValues.balance)
+            setAccountBalance(receiver, receiverValues.balance)
+
+            print(value .. " was successfully transferred from " .. sender .. " to " .. receiver)
+        else
+            print("Insufficient balance in sender's account.")
+        end
+    else
+        print("One or both accounts do not exist.")
+    end
+end
+
+
+function listAccounts()
+    local accountsDir = "/guardlink/economy/accounts/"
+    local accountNames = {}
+
+    if fs.exists(accountsDir) and fs.isDir(accountsDir) then
+        local accountFiles = fs.list(accountsDir)
+
+        for _, filename in ipairs(accountFiles) do
+            table.insert(accountNames, filename)
+        end
+    else
+        print("Accounts directory does not exist or is not a directory.")
+    end
+
+    return accountNames
+end
+
+
+return {
+    initializeAccountsDirectory = initializeAccountsDirectory,
+    createAccount = createAccount,
+    deleteAccount = deleteAccount,
+    getAccountValues = getAccountValues,
+    doesAccountExist = doesAccountExist,
+    setAccountBalance = setAccountBalance,
+    addAccountBalance = addAccountBalance,
+    subtractAccountBalance = subtractAccountBalance,
+    transferBalance = transferBalance,
+    setBanStatus = setBanStatus
+}
