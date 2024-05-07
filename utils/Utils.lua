@@ -14,6 +14,7 @@ function randomNumber(min, max)
 end
 
 
+-- generates a random UUID (used for the accounts)
 function generateUUID()
     math.randomseed(os.time())
     local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
@@ -23,12 +24,13 @@ function generateUUID()
     end)
 end
 
-
+-- checks if a number is whole and 
 function isInteger(value)
     return math.floor(value) == value and value >= 0
 end
 
 
+-- generates salt for SHA256 hashes
 function generateSalt(length)
     local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     local salt = ""

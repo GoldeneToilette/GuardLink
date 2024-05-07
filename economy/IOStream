@@ -1,6 +1,8 @@
 local utils = require("Utils")
 local sha256 = require("sha256")
 
+
+-- creates the directory if it doesnt exist
 function initializeAccountsDirectory()
     local guardlinkDir = "/guardlink"
     local economyDir = guardlinkDir .. "/economy"
@@ -13,6 +15,7 @@ function initializeAccountsDirectory()
 end
 
 
+-- no explanation needed
 function createAccount(name, password)
     local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
     if doesAccountExist(name) then
@@ -53,6 +56,7 @@ function createAccount(name, password)
 end
 
 
+-- deletes account file 
 function deleteAccount(name)
     local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
 
@@ -63,6 +67,7 @@ function deleteAccount(name)
 end
 
 
+-- returns all account values in a table
 function getAccountValues(name)
     local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
 
@@ -90,13 +95,14 @@ function getAccountValues(name)
 end
 
 
-
+-- checks if the given account file exists
 function doesAccountExist(name)
     local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
     return fs.exists(filePath)
 end
 
 
+-- sets the account balance to a specific value
 function setAccountBalance(name, newBalance)
     local accountValues = getAccountValues(name)
 
@@ -113,6 +119,7 @@ function setAccountBalance(name, newBalance)
 end
 
 
+-- adds money
 function addAccountBalance(name, value)
     local accountValues = getAccountValues(name)
     if value <= 0 and Utils.isInteger(value) == false then
@@ -133,6 +140,7 @@ function addAccountBalance(name, value)
 end
 
 
+-- removes money
 function subtractAccountBalance(name, value)
     local accountValues = getAccountValues(name)
     if value <= 0 and Utils.isInteger(value) == false then
@@ -157,6 +165,7 @@ function subtractAccountBalance(name, value)
 end
 
 
+-- sets the boolean for the banstatus
 function setBanStatus(name, isBanned)
     local accountValues = getAccountValues(name)
 
@@ -173,6 +182,7 @@ function setBanStatus(name, isBanned)
 end
 
 
+-- transfers money from one account to the other
 function transferBalance(sender, receiver, value)
     if value <= 0 and Utils.isInteger(value) == false then
         print("Invalid transfer amount.")
@@ -200,6 +210,7 @@ function transferBalance(sender, receiver, value)
 end
 
 
+-- returns all account names in a table (not sorted)
 function listAccounts()
     local accountsDir = "/guardlink/economy/accounts/"
     local accountNames = {}
