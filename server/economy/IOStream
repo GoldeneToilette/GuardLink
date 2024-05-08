@@ -239,5 +239,6 @@ return {
     addAccountBalance = addAccountBalance,
     subtractAccountBalance = subtractAccountBalance,
     transferBalance = transferBalance,
-    setBanStatus = setBanStatus
+    setBanStatus = setBanStatus,
+    listAccounts = listAccounts
 }

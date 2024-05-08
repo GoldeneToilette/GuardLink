@@ -713,10 +713,10 @@ local start = os.clock()
 
 local publicKey, privateKey = generateKeyPair()
 
-local f = io.open("/guardlink/network/keys/server/public.key", "w")
+local f = io.open("/guardlink/network/public.key", "w")
 f:write(textutils.serialize(publicKey))
 f:close()
-f = io.open("/guardlink/network/keys/server/private.key", "w")
+f = io.open("/guardlink/network/private.key", "w")
 f:write(textutils.serialize(privateKey))
 f:close()
 

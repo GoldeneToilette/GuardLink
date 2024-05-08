@@ -24,7 +24,7 @@ function generateUUID()
     end)
 end
 
--- checks if a number is whole and 
+-- checks if a number is whole
 function isInteger(value)
     return math.floor(value) == value and value >= 0
 end
