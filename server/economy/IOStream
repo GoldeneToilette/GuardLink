@@ -15,7 +15,7 @@ function initializeAccountsDirectory()
 end
 
 
--- no explanation needed
+-- no explanation needed here
 function createAccount(name, password)
     local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
     if doesAccountExist(name) then
