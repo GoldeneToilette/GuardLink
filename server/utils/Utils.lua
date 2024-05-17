@@ -14,6 +14,17 @@ function randomNumber(min, max)
 end
 
 
+function generateSessionToken(length)
+    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local token = ""
+    for i = 1, length do
+        local randomIndex = math.random(1, #charset)
+        token = token .. charset:sub(randomIndex, randomIndex)
+    end
+    return token
+end
+
+
 -- generates a random UUID (used for the accounts)
 function generateUUID()
     math.randomseed(os.time())
@@ -47,5 +58,6 @@ return {
     randomNumber = randomNumber,
     generateUUID = generateUUID,
     isInteger = isInteger,
-    generateSalt = generateSalt
+    generateSalt = generateSalt,
+    generateSessionToken = generateSessionToken
 }

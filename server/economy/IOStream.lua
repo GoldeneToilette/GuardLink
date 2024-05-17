@@ -1,11 +1,12 @@
-local utils = require("Utils")
-local sha256 = require("sha256")
+local utils = require("/GuardLink/server/utils/Utils")
+local sha256 = require("/GuardLink/server/economy/sha256")
 
 
 -- creates the directory if it doesnt exist
 function initializeAccountsDirectory()
     local guardlinkDir = "/guardlink"
-    local economyDir = guardlinkDir .. "/economy"
+    local serverDir = guardlinkDir .. "/server"
+    local economyDir = serverDir .. "/economy"
     local accountsDir = economyDir .. "/accounts"
 
     if not fs.exists(guardlinkDir) then
@@ -15,9 +16,9 @@ function initializeAccountsDirectory()
 end
 
 
--- no explanation needed here
+-- Creates Account and stores it in a .json file
 function createAccount(name, password)
-    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
     if doesAccountExist(name) then
         print("Account '" .. name .. "' already exists!")
         return
@@ -42,7 +43,8 @@ function createAccount(name, password)
             balance = 0,
             banned = false,
             password = hashedPassword,
-            salt = salt
+            salt = salt,
+            sessionToken = ""
         }
 
         local file = fs.open(filePath, "w")
@@ -58,7 +60,7 @@ end
 
 -- deletes account file 
 function deleteAccount(name)
-    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
 
     if doesAccountExist(name) then
         fs.delete(filePath)
@@ -69,7 +71,7 @@ end
 
 -- returns all account values in a table
 function getAccountValues(name)
-    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
 
     if doesAccountExist(name) then
         local file = fs.open(filePath, "r")
@@ -97,7 +99,7 @@ end
 
 -- checks if the given account file exists
 function doesAccountExist(name)
-    local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+    local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
     return fs.exists(filePath)
 end
 
@@ -109,12 +111,10 @@ function setAccountBalance(name, newBalance)
     if accountValues then
         accountValues.balance = newBalance
 
-        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
         local file = fs.open(filePath, "w")
         file.write(textutils.serialize(accountValues))
         file.close()
-    else
-        print("Account '" .. name .. "' does not exist.")
     end
 end
 
@@ -130,7 +130,7 @@ function addAccountBalance(name, value)
     if accountValues then
         accountValues.balance = accountValues.balance + value
 
-        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
         local file = fs.open(filePath, "w")
         file.write(textutils.serialize(accountValues))
         file.close()
@@ -152,7 +152,7 @@ function subtractAccountBalance(name, value)
         if accountValues.balance - value >= 0 then
             accountValues.balance = accountValues.balance - value
 
-            local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+            local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
             local file = fs.open(filePath, "w")
             file.write(textutils.serialize(accountValues))
             file.close()
@@ -172,7 +172,7 @@ function setBanStatus(name, isBanned)
     if accountValues then
         accountValues.banned = isBanned
 
-        local filePath = "/guardlink/economy/accounts/" .. name .. ".json"
+        local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
         local file = fs.open(filePath, "w")
         file.write(textutils.serialize(accountValues))
         file.close()
@@ -212,7 +212,7 @@ end
 
 -- returns all account names in a table (not sorted)
 function listAccounts()
-    local accountsDir = "/guardlink/economy/accounts/"
+    local accountsDir = "/guardlink/server/economy/accounts/"
     local accountNames = {}
 
     if fs.exists(accountsDir) and fs.isDir(accountsDir) then
@@ -229,6 +229,26 @@ function listAccounts()
 end
 
 
+-- Checks if the given password matches the username, returns true or false
+function authenticateUser(username, password)
+    local accountValues = getAccountValues(username)
+    if accountValues then
+        local salt = accountValues.salt
+        local storedPasswordHash = accountValues.password
+        local saltedPassword = salt .. password
+        local hashedPassword = sha256.digest(saltedPassword):toHex()
+        if hashedPassword == storedPasswordHash then
+            return true
+        else
+            return false
+        end
+    else
+        print("Account '" .. username .. "' does not exist.")
+        return false
+    end
+  end
+
+
 return {
     initializeAccountsDirectory = initializeAccountsDirectory,
     createAccount = createAccount,
@@ -240,5 +260,6 @@ return {
     subtractAccountBalance = subtractAccountBalance,
     transferBalance = transferBalance,
     setBanStatus = setBanStatus,
-    listAccounts = listAccounts
+    listAccounts = listAccounts,
+    authenticateUser = authenticateUser
 }
