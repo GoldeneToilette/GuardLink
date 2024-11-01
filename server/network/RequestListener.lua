@@ -72,19 +72,47 @@ end
 
 
 function handleTransactionRequest(sender, receiver, amount, sessionToken, socket)
-    if verifySessionToken(sender, sessionToken) then
+        -- verify session token
+        if not verifySessionToken(sender, sessionToken) then
+            cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_TOKEN")
+            return
+        end
+        
+        -- checks if sender and receiver accounts exist
+        if not iostream.doesAccountExist(sender) then
+            cryptoNet.send(socket, "TRANSACTION_FAIL|SENDER_NOT_FOUND")
+           return
+        end
+
+        if not iostream.doesAccountExist(receiver) then
+            cryptoNet.send(socket, "TRANSACTION_FAIL|RECEIVER_NOT_FOUND")
+           return
+        end
+
+        -- checks if amount is a positive integer
+        if type(amount) ~= "number" or amount <= 0 or math.floor(amount) ~= amount then
+            cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_AMOUNT")
+            return   
+        end
+        
+        -- checks if sender has enough balance
+        if iostream.getAccountBalance(sender) < amount then
+            cryptoNet.send(socket, "TRANSACTION_FAIL|INSUFFICIENT_FUNDS")
+            return
+        end
+
+
+
         iostream.transferBalance(sender, receiver, amount)
         cryptoNet.send(socket, "TRANSACTION_SUCCESS")
-    else
-        cryptoNet.send(socket, "TRANSACTION_FAIL")
-    end
 end
 
 
 function handleAccountInfoRequest(username, sessionToken, socket)
     if verifySessionToken(username, sessionToken) then
-        local accountInfo = iostream.getAccountValues(username)
-        cryptoNet.send(socket, "ACCOUNT_INFO|" .. accountInfo)
+        local accountInfo = iostream.getSanitizedAccountValues(username) --serialized
+        local accountInfoJSON = textutils.serializeJSON(accountInfo)
+        cryptoNet.send(socket, "ACCOUNT_INFO|" .. accountInfoJSON)
     else
         cryptoNet.send(socket, "SESSION_EXPIRED")
     end

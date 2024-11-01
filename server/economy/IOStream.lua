@@ -69,7 +69,7 @@ function deleteAccount(name)
 end
 
 
--- returns all account values in a table
+-- returns account values in a table
 function getAccountValues(name)
     local filePath = "/guardlink/server/economy/accounts/" .. name .. ".json"
 
@@ -96,6 +96,22 @@ function getAccountValues(name)
     end
 end
 
+-- same as above but without sensitive data
+function getSanitizedAccountValues(name)
+    local accountData = getAccountValues(name)
+    if accountData then
+        return {
+            name = accountData.name,
+            uuid = accountData.uuid,
+            creationDate = accountData.creationDate,
+            creationTime = accountData.creationTime,
+            balance = accountData.balance,
+            banned = accountData.banned
+        }
+    else
+        return nil
+    end
+end
 
 -- checks if the given account file exists
 function doesAccountExist(name)
@@ -164,6 +180,16 @@ function subtractAccountBalance(name, value)
     end
 end
 
+-- get the account balance
+function getAccountBalance(name)
+    local accountValues = getAccountValues(name)
+    if accountValues then
+        return accountValues.balance
+    else
+        print("Account '" .. name .. "' does not exist.")
+        return nil
+    end
+end
 
 -- sets the boolean for the banstatus
 function setBanStatus(name, isBanned)

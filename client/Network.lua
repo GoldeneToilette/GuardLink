@@ -11,6 +11,8 @@ responseCallback = nil
 function onStart()
     cryptoNet.connect("GuardLinkBank")
     cryptoNet.setLoggingEnabled(false)
+
+    
 end
 
 -- Listens for responses from server
@@ -18,11 +20,14 @@ function onEvent(event)
   if event[1] == "encrypted_message" then
       -- The message received from the server
       local message = event[2]
-      if message:sub(1, 12) == "ACCOUNT_INFO|" then
-          serverData.accountInfo = message:sub(13)
+      if message:sub(1, 13) == "ACCOUNT_INFO|" then
+          serverData.accountInfo = message:sub(14)
 
-      elseif message:sub(1, 17) == "TRANSACTION_STATUS|" then
+      elseif message:sub(1, 17) == "TRANSACTION_FAIL|" then
           serverData.transactionStatus = message:sub(18)
+
+      elseif message:sub(1, 20) == "TRANSACTION_SUCCESS|" then
+          serverData.transactionStatus = "TRANSACTION_SUCCESS"
       
       -- If the message includes "SESSION_TOKEN" at the beginning, it extracts the token and saves it in serverData
       elseif message:sub(1, 14) == "SESSION_TOKEN|" then
