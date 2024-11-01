@@ -1,11 +1,7 @@
 os.loadAPI("/GuardLink/client/lib/cryptoNet")
 
 -- Stores all responses from server in memory
-serverData = {
-  accountInfo = {},
-  transactionStatus = "",
-  sessionToken = ""
-}
+serverData = {}
 -- Socket used to connect to the server
 socket = nil
 -- idk what that is
@@ -30,8 +26,8 @@ function onEvent(event)
       elseif message:sub(1, 17) == "TRANSACTION_FAIL|" then
           serverData.transactionStatus = message:sub(18)
 
-      elseif message:sub(1, 19) == "TRANSACTION_SUCCESS" then
-          serverData.transactionStatus = message
+      elseif message:sub(1, 20) == "TRANSACTION_SUCCESS|" then
+          serverData.transactionStatus = "TRANSACTION_SUCCESS"
       
       -- If the message includes "SESSION_TOKEN" at the beginning, it extracts the token and saves it in serverData
       elseif message:sub(1, 14) == "SESSION_TOKEN|" then
