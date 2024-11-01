@@ -1,4 +1,7 @@
 local network = require("/GuardLink/client/network")
+local popup = require("/GuardLink/client/ui/popup")
+
+local data = network.getServerData()
 
 function add(mainFrame)
     local accountFrame = mainFrame:addFrame()
@@ -20,8 +23,6 @@ function add(mainFrame)
     :setForeground(colors.red)
     :setPosition(26, 1)
     :setSize(1, 1)
-
-
 
     -- ACCOUNT INFO DISPLAY ------------------------------------------------------
     local scrollableFrame = accountFrame:addScrollableFrame()
@@ -68,24 +69,28 @@ function add(mainFrame)
     :setSize(14, 1)
     -- ACCOUNT INFO DISPLAY ------------------------------------------------------
 
-    network.setResponseCallback(function(serverData)
-        if serverData.accountInfo then
-            local accountInfo = textutils.unserializeJSON(serverData.accountInfo)
-            nameLabel:setText("Name: " .. accountInfo.name)
-            statusLabel:setText("Status: Online")
-            bannedLabel:setText("Banned: " .. tostring(accountInfo.banned))
-            balanceLabel:setText(accountInfo.balance .. " GC")
-        else
-            local placeHolder = "N/A"
-            nameLabel:setText(placeHolder)
-            statusLabel:setText("Status: Offline")
-            bannedLabel:setText(placeHolder)
-            balanceLabel:setText(placeHolder)
-        end
-    end)
+    -- fetches the account data from the server
+    function updateInfo()
+        network.setResponseCallback(function(serverData)
+            if serverData.accountInfo then
+                local accountInfo = textutils.unserializeJSON(serverData.accountInfo)
+                nameLabel:setText("Name: " .. accountInfo.name)
+                statusLabel:setText("Status: Online")
+                bannedLabel:setText("Banned: " .. tostring(accountInfo.banned))
+                balanceLabel:setText(accountInfo.balance .. " GC")
+            else
+                local placeHolder = "N/A"
+                nameLabel:setText(placeHolder)
+                statusLabel:setText("Status: Offline")
+                bannedLabel:setText(placeHolder)
+                balanceLabel:setText(placeHolder)
+            end
+        end)
+        network.sendAccountInfoRequest(data.username, network.getSocket())
+    end
 
-    local data = network.getServerData()
-    network.sendAccountInfoRequest(data.username, network.getSocket())
+
+    updateInfo()
 
     -- TRANSACTION PANE ----------------------------------------------------------
     local transactionPane = scrollableFrame:addPane()
@@ -136,62 +141,46 @@ function add(mainFrame)
     :setForeground(colors.white)
     -- TRANSACTION PANE ----------------------------------------------------------
 
-    local transactionStatusFrame = accountFrame:addMovableFrame():setSize(10, 5)
-    :setBackground(colors.white, "#", colors.gray)
-    :setVisible(false)
-
-    local transactionStatustitleBar = transactionStatusFrame:addLabel()
-    :setText(" ")
-    :setBackground(colors.blue)
-    :setForeground(colors.white)
-    :setPosition(1, 1)
-    :setSize(10, 1)
-
-    local transactionStatusCloseButton = transactionStatusFrame:addButton()
-    :setText("X")
-    :setBackground(colors.blue)
-    :setForeground(colors.red)
-    :setPosition(10, 1)
-    :setSize(1, 1)
-
-    local transactionStatusLabel = transactionStatusFrame:addLabel()
-    :setText(" ")
-    :setBackground(colors.white)
-    :setForeground(colors.black)
-    :setPosition(1, 3)
-
-    -- Listener for closing the pop up
-    transactionStatusCloseButton:onClick(function(self, event, button, x, y)
-        if event == "mouse_click" and button == 1 then
-            transactionStatusFrame:setVisible(false)
-        end
-    end)
-
     -- handles the transaction button
     transactionButton:onClick(function(self, event, button, x, y)
         if event == "mouse_click" and button == 1 then
-            local username = nameField:getLine(1)
+            local receiver = nameField:getLine(1)
             local amount = amountField:getLine(1)
 
                 network.setResponseCallback(function(serverData)
-                    if serverData.transactionStatus then
+                    local status = serverData.transactionStatus
+                    if status then
                         -- if transaction is successful
-                        if(serverData.transactionStatus = "TRANSACTION_SUCCESS") then
-                            transactionStatusFrame:setVisible(true)
-                            transactionStatustitleBar:setText("Info")
-                        end 
+                        if status == "TRANSACTION_SUCCESS" then
+                            popup.create(accountFrame, "Success", "success", "Success!")
+                            updateInfo()
+                        -- all other cases
+                        elseif status == "INVALID_TOKEN" then
+                            popup.create(accountFrame, "Error", "error", status)
+                        elseif status == "SENDER_NOT_FOUND" then
+                            popup.create(accountFrame, "Error", "error", status)
+                        elseif status == "RECEIVER_NOT_FOUND" then
+                            popup.create(accountFrame, "Error", "error", status)
+                        elseif status == "INVALID_AMOUNT" then
+                            popup.create(accountFrame, "Error", "error", status)
+                        elseif status == "INSUFFICIENT_FUNDS" then
+                            popup.create(accountFrame, "Error", "error", status)
+                        else
+                            popup.create(accountFrame, "Error", "error", status)
+                        end
                     else
-
+                        popup.create(accountFrame, "Error", "error", "Failed to reach server")
                     end
                 end)
 
                 -- Send the login request to the server
-                network.sendLoginRequest(username, password, network.getSocket())
-            end
+                network.sendTransactionRequest(data.username, receiver, amount, network.getSocket())
         end
     end)
-end
 
+
+
+end
 
 return {
     add = add

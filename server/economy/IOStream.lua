@@ -280,6 +280,7 @@ return {
     createAccount = createAccount,
     deleteAccount = deleteAccount,
     getAccountValues = getAccountValues,
+    getAccountBalance = getAccountBalance,
     doesAccountExist = doesAccountExist,
     setAccountBalance = setAccountBalance,
     addAccountBalance = addAccountBalance,
@@ -287,5 +288,6 @@ return {
     transferBalance = transferBalance,
     setBanStatus = setBanStatus,
     listAccounts = listAccounts,
-    authenticateUser = authenticateUser
+    authenticateUser = authenticateUser,
+    getSanitizedAccountValues = getSanitizedAccountValues
 }

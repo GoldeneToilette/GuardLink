@@ -71,33 +71,39 @@ function handleLoginRequest(username, password, socket)
 end
 
 
+-- Handles transaction request from client
 function handleTransactionRequest(sender, receiver, amount, sessionToken, socket)
         -- verify session token
         if not verifySessionToken(sender, sessionToken) then
             cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_TOKEN")
+            print("Response: INVALID_TOKEN")
             return
         end
         
         -- checks if sender and receiver accounts exist
         if not iostream.doesAccountExist(sender) then
             cryptoNet.send(socket, "TRANSACTION_FAIL|SENDER_NOT_FOUND")
+            print("Response: SENDER_NOT_FOUND")
            return
         end
 
         if not iostream.doesAccountExist(receiver) then
             cryptoNet.send(socket, "TRANSACTION_FAIL|RECEIVER_NOT_FOUND")
+            print("Response: RECEIVER_NOT_FOUND")
            return
         end
 
         -- checks if amount is a positive integer
         if type(amount) ~= "number" or amount <= 0 or math.floor(amount) ~= amount then
             cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_AMOUNT")
+            print("Response: INVALID_AMOUNT")
             return   
         end
         
         -- checks if sender has enough balance
         if iostream.getAccountBalance(sender) < amount then
             cryptoNet.send(socket, "TRANSACTION_FAIL|INSUFFICIENT_FUNDS")
+            print("Response: INSUFFICIENT_FUNDS")
             return
         end
 
@@ -105,6 +111,7 @@ function handleTransactionRequest(sender, receiver, amount, sessionToken, socket
 
         iostream.transferBalance(sender, receiver, amount)
         cryptoNet.send(socket, "TRANSACTION_SUCCESS")
+        print("Response: TRANSACTION_SUCCESS")
 end
 
 
