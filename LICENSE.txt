@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 MIT License
 
+=======
+>>>>>>> 9762a64225f7fb76aa04d4954aa09ac9c6e0d627
 Copyright (c) 2024 glittershitter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
