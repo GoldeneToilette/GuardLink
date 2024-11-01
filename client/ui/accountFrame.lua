@@ -153,7 +153,7 @@ function add(mainFrame)
                         -- if transaction is successful
                         if status == "TRANSACTION_SUCCESS" then
                             updateInfo()
-                            popup.create(accountFrame, "Success", "success", "Success!")
+                            popup.create(accountFrame, "Success", "success", "Transaction Success!")
                         -- all other cases
                         elseif status == "INVALID_TOKEN" then
                             popup.create(accountFrame, "Error", "error", status)

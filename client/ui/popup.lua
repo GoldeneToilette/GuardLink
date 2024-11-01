@@ -1,7 +1,7 @@
 -- creates a simple pop up frame
 function create(frame, title, type, message)
-    local popUpFrame = frame:addMovableFrame():setSize(18, 5)
-    :setBackground(colors.white, "#", colors.gray)
+    local popUpFrame = frame:addMovableFrame():setSize(23, 5)
+    :setBackground(colors.white, "#", colors.lightGray)
     :setVisible(true)
 
     local popUpTitle = popUpFrame:addLabel()
@@ -9,12 +9,12 @@ function create(frame, title, type, message)
     :setBackground(colors.blue)
     :setForeground(colors.white)
     :setPosition(1, 1)
-    :setSize(18, 1)
+    :setSize(23, 1)
 
     local popUpLabel = popUpFrame:addLabel()
     :setText(message)
     :setBackground(colors.white)
-    :setPosition(1, 3)
+    :setPosition(2, 3)
 
     if type == "error" then
         popUpLabel:setForeground(colors.red)
@@ -24,11 +24,11 @@ function create(frame, title, type, message)
         popUpLabel:setForeground(colors.white)
     end
 
-    local pupUpButton = popUpFrame:addButton()
+    local popUpButton = popUpFrame:addButton()
     :setText("X")
     :setBackground(colors.blue)
     :setForeground(colors.red)
-    :setPosition(18, 1)
+    :setPosition(23, 1)
     :setSize(1, 1)
 
     -- Listener for closing the pop up
