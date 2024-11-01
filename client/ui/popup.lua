@@ -10,12 +10,19 @@ function create(frame, title, type, message)
     :setForeground(colors.white)
     :setPosition(1, 1)
     :setSize(10, 1)
-    
-    local pupUpLabel = popUpFrame:addLabel()
+
+    local popUpLabel = popUpFrame:addLabel()
     :setText(message)
     :setBackground(colors.white)
-    :setForeground(colors.black)
     :setPosition(1, 3)
+
+    if type == "error" then
+        popUpLabel.setForeground(colors.red)
+    elseif type == "success" then
+        popUpLabel.setForeground(colors.green)
+    elseif type == "info" then
+        popUpLabel.setForeground(colors.white)
+    end
 
     local pupUpButton = popUpFrame:addButton()
     :setText("X")

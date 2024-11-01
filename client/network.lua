@@ -1,7 +1,11 @@
 os.loadAPI("/GuardLink/client/lib/cryptoNet")
 
 -- Stores all responses from server in memory
-serverData = {}
+serverData = {
+  accountInfo = {},
+  transactionStatus = "",
+  sessionToken = ""
+}
 -- Socket used to connect to the server
 socket = nil
 -- idk what that is
