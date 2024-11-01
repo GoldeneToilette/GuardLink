@@ -136,8 +136,6 @@ function add(mainFrame)
     :setForeground(colors.white)
     -- TRANSACTION PANE ----------------------------------------------------------
 
-<<<<<<< HEAD
-=======
     local transactionStatusFrame = accountFrame:addMovableFrame():setSize(10, 5)
     :setBackground(colors.white, "#", colors.gray)
     :setVisible(false)
@@ -169,7 +167,6 @@ function add(mainFrame)
         end
     end)
 
->>>>>>> 9762a64225f7fb76aa04d4954aa09ac9c6e0d627
     -- handles the transaction button
     transactionButton:onClick(function(self, event, button, x, y)
         if event == "mouse_click" and button == 1 then

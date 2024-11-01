@@ -10,7 +10,7 @@ function create(frame, title, type, message)
     :setForeground(colors.white)
     :setPosition(1, 1)
     :setSize(10, 1)
-
+    
     local pupUpLabel = popUpFrame:addLabel()
     :setText(message)
     :setBackground(colors.white)
