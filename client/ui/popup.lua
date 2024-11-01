@@ -17,11 +17,11 @@ function create(frame, title, type, message)
     :setPosition(1, 3)
 
     if type == "error" then
-        popUpLabel.setForeground(colors.red)
+        popUpLabel:setForeground(colors.red)
     elseif type == "success" then
-        popUpLabel.setForeground(colors.green)
+        popUpLabel:setForeground(colors.green)
     elseif type == "info" then
-        popUpLabel.setForeground(colors.white)
+        popUpLabel:setForeground(colors.white)
     end
 
     local pupUpButton = popUpFrame:addButton()
