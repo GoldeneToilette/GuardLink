@@ -1,5 +1,34 @@
+-- creates basalt label
+function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, fontSize)
+    return parent:addLabel()
+        :setText(text)
+        :setPosition(posX, posY)
+        :setSize(sizeX, sizeY)
+        :setBackground(bgColor)
+        :setForeground(fgColor)
+        :setFontSize(fontSize or 1)
+end
+
+-- creates basalt pane
+function createPane(parent, posX, posY, sizeX, sizeY, bgColor)
+    return parent:addPane()
+    :setPosition(posX, posY)
+    :setSize(sizeX, sizeY)
+    :setBackground(bgColor)
+end
+
+-- creates a basalt textfield
+function createTextfield(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
+    return parent:addTextfield()
+    :addLine("")
+    :setPosition(posX, posY)
+    :setSize(sizeX, sizeY)
+    :setBackground(bgColor)
+    :setForeground(fgColor)
+end
+
 -- creates a simple pop up frame
-function create(frame, title, type, message)
+function createPopup(frame, title, type, message)
     local popUpFrame = frame:addMovableFrame():setSize(23, 5)
     :setBackground(colors.white, "#", colors.lightGray)
     :setVisible(true)
@@ -39,6 +68,11 @@ function create(frame, title, type, message)
     end)
 end
 
+
+
 return {
-    create = create
+    createLabel = createLabel,
+    createPane = createPane,
+    createTextfield = createTextfield,
+    createPopup = createPopup
 }
