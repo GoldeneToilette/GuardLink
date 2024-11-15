@@ -1,35 +1,48 @@
--- Parses a message, stores it into memory and returns a string of the message type
+-- Parses a message, stores it into memory, and returns a string of the message type
 function handleEventMessage(message, serverData)
-    if message:sub(1, 13) == "ACCOUNT_INFO|" then
-        serverData.accountInfo = message:sub(14)
-        _G.logger:info("[messageParser] Received message: " .. message:sub(1, 12))
-        return "ACCOUNT_INFO"
-    elseif message:sub(1, 17) == "TRANSACTION_FAIL|" then
-        serverData.transactionStatus = message:sub(18)
-        _G.logger:info("[messageParser] Received message: " .. message)
-        return "TRANSACTION"
-    elseif message:sub(1, 19) == "TRANSACTION_SUCCESS" then
-        serverData.transactionStatus = "TRANSACTION_SUCCESS"
-        _G.logger:info("[messageParser] Received message: " .. message)
-        return "TRANSACTION"
-    -- If the message includes "SESSION_TOKEN" at the beginning, it extracts the token and saves it in serverData
-    elseif message:sub(1, 14) == "SESSION_TOKEN|" then
-        _G.logger:info("[messageParser] Received message: " .. message:sub(1, 13))
-      local token = message:sub(15)
-      if token ~= "" then
-      serverData.sessionToken = token
-      return "LOGIN"
-      else 
-        serverData.sessionToken = "INVALID_FORMAT"
-        _G.logger:info("[messageParser] Received message: INVALID_FORMAT")
-        return "LOGIN"
-      end
-    else 
-        serverData.unknownMessage = message
-        _G.logger:info("[messageParser] Received message: " .. message)
-        return "UNKNOWN"
-    end    
+    local handlers = {
+        ["ACCOUNT_INFO|"] = function(msg)
+            serverData.accountInfo = msg:sub(14)
+            _G.logger:info("[messageParser] Received message: ACCOUNT_INFO")
+            return "ACCOUNT_INFO"
+        end,
+        ["TRANSACTION_FAIL|"] = function(msg)
+            serverData.transactionStatus = msg:sub(18)
+            _G.logger:info("[messageParser] Received message: TRANSACTION_FAIL")
+            return "TRANSACTION"
+        end,
+        ["TRANSACTION_SUCCESS"] = function(msg)
+            serverData.transactionStatus = "TRANSACTION_SUCCESS"
+            _G.logger:info("[messageParser] Received message: TRANSACTION_SUCCESS")
+            return "TRANSACTION"
+        end,
+        ["SESSION_TOKEN|"] = function(msg)
+            _G.logger:info("[messageParser] Received message: SESSION_TOKEN")
+            local token = msg:sub(15)
+            if token ~= "" then
+                serverData.sessionToken = token
+                return "LOGIN"
+            else
+                serverData.sessionToken = "INVALID_FORMAT"
+                _G.logger:info("[messageParser] Received message: INVALID_FORMAT")
+                return "LOGIN"
+            end
+        end,
+    }
+
+    -- goes through the table and executes the associated function
+    for prefix, handler in pairs(handlers) do
+        if message:sub(1, #prefix) == prefix then
+            return handler(message)
+        end
+    end
+
+    -- if everything else fails it marks it as an unknown message
+    serverData.unknownMessage = message
+    _G.logger:info("[messageParser] Received unknown message: " .. message)
+    return "UNKNOWN"
 end
+
 
 return {
     handleEventMessage = handleEventMessage
