@@ -52,7 +52,7 @@ local function onEvent(event)
         -- Interprets the message and updates serverData
         local messageType = messageParser.handleEventMessage(message, serverData)
 
-        -- Execute and clear callbacks for this message type
+        -- Execute and clear callbacks for specific message type
         executeCallbacks(messageType, serverData)
     end
 end

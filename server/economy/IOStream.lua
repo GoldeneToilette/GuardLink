@@ -212,7 +212,7 @@ end
 function transferBalance(sender, receiver, value)
     if value <= 0 and Utils.isInteger(value) == false then
         print("Invalid transfer amount.")
-        return
+        return 
     end
 
     local senderValues = getAccountValues(sender)
