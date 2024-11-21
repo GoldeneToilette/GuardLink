@@ -1,0 +1,13 @@
+<ui>
+<label id="titleLabel" text="GuardLink Banking" x="6" y="5" width="17" height="1" background="third" foreground="primary" />
+<label id="nameLabel" text="Name: " x="8" y="8" width="5" height="1" background="third" foreground="black" />
+<label id="passwordLabel" text="Password: " x="8" y="11" width="9" height="1" background="third" foreground="black" />
+<label id="infoLabel" text="" x="9" y="19" width="13" height="1" background="third" foreground="third" />
+
+<pane id="pane" x="3" y="2" width="22" height="18" background="third" />
+
+<textfield id="nameField" x="8" y="9" width="12" height="1" background="secondary" foreground="primary" />
+<textfield id="passwordField" x="8" y="12" width="12" height="1" background="secondary" foreground="primary" />
+
+<button id="loginButton" text="Login" x="8" y="15" width="12" height="3" background="primary" foreground="secondary" />
+</ui>

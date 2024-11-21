@@ -2,24 +2,20 @@ local network = require("/GuardLink/client/network/eventHandler")
 local utils = require("/GuardLink/client/ui/utils")
 local requestSender = require("/GuardLink/client/network/requestSender")
 local ErrorHandler = require("/GuardLink/client/errorHandler")
+local xmlParser = require("/GuardLink/client/ui/xmlParser")
 
 local function add(mainFrame)
     local accountFrame = mainFrame:addFrame()
         :setSize("parent.w", "parent.h")
-        :setBackground(colors.white)
+        :setBackground(colors.lightBlue)
         :setVisible(true)
 
-    local titleBar = utils.createLabel(accountFrame, "GLB 0.8a", 1, 1, 26, 1, colors.blue, colors.white, 1)
-    
-    -- account information ----------------------------------------------------------------------------------
-    local nameLabel = utils.createLabel(accountFrame, " ", 2, 3, 24, 2, colors.lightBlue, colors.blue, 1)
-    local statusLabel = utils.createLabel(accountFrame, " ", 2, 6, 14, 1, colors.lightBlue, colors.blue, 1)
-    statusLabel:setTextAlign("left")
-    local balanceLabel = utils.createLabel(accountFrame, " ", 18, 7, 9, 1, colors.blue, colors.orange, 1)
-    utils.createPane(accountFrame, 17, 6, 10, 3, colors.blue)
+    local uiElements = xmlParser.loadXML(accountFrame, "/GuardLink/client/ui/xml/accountFrame.xml")
 
-    local bannedLabel = utils.createLabel(accountFrame, " ", 2, 8, 14, 1, colors.lightBlue, colors.blue, 1)
-    -- account information ----------------------------------------------------------------------------------
+    local nameLabel = uiElements["nameLabel"]
+    local statusLabel = uiElements["statusLabel"]
+    local balanceLabel = uiElements["balanceLabel"]
+    local bannedLabel = uiElements["bannedLabel"] 
 
     -- function for updating account information
     local function updateInfo()
@@ -30,7 +26,7 @@ local function add(mainFrame)
                         nameLabel:setText("Name: " .. accountInfo.name)
                         statusLabel:setText("Status: Online")
                         bannedLabel:setText("Banned: " .. tostring(accountInfo.banned))
-                        balanceLabel:setText(accountInfo.balance .. " GC")
+                        balanceLabel:setText(utils.formatNumber(accountInfo.balance) .. " GC")
                     else
                         local placeHolder = "N/A"
                         nameLabel:setText(placeHolder)
@@ -44,22 +40,10 @@ local function add(mainFrame)
     -- update info right after declaring the function
     updateInfo()
 
+    local nameField = uiElements["nameField"] 
+    local amountField = uiElements["amountField"] 
 
-    local transactionPane = utils.createPane(accountFrame, 2, 10, 24, 9, colors.lightBlue)
-
-    utils.createLabel(accountFrame, "Transfer Balance", 6, 11, 17, 1, colors.lightBlue, colors.blue, 1)
-    utils.createLabel(accountFrame, "Name: ", 3, 13, 5, 1, colors.lightBlue, colors.blue, 1)
-    utils.createLabel(accountFrame, "Amount: ", 3, 16, 7, 1, colors.lightBlue, colors.blue, 1)
-
-    local nameField = utils.createTextfield(accountFrame, 10, 13, 15, 1, colors.white, colors.blue)
-    local amountField = utils.createTextfield(accountFrame, 10, 16, 8, 1, colors.white, colors.blue)
-
-    local transactionButton = accountFrame:addButton()
-        :setText(" Send")
-        :setSize(6, 3)
-        :setPosition(19, 15)
-        :setBackground(colors.blue)
-        :setForeground(colors.white)
+    local transactionButton = uiElements["transactionButton"]     
 
         transactionButton:onClick(function(_, event, button)
             if event == "mouse_click" and button == 1 then
@@ -87,7 +71,22 @@ local function add(mainFrame)
             end
         end)
 
-
+    local dropdown = accountFrame:addDropdown()
+    :setForeground(colors.lightBlue)
+    :setBackground(colors.orange)
+    :setPosition(1, 1)
+    :setSelectionColor(colors.magenta, colors.yellow)
+    :addItem("Banking", colors.orange)
+    :addItem("Investments", colors.orange)
+    :addItem("Marketplace", colors.orange)
+    :addItem("Law", colors.orange)
+    :addItem("GPS", colors.orange)
+    :addItem("Events", colors.orange)
+    :addItem("Ledger", colors.orange)
+    :addItem("Mailbox", colors.orange)
+    :addItem("Leaderboard", colors.orange)
+    :addItem("Settings", colors.orange)
+    :addItem("Help", colors.orange)
 
 end
 

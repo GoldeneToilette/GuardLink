@@ -1,3 +1,5 @@
+local settingsManager = require("/GuardLink/client/settingsManager")
+
 local Logger = {}
 Logger.__index = Logger
 
@@ -59,7 +61,9 @@ end
 
 -- Log debug message
 function Logger:debug(message)
+    if settingsManager.getSetting("debug") == true then
     self:log(message, "debug")
+    end
 end
 
 -- clear the log file

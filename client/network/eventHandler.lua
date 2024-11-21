@@ -58,23 +58,23 @@ local function onEvent(event)
 end
 
 -- starts the listener loop
-function startEventListener()
+local function startEventListener()
     _G.logger:info("[eventHandler] Starting Event loop!")
     cryptoNet.startEventLoop(onStart, onEvent)
 end
 
 -- returns server socket
-function getSocket()
+local function getSocket()
     return socket
 end
 
 -- connects to the server with given name
-function connectServer(serverName)
+local function connectServer(serverName)
     socket = cryptoNet.connect(serverName)
 end
 
 -- generic setter function
-function setServerData(key, value)
+local function setServerData(key, value)
     if serverData[key] ~= nil then
         serverData[key] = value
     else
@@ -83,7 +83,7 @@ function setServerData(key, value)
 end
 
 -- generic getter function
-function getServerData(key)
+local function getServerData(key)
     return serverData[key]
 end
 
