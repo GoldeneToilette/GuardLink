@@ -124,6 +124,14 @@ function addProgramMenu(mainframe, current)
     :setPosition(1, 1)
     :setSelectionColor(colors.magenta, colors.yellow)
     :addItem("Banking", colors.orange, colors.lightBlue, "accountFrame")
+    :addItem("Settings", colors.orange, colors.lightBlue, "settingsFrame")
+    :onChange(function(self, event, item)
+        local path = "/GuardLink/client/ui/frames/" .. tostring(item.args[1])
+        local frame = require(path)
+        current:remove()
+        frame.add(mainframe)
+    end)
+
     --:addItem("Investments", colors.orange, colors.lightBlue, "investmentsFrame")
     --:addItem("Marketplace", colors.orange, colors.lightBlue, "marketplaceFrame")
     --:addItem("Law", colors.orange, colors.lightBlue, "lawFrame")
@@ -132,16 +140,7 @@ function addProgramMenu(mainframe, current)
     --:addItem("Ledger", colors.orange, colors.lightBlue, "ledgerFrame")
     --:addItem("Mailbox", colors.orange, colors.lightBlue, "mailboxFrame")
     --:addItem("Leaderboard", colors.orange, colors.lightBlue, "leaderboardFrame")
-    :addItem("Settings", colors.orange, colors.lightBlue, "settingsFrame")
     --:addItem("Help", colors.orange, colors.lightBlue, "helpFrame")
-    :onChange(function(self, event, item)
-        local path = "/GuardLink/client/ui/frames/" .. tostring(item.args[1])
-        if fs.exists(path) then
-                local frame = require(path)
-                current:remove()
-                frame.add(mainframe)
-        end
-    end)
 end
 
 

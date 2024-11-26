@@ -28,3 +28,6 @@ installer doesn't exist yet
 
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/)
 
+## Demo
+
+![](demo.gif)
