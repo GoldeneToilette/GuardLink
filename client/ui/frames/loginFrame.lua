@@ -16,7 +16,7 @@ function add(mainFrame)
     local passwordField = uiElements["passwordField"]
     local infoLabel = uiElements["infoLabel"] 
 
-
+    -- MINOR BUG: callbacks for failed logins are still put in the queue, causes longer loading times if you fail login
     loginButton:onClick(function(self, event, button, x, y)
         if event == "mouse_click" and button == 1 then
             local name = nameField:getLine(1)

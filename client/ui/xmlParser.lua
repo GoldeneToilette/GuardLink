@@ -75,6 +75,15 @@ function xmlParser.loadXML(frame, filePath)
                 tonumber(child["@height"]),
                 resolveColor(child["@background"])
             )
+        elseif elementName == "checkbox" then
+            elements[id] = utils.createCheckbox(frame,
+                tonumber(child["@x"]),
+                tonumber(child["@y"]),
+                tonumber(child["@width"]),
+                tonumber(child["@height"]),
+                resolveColor(child["@background"]),
+                resolveColor(child["@foreground"])
+            )
         end
     end
 

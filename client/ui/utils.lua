@@ -9,7 +9,7 @@ local function formatNumber(balance)
     end
 end
 
--- creates basalt label
+-- creates a basalt label
 function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, fontSize)
     return parent:addLabel()
         :setText(text)
@@ -20,7 +20,7 @@ function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, f
         :setFontSize(fontSize or 1)
 end
 
--- creates basalt pane
+-- creates a basalt pane
 function createPane(parent, posX, posY, sizeX, sizeY, bgColor)
     return parent:addPane()
     :setPosition(posX, posY)
@@ -38,6 +38,7 @@ function createTextfield(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
     :setForeground(fgColor)
 end
 
+-- creates a basalt button
 function createButton(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor)
     return parent:addButton()
     :setText(text)
@@ -46,6 +47,16 @@ function createButton(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor)
     :setPosition(posX, posY)
     :setSize(sizeX, sizeY)
 end
+
+-- creates a basalt checkbox
+function createCheckbox(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
+    return parent:addCheckbox()
+    :setBackground(bgColor)
+    :setForeground(fgColor)
+    :setPosition(posX, posY)
+    :setSize(sizeX, sizeY)
+end
+
 -- creates a simple pop up frame
 function createPopup(frame, title, type, message, yesCallback)
     local popUpFrame = frame:addMovableFrame():setSize(23, 5)
@@ -105,6 +116,36 @@ function createPopup(frame, title, type, message, yesCallback)
     end)
 end
 
+-- adds the program menu at the top
+function addProgramMenu(mainframe, current)
+    return current:addDropdown()
+    :setForeground(colors.lightBlue)
+    :setBackground(colors.orange)
+    :setPosition(1, 1)
+    :setSelectionColor(colors.magenta, colors.yellow)
+    :addItem("Banking", colors.orange, colors.lightBlue, "accountFrame")
+    :addItem("Investments", colors.orange, colors.lightBlue, "investmentsFrame")
+    :addItem("Marketplace", colors.orange, colors.lightBlue, "marketplaceFrame")
+    :addItem("Law", colors.orange, colors.lightBlue, "lawFrame")
+    :addItem("GPS", colors.orange, colors.lightBlue, "gpsFrame")
+    :addItem("Events", colors.orange, colors.lightBlue, "eventsFrame")
+    :addItem("Ledger", colors.orange, colors.lightBlue, "ledgerFrame")
+    :addItem("Mailbox", colors.orange, colors.lightBlue, "mailboxFrame")
+    :addItem("Leaderboard", colors.orange, colors.lightBlue, "leaderboardFrame")
+    :addItem("Settings", colors.orange, colors.lightBlue, "settingsFrame")
+    :addItem("Help", colors.orange, colors.lightBlue, "helpFrame")
+    :onChange(function(self, event, item)
+        local path = "/GuardLink/client/ui/frames/" .. tostring(item.args[1])
+        local dir = fs.getDir(path)
+        if fs.exists(dir) then
+                local frame = require(path)
+                current:remove()
+                frame.add(mainframe)
+        else
+            -- add custom error window here
+        end
+    end)
+end
 
 
 return {
@@ -113,5 +154,7 @@ return {
     createTextfield = createTextfield,
     createPopup = createPopup,
     createButton = createButton,
-    formatNumber = formatNumber
+    formatNumber = formatNumber,
+    addProgramMenu = addProgramMenu,
+    createCheckbox = createCheckbox
 }

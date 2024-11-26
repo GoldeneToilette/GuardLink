@@ -10,6 +10,9 @@ local function add(mainFrame)
         :setBackground(colors.lightBlue)
         :setVisible(true)
 
+    local dropdown = utils.addProgramMenu(mainFrame, accountFrame)
+    dropdown:selectItem(1)  
+
     local uiElements = xmlParser.loadXML(accountFrame, "/GuardLink/client/ui/xml/accountFrame.xml")
 
     local nameLabel = uiElements["nameLabel"]
@@ -71,23 +74,7 @@ local function add(mainFrame)
             end
         end)
 
-    local dropdown = accountFrame:addDropdown()
-    :setForeground(colors.lightBlue)
-    :setBackground(colors.orange)
-    :setPosition(1, 1)
-    :setSelectionColor(colors.magenta, colors.yellow)
-    :addItem("Banking", colors.orange)
-    :addItem("Investments", colors.orange)
-    :addItem("Marketplace", colors.orange)
-    :addItem("Law", colors.orange)
-    :addItem("GPS", colors.orange)
-    :addItem("Events", colors.orange)
-    :addItem("Ledger", colors.orange)
-    :addItem("Mailbox", colors.orange)
-    :addItem("Leaderboard", colors.orange)
-    :addItem("Settings", colors.orange)
-    :addItem("Help", colors.orange)
-
+        
 end
 
 
