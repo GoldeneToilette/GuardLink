@@ -16,6 +16,7 @@ External Libraries:
 - [SHA256-Algorithm](https://pastebin.com/6UV4qfNF)
 - [Basalt (UI Library)](https://basalt.madefor.cc/#/)
 - [Simple XML-Parser for lua](https://github.com/Cluain/Lua-Simple-XML-Parser)
+- [cryptoNet](https://github.com/SiliconSloth/CryptoNet)
 
 Installation:
 - 

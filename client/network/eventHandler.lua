@@ -7,7 +7,11 @@ local serverData = {
   accountInfo = nil,
   transactionStatus = nil,
   sessionToken = nil,
-  unknownMessage = nil
+  unknownMessage = nil,
+  gpsLocations = {
+    byName = {},
+    byCategory = {}
+  }
 }
 
 -- Queue for holding callbacks, mapped by message type

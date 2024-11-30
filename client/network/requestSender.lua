@@ -7,7 +7,7 @@ local function sendLoginRequest(username, password, socket, callback)
     cryptoNet.send(socket, "LOGIN|" .. username .. "|" .. password .. "|")
   end
   
-  -- Sends a transaction request to the server
+-- Sends a transaction request to the server
 local function sendTransactionRequest(sender, receiver, amount, socket, callback)
     _G.logger:debug("[requestSender] Sending Transaction Request with callback " .. tostring(callback))
     network.registerCallback("TRANSACTION", callback)
@@ -15,7 +15,7 @@ local function sendTransactionRequest(sender, receiver, amount, socket, callback
     cryptoNet.send(socket, "TRANSACTION|" .. sender .. "|" .. receiver .. "|" .. amount .. "|" .. sessionToken)
   end
   
-  -- Request all account information from an account (you can only request yours since you need a token)
+-- Request all account information from an account (you can only request yours since you need a token)
 local function sendAccountInfoRequest(username, socket, callback)
     _G.logger:debug("[requestSender] Sending Account Info Request with callback " .. tostring(callback))
     network.registerCallback("ACCOUNT_INFO", callback)
@@ -23,8 +23,21 @@ local function sendAccountInfoRequest(username, socket, callback)
     cryptoNet.send(socket, "ACCOUNT_INFO|" .. username .. "|" .. sessionToken)
   end
   
+--[[
+Request GPS Information. There are 3 types:
+1. "single" - Fetch info for a specific location (requires "name").
+2. "list" - Fetch locations by category (requires "category").
+3. "add" - Add a new location (requires "name", "coordinates", "description", "category").
+]]
+local function sendGPSRequest(type, param, socket, callback) -- param should always be a table
+    _G.logger:debug("[requestHandler] Sending GPS Request with type: " .. type .. " and callback: " .. callback)
+    network.registerCallback("GPS", callback)
+    cryptoNet.send(socket, "GPS|" .. type .. "|" .. textutils.serialize(param), sessionToken)
+end
+
   return {
     sendLoginRequest = sendLoginRequest,
     sendTransactionRequest = sendTransactionRequest,
-    sendAccountInfoRequest = sendAccountInfoRequest
+    sendAccountInfoRequest = sendAccountInfoRequest,
+    sendGPSRequest = sendGPSRequest
   }

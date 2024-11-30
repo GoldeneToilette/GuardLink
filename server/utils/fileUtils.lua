@@ -1,6 +1,6 @@
 local fileUtils = {}
 
-local function isValidPath(path)
+function isValidPath(path)
     return fs.exists(path)
 end
 
@@ -21,11 +21,9 @@ end
 
 -- Writes "data" into the file
 function fileUtils.writeFile(path, data)
-    if isValidPath(path) then
         local file = fs.open(path, "w")
         file.write(data)
         file.close()
-    end
 end
 
 -- deletes a file
@@ -46,7 +44,7 @@ end
 
 -- Returns a table of all account values
 function fileUtils.readAccountFile(name)
-    local path = "/Guardlink/server/economy/accounts/" .. name .. ".json"
+    local path = "/GuardLink/server/economy/accounts/" .. name .. ".json"
     if isValidPath(path) then
         return textutils.unserialize(fileUtils.readFile(path))
     else
@@ -56,10 +54,8 @@ end
 
 -- Writes to an account file
 function fileUtils.writeAccountFile(name, data)
-    local path = "/Guardlink/server/economy/accounts/" .. name .. ".json"
-    if isValidPath(path) then
+    local path = "/GuardLink/server/economy/accounts/" .. name .. ".json"
         fileUtils.writeFile(path, data)
-    end
 end
 
 return fileUtils

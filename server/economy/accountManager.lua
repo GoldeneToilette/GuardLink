@@ -3,7 +3,7 @@ local securityUtils = require("/GuardLink/server/utils/securityUtils")
 local mathUtils = require("/GuardLink/server/utils/mathUtils")
 local sha256 = require("/GuardLink/server/lib/sha256")
 
-local accountPath = "GuardLink/server/economy/accounts/"
+local accountPath = "/GuardLink/server/economy/accounts/"
 
 accountManager = {}
 
@@ -37,7 +37,7 @@ function accountManager.createAccount(name, password)
             sessionToken = ""
         }
 
-        fileUtils.writeAccountFile(name, textutils.serialize(accountData))
+        fileUtils.writeAccountFile(tostring(name), textutils.serialize(accountData))
     else
         _G.logger:error("[accountManager] Failed to create account: Invalid name or password")
     end

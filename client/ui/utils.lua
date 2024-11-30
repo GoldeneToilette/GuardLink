@@ -1,11 +1,11 @@
 -- formats the balance correctly, so it doesnt go out of bounds
 local function formatNumber(balance)
     if balance >= 1e9 then
-        return string.format("%.1fB GC", balance / 1e9)
+        return string.format("%.1fB ", balance / 1e9)
     elseif balance >= 1e6 then
-        return string.format("%.1fM GC", balance / 1e6)
+        return string.format("%.1fM ", balance / 1e6)
     else
-        return string.format("%d GC", balance)
+        return string.format("%d ", balance)
     end
 end
 
@@ -61,6 +61,7 @@ end
 function createPopup(frame, title, type, message, yesCallback)
     local popUpFrame = frame:addMovableFrame():setSize(23, 5)
     :setBackground(colors.white, "#", colors.lightGray)
+    :setPosition(2, 8)
     :setVisible(true)
 
     local popUpTitle = popUpFrame:addLabel()
@@ -124,6 +125,7 @@ function addProgramMenu(mainframe, current)
     :setPosition(1, 1)
     :setSelectionColor(colors.magenta, colors.yellow)
     :addItem("Banking", colors.orange, colors.lightBlue, "accountFrame")
+    :addItem("GPS", colors.orange, colors.lightBlue, "gpsFrame")
     :addItem("Settings", colors.orange, colors.lightBlue, "settingsFrame")
     :onChange(function(self, event, item)
         local path = "/GuardLink/client/ui/frames/" .. tostring(item.args[1])
@@ -135,7 +137,7 @@ function addProgramMenu(mainframe, current)
     --:addItem("Investments", colors.orange, colors.lightBlue, "investmentsFrame")
     --:addItem("Marketplace", colors.orange, colors.lightBlue, "marketplaceFrame")
     --:addItem("Law", colors.orange, colors.lightBlue, "lawFrame")
-    --:addItem("GPS", colors.orange, colors.lightBlue, "gpsFrame")
+
     --:addItem("Events", colors.orange, colors.lightBlue, "eventsFrame")
     --:addItem("Ledger", colors.orange, colors.lightBlue, "ledgerFrame")
     --:addItem("Mailbox", colors.orange, colors.lightBlue, "mailboxFrame")

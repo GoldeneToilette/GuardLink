@@ -1,5 +1,6 @@
 local accountManager = require("/GuardLink/server/economy/accountManager")
 local securityUtils = require("/GuardLink/server/utils/securityUtils")
+local mathUtils = require("/GuardLink/server/utils/mathUtils")
 
 os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
@@ -16,7 +17,7 @@ local function handleLoginRequest(parts, socket)
         local sessionToken = securityUtils.generateSessionToken(16)
         accountManager.setAccountValue(username, "sessionToken", sessionToken)
         cryptoNet.send(socket, "SESSION_TOKEN|" .. sessionToken)
-        _G.logger:info("[requestHandler] Successfull login: " .. username)
+        _G.logger:info("[requestHandler] Successful login: " .. username)
     else
         cryptoNet.send(socket, "LOGIN_FAILED")
         _G.logger:info("[requestHandler] Failed login: " .. username)
@@ -40,7 +41,7 @@ local function handleTransactionRequest(parts, socket)
         _G.logger:info("[requestHandler] Failed transaction request: Invalid token.")
         return
     end
-    if not amount or amount <= 0 then
+    if not amount or amount <= 0 or mathUtils.isInteger(amount) then
         cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_AMOUNT")
         _G.logger:info("[requestHandler] Failed transaction request: Invalid amount.")
         return

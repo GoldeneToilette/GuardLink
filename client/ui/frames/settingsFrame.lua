@@ -10,7 +10,7 @@ local function add(mainFrame)
         :setVisible(true)
 
         local dropdown = utils.addProgramMenu(mainFrame, settingsFrame)   
-        dropdown:selectItem(2)
+        dropdown:selectItem(3)
 
         local uiElements = xmlParser.loadXML(settingsFrame, "/GuardLink/client/ui/xml/settingsFrame.xml")
 
