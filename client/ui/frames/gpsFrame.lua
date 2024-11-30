@@ -1,7 +1,7 @@
 local utils = require("/GuardLink/client/ui/utils")
 local xmlParser = require("/GuardLink/client/ui/xmlParser")
 
-function add(mainframe)
+local function add(mainFrame)
     local gpsFrame = mainFrame:addFrame()
     :setSize("parent.w", "parent.h")
     :setBackground(colors.orange)
@@ -12,3 +12,7 @@ function add(mainframe)
     local dropdown = utils.addProgramMenu(mainFrame, gpsFrame)   
     dropdown:selectItem(2)
 end
+
+return {
+    add = add
+}

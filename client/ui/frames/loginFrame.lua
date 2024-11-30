@@ -3,7 +3,7 @@ local requestSender = require("/GuardLink/client/network/requestSender")
 local accountFrame = require("/GuardLink/client/ui/frames/accountFrame")
 local xmlParser = require("/GuardLink/client/ui/xmlParser")
 
-function add(mainFrame)
+local function add(mainFrame)
     local loginFrame = mainFrame:addFrame()
     :setSize("parent.w", "parent.h")
     :setBackground(colors.orange)
