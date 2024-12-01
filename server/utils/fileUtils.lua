@@ -30,6 +30,9 @@ end
 function fileUtils.deleteFile(path)
     if isValidPath(path) then
         fs.delete(path)
+        return true
+    else
+        return false
     end
 end
 

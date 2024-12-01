@@ -1,6 +1,7 @@
 local accountManager = require("/GuardLink/server/economy/accountManager")
 local securityUtils = require("/GuardLink/server/utils/securityUtils")
 local mathUtils = require("/GuardLink/server/utils/mathUtils")
+local clientManager = require("/GuardLink/server/network/clientManager")
 
 os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
@@ -8,7 +9,7 @@ os.loadAPI("/GuardLink/server/lib/cryptoNet")
 local requestHandlers = {}
 
 -- LOGIN handler
-local function handleLoginRequest(parts, socket)
+local function handleLoginRequest(parts, socket, client)
     local username = parts[2]
     local password = parts[3]
     local success = accountManager.authenticateUser(username, password)
@@ -18,6 +19,7 @@ local function handleLoginRequest(parts, socket)
         accountManager.setAccountValue(username, "sessionToken", sessionToken)
         cryptoNet.send(socket, "SESSION_TOKEN|" .. sessionToken)
         _G.logger:info("[requestHandler] Successful login: " .. username)
+        clientManager.updateLastActivity(client.id, "login")
     else
         cryptoNet.send(socket, "LOGIN_FAILED")
         _G.logger:info("[requestHandler] Failed login: " .. username)
@@ -25,7 +27,7 @@ local function handleLoginRequest(parts, socket)
 end
 
 -- TRANSACTION handler
-local function handleTransactionRequest(parts, socket)
+local function handleTransactionRequest(parts, socket, client)
     local sender = parts[2]
     local receiver = parts[3]
     local amount = tonumber(parts[4])
@@ -41,7 +43,7 @@ local function handleTransactionRequest(parts, socket)
         _G.logger:info("[requestHandler] Failed transaction request: Invalid token.")
         return
     end
-    if not amount or amount <= 0 or mathUtils.isInteger(amount) then
+    if not amount or amount <= 0 or not mathUtils.isInteger(amount) then
         cryptoNet.send(socket, "TRANSACTION_FAIL|INVALID_AMOUNT")
         _G.logger:info("[requestHandler] Failed transaction request: Invalid amount.")
         return
@@ -66,18 +68,20 @@ local function handleTransactionRequest(parts, socket)
     accountManager.transferBalance(sender, receiver, amount)
     cryptoNet.send(socket, "TRANSACTION_SUCCESS")
     _G.logger:info("[requestHandler] Successful transaction: Transfered " .. amount .. " GC from " .. sender .. " to " .. receiver)
+    clientManager.updateLastActivity(client.id, "transaction")
 end
 
 -- ACCOUNT INFO handler
-local function handleAccountInfoRequest(parts, socket)
+local function handleAccountInfoRequest(parts, socket, client)
     local username = parts[2]
     local sessionToken = parts[3]
-    
+
     if accountManager.verifySessionToken(username, sessionToken) then
         local accountInfo = accountManager.getSanitizedAccountValues(username)
         local accountInfoJSON = textutils.serializeJSON(accountInfo)
         cryptoNet.send(socket, "ACCOUNT_INFO|" .. accountInfoJSON)
-        _G.logger:info("[requestHandler] Successful account info request: " .. username)        
+        _G.logger:info("[requestHandler] Successful account info request: " .. username)       
+        clientManager.updateLastActivity(client.id, "account_info")
     else
         cryptoNet.send(socket, "SESSION_EXPIRED")
         _G.logger:info("[requestHandler] Failed account info request: Session expired!")
@@ -99,9 +103,10 @@ function handleRequest(message, socket)
 
     local messageType = parts[1]
     local handler = requestHandlers[messageType]
-    
+
+    local client = clientManager.getClientBySocket(socket)
     if handler then
-        handler(parts, socket)
+        handler(parts, socket, client)
     else
         _G.logger:error("[requestHandler] Unknown message: " .. message)
         return

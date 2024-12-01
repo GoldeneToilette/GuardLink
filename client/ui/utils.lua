@@ -10,7 +10,7 @@ local function formatNumber(balance)
 end
 
 -- creates a basalt label
-function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, fontSize)
+local function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, fontSize)
     return parent:addLabel()
         :setText(text)
         :setPosition(posX, posY)
@@ -21,7 +21,7 @@ function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor, f
 end
 
 -- creates a basalt pane
-function createPane(parent, posX, posY, sizeX, sizeY, bgColor)
+local function createPane(parent, posX, posY, sizeX, sizeY, bgColor)
     return parent:addPane()
     :setPosition(posX, posY)
     :setSize(sizeX, sizeY)
@@ -29,7 +29,7 @@ function createPane(parent, posX, posY, sizeX, sizeY, bgColor)
 end
 
 -- creates a basalt textfield
-function createTextfield(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
+local function createTextfield(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
     return parent:addTextfield()
     :addLine("")
     :setPosition(posX, posY)
@@ -39,7 +39,7 @@ function createTextfield(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
 end
 
 -- creates a basalt button
-function createButton(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor)
+local function createButton(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor)
     return parent:addButton()
     :setText(text)
     :setBackground(bgColor)
@@ -49,7 +49,7 @@ function createButton(parent, text, posX, posY, sizeX, sizeY, bgColor, fgColor)
 end
 
 -- creates a basalt checkbox
-function createCheckbox(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
+local function createCheckbox(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
     return parent:addCheckbox()
     :setBackground(bgColor)
     :setForeground(fgColor)
@@ -58,7 +58,7 @@ function createCheckbox(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
 end
 
 -- creates a simple pop up frame
-function createPopup(frame, title, type, message, yesCallback)
+local function createPopup(frame, title, type, message, yesCallback)
     local popUpFrame = frame:addMovableFrame():setSize(23, 5)
     :setBackground(colors.white, "#", colors.lightGray)
     :setPosition(2, 8)
@@ -118,7 +118,7 @@ function createPopup(frame, title, type, message, yesCallback)
 end
 
 -- adds the program menu at the top
-function addProgramMenu(mainframe, current)
+local function addProgramMenu(mainframe, current)
     return current:addDropdown()
     :setForeground(colors.lightBlue)
     :setBackground(colors.orange)

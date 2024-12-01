@@ -38,8 +38,10 @@ function accountManager.createAccount(name, password)
         }
 
         fileUtils.writeAccountFile(tostring(name), textutils.serialize(accountData))
+        return true
     else
         _G.logger:error("[accountManager] Failed to create account: Invalid name or password")
+        return false
     end
 end
 
@@ -83,9 +85,11 @@ function accountManager.changeAccountBalance(operation, name, value)
         end
     else
         _G.logger:error("[accountManager] Failed to modify balance: Invalid operator " .. operator)
+        return false
     end
 
     fileUtils.writeAccountFile(name, textutils.serialize(accountData))
+    return true
 end
 
 -- Transfers balance between 2 accounts.

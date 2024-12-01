@@ -20,4 +20,14 @@ function mathUtils.randomNumber(min, max)
         return math.floor(rand)
 end
 
+function mathUtils.formatNumber(balance)
+    if balance >= 1e9 then
+        return string.format("%.1fB ", balance / 1e9)
+    elseif balance >= 1e6 then
+        return string.format("%.1fM ", balance / 1e6)
+    else
+        return string.format("%d ", balance)
+    end
+end
+
 return mathUtils

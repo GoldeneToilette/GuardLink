@@ -38,10 +38,13 @@ local function handleEventMessage(message, serverData)
         end,
 
         -- GPS response
-        ["GPS|"] = function(msg)
+        --[[
+                ["GPS|"] = function(msg)
             _G.logger:info("[messageParser] Received message: GPS")
             -- implement here
         end,
+        ]]--
+
     }
 
     -- depending on what the "message" argument is, it takes the element from the table and executes its
