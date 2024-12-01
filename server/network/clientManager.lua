@@ -43,8 +43,10 @@ local function unregisterClient(clientID)
     if clients[clientID] then
         clients[clientID] = nil
         _G.logger:info("[clientManager] Client disconnected: " .. clientID)
+        return true
     else
         _G.logger:error("[clientManager] Client ID not found: " .. clientID)
+        return false
     end
 end
 
