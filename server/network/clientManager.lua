@@ -1,4 +1,5 @@
 local mathUtils = require("/GuardLink/server/utils/mathUtils")
+os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
 -- stores all connected clients
 local clients = {}
@@ -41,6 +42,7 @@ end
 -- remove client from table by ID
 local function unregisterClient(clientID)
     if clients[clientID] then
+            cryptoNet.close(clients[clientID].socket)
         clients[clientID] = nil
         _G.logger:info("[clientManager] Client disconnected: " .. clientID)
         return true
