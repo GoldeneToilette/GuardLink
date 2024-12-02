@@ -29,9 +29,6 @@ installer doesn't exist yet
 
 ![](demo.gif)
 
-## Boo
-
-spooky
 
 ## License
 
