@@ -13,7 +13,7 @@ local function add(mainFrame)
         :setPosition(1,1)
         :setBackground(colors.lightBlue)
         local dropdown = utils.addProgramMenu(mainFrame, subFrame)   
-        dropdown:selectItem(3)
+        dropdown:selectItem(4)
 
         local uiElements = xmlParser.loadXML(subFrame, "/GuardLink/client/ui/xml/helpFrame.xml")
 
