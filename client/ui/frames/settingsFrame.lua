@@ -33,7 +33,22 @@ local function add(mainFrame)
             themes.initializePaletteWithTheme(selectedTheme)
         end)
 
+        local checkbox = settingsFrame:addCheckbox()
+        :setPosition(15,6)
+        :setForeground(colors.lightBlue)
+        :setBackground(colors.orange)
 
+        checkbox:setValue(settingsManager.getSetting("debug"))
+
+        checkbox:onChange(function(self)
+            local checked = self:getValue()
+            if checked == true then
+                settingsManager.setSetting("debug", true)
+            else
+                settingsManager.setSetting("debug", false)
+            end
+            _G.logger:info("[settingsFrame] changed debug mode to: " .. tostring(checked))
+        end)
 end
 
 

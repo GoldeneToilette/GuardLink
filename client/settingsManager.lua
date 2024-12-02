@@ -4,7 +4,7 @@ local settings = {}
 -- Default settings
 local defaultSettings = {
     theme = "default",
-    volume = 50,
+    debug = false,
 }
 
 -- Initializes settings, creates the settings file if it doesnt exist and sets default values
