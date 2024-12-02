@@ -26,7 +26,6 @@ local function clientCommand(words)
             return {
                 "ID: " .. client.id,
                 "Connected At: " .. client.connectedAt,
-                "Last Activity Date: " .. client.lastActivityDate,
                 "Last Activity: " .. client.lastActivityType
             }
         else

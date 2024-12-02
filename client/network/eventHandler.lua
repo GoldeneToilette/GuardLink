@@ -24,6 +24,8 @@ local socket = nil
 local function onStart()
     cryptoNet.connect("GuardLinkBank")
     cryptoNet.setLoggingEnabled(false)
+
+    _G.logger:debug("[eventHandler] Connecting to server with name 'GuardLinkBank'")
 end
 
 -- Register a callback for a specific message type
@@ -32,6 +34,7 @@ local function registerCallback(messageType, callback)
         callbackQueue[messageType] = {}
     end
     table.insert(callbackQueue[messageType], callback)
+    _G.logger:debug("[eventHandler] Registering callback for message type " .. messageType .. " and function " .. callback)
 end
 
 -- Handles executing callbacks for a specific message type
@@ -63,7 +66,7 @@ end
 
 -- starts the listener loop
 local function startEventListener()
-    _G.logger:info("[eventHandler] Starting Event loop!")
+    _G.logger:debug("[eventHandler] Starting Event loop!")
     cryptoNet.startEventLoop(onStart, onEvent)
 end
 
