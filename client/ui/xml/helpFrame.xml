@@ -9,6 +9,6 @@
 <label id="seperator1" text="__________________" x="2" y="4" width="24" height="1" background="secondary" foreground="primary"/>
 
 <label id="helpline1" text="1. How do I transfer money?                                           You can transfer money in the Banking tab under 'transfer balance', just type the reciever's bank account name, and how much you want to send, then click the send button!" x="2" y="6" width="24" height="11" background="secondary" foreground="primary"/>
-<label id="helpline2" text="2. How do I change these colors?                                         You can change your color theme in the Settings tab under 'Themes', just choose your prefered theme, you can change at any time!" x="2" y="19" width="24" height="25" background="secondary" foreground="primary"/>
+<label id="helpline2" text="2. How do I change these colors?                                         You can change your color theme in the Settings tab under 'Themes', just choose your prefered theme, you can change at any time!" x="2" y="19" width="24" height="10" background="secondary" foreground="primary"/>
 
 </ui>
