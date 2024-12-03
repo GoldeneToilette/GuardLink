@@ -3,7 +3,7 @@ local commands = require("/GuardLink/server/shell/commands")
 
 local MAX_LINES = 17
 
-function labelManager(outputFrame)
+local function labelManager(outputFrame)
     local labels = {}
 
     local function addLine(text, bgColor, fgColor)

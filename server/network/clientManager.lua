@@ -41,6 +41,7 @@ end
 
 -- remove client from table by ID
 local function unregisterClient(clientID)
+    clientID = tonumber(clientID)
     if clients[clientID] then
             cryptoNet.close(clients[clientID].socket)
         clients[clientID] = nil
@@ -63,10 +64,12 @@ end
 
 -- returns all details for a clientID
 local function inspect(clientID)
+    clientID = tonumber(clientID)
     local client = clients[clientID]
     if client then
         return client
     else
+        _G.logger:debug("[clientManager] Failed to inspect client: " .. clientID)
         return nil
     end
 end

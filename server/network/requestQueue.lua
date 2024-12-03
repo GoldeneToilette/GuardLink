@@ -164,4 +164,13 @@ function RequestQueue.getAverageTimeSpent()
     return totalTimeSpent / processedCount
 end
 
+-- List all request IDs in the queue
+function RequestQueue.listRequestIDs()
+    local ids = {}
+    for _, request in ipairs(queue) do
+        table.insert(ids, request.id)
+    end
+    return ids
+end
+
 return RequestQueue

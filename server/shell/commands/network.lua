@@ -1,74 +1,73 @@
 os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
 local clientManager = require("/GuardLink/server/network/clientManager")
+local requestQueue = require("/GuardLink/server/network/requestQueue")
+local requestHandler = require("/GuardLink/server/network/requestHandler")
 
--- Network client [list/remove/inspect] [ID]
-local function clientCommand(words)
-    local command = words[3]
-    local clientID = tonumber(words[4])
+local inspectClient = require("/GuardLink/server/shell/commands/network/client_inspect")
+local listClient = require("/GuardLink/server/shell/commands/network/client_list")
+local removeClient = require("/GuardLink/server/shell/commands/network/client_remove")
 
-    if command == "list" then
-        local clients = clientManager.list()
-        local output = {"Connected Clients:"}
-
-        for index, id in ipairs(clients) do
-            table.insert(output, string.format("%d. %s", index, id))
-        end
-
-        table.insert(output, "Total connections: " .. tostring(clientManager.countClients()))
-        return output
-    end
-
-    if command == "remove" then
-        if clientManager.unregisterClient(clientID) then
-            return {words[4] .. " removed successfully"}
-        else
-            return {"Failed to remove client " .. words[4]}
-        end
-    end
-
-    if command == "inspect" then
-        local client = clientManager.inspect(clientID)
-        if client then
-            return {
-                "ID: " .. client.id,
-                "Connected At: " .. client.connectedAt,
-                "Last Activity: " .. client.lastActivityType
-            }
-        else
-            return {"Failed to inspect client " .. words[4]}
-        end
-    end
-
-    return {"Command " .. command .. " not found. Use 'network socket [list/remove/inspect] [ID]'"}
-end
+local queueAdd = require("/GuardLink/server/shell/commands/network/queue_add")
+local queueClear = require("/GuardLink/server/shell/commands/network/queue_clear")
+local queuePrioritize = require("/GuardLink/server/shell/commands/network/queue_prioritize")
+local queueRemove = require("/GuardLink/server/shell/commands/network/queue_remove")
+local queueSize = require("/GuardLink/server/shell/commands/network/queue_size")
+local queuePostpone = require("/GuardLink/server/shell/commands/network/queue_postpone")
+local queuePause = require("/GuardLink/server/shell/commands/network/queue_pause")
+local queueResume = require("/GuardLink/server/shell/commands/network/queue_resume")
+local queuePopulation = require("/GuardLink/server/shell/commands/network/queue_population")
+local queueAverage = require("/GuardLink/server/shell/commands/network/queue_average")
+local queueInspect = require("/GuardLink/server/shell/commands/network/queue_inspect")
+local queueList = require("/GuardLink/server/shell/commands/network/queue_list")
 
 
--- network queue [list/size/clear]
-local function queueCommand(words)
-
-end
-
-local networkCommands = {
-    client = clientCommand,
-    queue = queueCommand,
-    status = statusCommand,
-
+local clientCommands = {
+    inspect = inspectClient,
+    list = listClient,
+    remove = removeClient
 }
 
-local function handle(words)
-    local action = words[2]
-    local handler = networkCommands[action]
+local queueCommands = {
+    size = queueSize,
+    clear = queueClear,
+    add = queueAdd,
+    remove = queueRemove,
+    prioritize = queuePrioritize,
+    postpone = queuePostpone,
+    pause = queuePause,
+    resume = queueResume,
+    population = queuePopulation,
+    average = queueAverage,
+    inspect = queueInspect,
+    list = queueList
+}
 
-    if handler then
-        return handler(words)
-    else
-        if action then
-            return { action .. " command not found. Use 'help network'" }
+local function handle(cmd)
+    local mainCommand = cmd[2]
+    local subCommand = cmd[3]
+
+    local clientCmd = clientCommands[subCommand]
+    local queueCmd = queueCommands[subCommand]
+
+    if mainCommand == "client" then
+        if clientCmd then
+            return clientCmd(cmd, clientManager)
         else
-            return {"Missing arguments! Use 'help network'"}
+            return {"Command not found. Use 'help client'"}
         end
     end
+
+    if mainCommand == "queue" then
+        if queueCmd then
+            return queueCmd(cmd, requestQueue, requestHandler)
+        else
+            return {"Command not found. Use 'help queue'"}
+        end
+
+    end
+
+    return {"Command not found. Use 'help network'"}
 end
 
 return {
