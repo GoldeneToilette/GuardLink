@@ -6,8 +6,10 @@ local queue = {}
 local size = 20
 local isProcessing = false
 local paused = false
-local totalTimeSpent = 0
-local processedCount = 0 
+local totalTimeSpent = 0 -- seconds
+local processedCount = 0
+
+local throttle = 2
 
 -- Helper function to generate a unique ID
 local function generateUniqueID()
@@ -28,22 +30,26 @@ end
 
 -- Process the queue
 local function processQueue(requestHandler)
-    if #queue > 0 and not isProcessing and not paused then
-        isProcessing = true
-                -- gets the first request in the queue
-        local request = table.remove(queue, 1)
-        local message, clientID, timestamp = request.message, request.clientID, request.timestamp
-        local client = clientManager.inspect(clientID)  -- fetch the client by ID
-        if client then
-            requestHandler.handleRequest(message, client.socket)  -- handles the message
-            _G.logger:debug("[messageQueue] Processing Request " .. request.id .. " for client " .. clientID)
-            -- Calculate the time spent in the queue
-            local timeSpent = os.time() - timestamp
-            totalTimeSpent = totalTimeSpent + timeSpent
-            processedCount = processedCount + 1
+    while #queue > 0 and not paused do
+        if not isProcessing then
+            isProcessing = true
+            -- gets the first request in the queue
+            local request = table.remove(queue, 1)
+            local message, clientID, timestamp = request.message, request.clientID, request.timestamp
+            local client = clientManager.inspect(clientID)  -- fetch the client by ID
+            if client then
+                os.sleep(throttle)
+                requestHandler.handleRequest(message, client.socket)  -- handles the message
+
+                local timeSpent = os.time() - timestamp
+                totalTimeSpent = totalTimeSpent + timeSpent
+                processedCount = processedCount + 1
+                _G.logger:debug("[messageQueue] Processing Request with ID '" .. request.id .. "' for client " .. clientID)
+            end
+            isProcessing = false
+        else
+            break
         end
-        isProcessing = false  -- reset the flag for the next request
-        processQueue(requestHandler)  -- run the function recursively until all requests are done
     end
 end
 
@@ -57,13 +63,14 @@ function RequestQueue.addToQueue(message, socket, requestHandler)
         local id = generateUniqueID()
         local timestamp = os.time()
         table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp})
-        if not paused then
+        if not paused and not isProcessing then
             processQueue(requestHandler)
         end
         return true
     end
     return false
 end
+
 
 -- Pause the queue
 function RequestQueue.pauseQueue()
