@@ -19,6 +19,10 @@ local function handleCommand(input)
         return accounts.handle(words)
     elseif words[1] == "network" then
         return network.handle(words)
+    else
+        if words[1] then
+            return {"Unknown command '" .. words[1] .. "'. Type help"}
+        end
     end
 end
 

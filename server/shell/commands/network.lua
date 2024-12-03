@@ -2,26 +2,33 @@ os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
 local clientManager = require("/GuardLink/server/network/clientManager")
 
--- network client [list/remove/inspect] [ID] 
+-- Network client [list/remove/inspect] [ID]
 local function clientCommand(words)
-    if words[3] and words[3] == "list" then
+    local command = words[3]
+    local clientID = tonumber(words[4])
+
+    if command == "list" then
         local clients = clientManager.list()
         local output = {"Connected Clients:"}
 
-        for index, clientID in ipairs(clients) do
-            table.insert(output, string.format("%d. %s", index, clientID))
+        for index, id in ipairs(clients) do
+            table.insert(output, string.format("%d. %s", index, id))
         end
 
         table.insert(output, "Total connections: " .. tostring(clientManager.countClients()))
         return output
-    elseif words[3] and words[3] == "remove" then
-        if clientManager.unregisterClient(tonumber(words[4])) then
-            return { words[4] .. " removed successfully"}
+    end
+
+    if command == "remove" then
+        if clientManager.unregisterClient(clientID) then
+            return {words[4] .. " removed successfully"}
         else
             return {"Failed to remove client " .. words[4]}
         end
-    elseif words[3] and words[3] == "inspect" then
-        local client = clientManager.inspect(tonumber(words[4]))
+    end
+
+    if command == "inspect" then
+        local client = clientManager.inspect(clientID)
         if client then
             return {
                 "ID: " .. client.id,
@@ -29,12 +36,13 @@ local function clientCommand(words)
                 "Last Activity: " .. client.lastActivityType
             }
         else
-            return {"Failed to inspect client " .. words[4]}            
+            return {"Failed to inspect client " .. words[4]}
         end
-    else
-        return { "Command " .. words[3] .. " not found. Use 'network socket [list/delete/inspect] [ID] '"}
     end
+
+    return {"Command " .. command .. " not found. Use 'network socket [list/remove/inspect] [ID]'"}
 end
+
 
 -- network queue [list/size/clear]
 local function queueCommand(words)

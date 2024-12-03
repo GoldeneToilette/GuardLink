@@ -1,10 +1,10 @@
 local sha256 = require("/GuardLink/server/lib/sha256")
 
 securityUtils = {}
+local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 -- generates a session token
 function securityUtils.generateSessionToken(length)
-    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     local token = ""
     for i = 1, length do
         local randomIndex = math.random(1, #charset)
@@ -25,7 +25,6 @@ end
 
 -- generates salt for SHA256 hashes
 function securityUtils.generateSalt(length)
-    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     local salt = ""
     math.randomseed(os.time())
     for i = 1, length do
@@ -33,6 +32,16 @@ function securityUtils.generateSalt(length)
         salt = salt .. charset:sub(randomIndex, randomIndex)
     end
     return salt
+end
+
+-- generates a random ID with specific length
+function securityUtils.generateRandomID(length)
+    local id = ""
+    for i = 1, length do
+        local randomIndex = math.random(1, #charset)
+        id = id .. charset:sub(randomIndex, randomIndex)
+    end
+    return id
 end
 
 return securityUtils
