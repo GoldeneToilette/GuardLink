@@ -41,7 +41,7 @@ local function processQueue(requestHandler)
                 os.sleep(throttle)
                 requestHandler.handleRequest(message, client.socket)  -- handles the message
 
-                local timeSpent = os.time() - timestamp
+                local timeSpent = os.clock() - timestamp
                 totalTimeSpent = totalTimeSpent + timeSpent
                 processedCount = processedCount + 1
                 _G.logger:debug("[messageQueue] Processing Request with ID '" .. request.id .. "' for client " .. clientID)
@@ -61,7 +61,7 @@ function RequestQueue.addToQueue(message, socket, requestHandler)
     local client = clientManager.getClientBySocket(socket)
     if client then
         local id = generateUniqueID()
-        local timestamp = os.time()
+        local timestamp = os.clock() 
         table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp})
         if not paused and not isProcessing then
             processQueue(requestHandler)
