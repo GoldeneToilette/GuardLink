@@ -20,6 +20,7 @@ local queuePopulation = require("/GuardLink/server/shell/commands/network/queue_
 local queueAverage = require("/GuardLink/server/shell/commands/network/queue_average")
 local queueInspect = require("/GuardLink/server/shell/commands/network/queue_inspect")
 local queueList = require("/GuardLink/server/shell/commands/network/queue_list")
+local queueThrottle = require("/GuardLink/server/shell/commands/network/queue_throttle")
 
 
 local clientCommands = {
@@ -40,7 +41,8 @@ local queueCommands = {
     population = queuePopulation,
     average = queueAverage,
     inspect = queueInspect,
-    list = queueList
+    list = queueList,
+    throttle = queueThrottle
 }
 
 local function handle(cmd)

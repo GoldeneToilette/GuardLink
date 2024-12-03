@@ -9,7 +9,23 @@ local paused = false
 local totalTimeSpent = 0 -- seconds
 local processedCount = 0
 
+local isThrottle = false
 local throttle = 2
+
+local function doThrottle()
+    if isThrottle then
+        os.sleep(throttle)
+    end
+end
+
+function RequestQueue.setThrottle(flag, number)
+    isThrottle = flag
+    throttle = number
+end
+
+function RequestQueue.getThrottle()
+    return isThrottle, throttle
+end
 
 -- Helper function to generate a unique ID
 local function generateUniqueID()
@@ -38,7 +54,8 @@ local function processQueue(requestHandler)
             local message, clientID, timestamp = request.message, request.clientID, request.timestamp
             local client = clientManager.inspect(clientID)  -- fetch the client by ID
             if client then
-                os.sleep(throttle)
+                -- adds some delay
+                doThrottle()
                 requestHandler.handleRequest(message, client.socket)  -- handles the message
 
                 local timeSpent = os.clock() - timestamp
