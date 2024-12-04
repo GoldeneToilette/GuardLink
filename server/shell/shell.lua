@@ -7,39 +7,29 @@ local function labelManager(outputFrame)
     local labels = {}
 
     local function addLine(text, bgColor, fgColor)
-        -- Set default colors if not provided
         bgColor = bgColor or colors.black
         fgColor = fgColor or colors.white
-
-        -- Remove the first label if at max capacity
+    
+        local START_ROW = 2
+    
         if #labels == MAX_LINES then
             labels[1]:remove()
             table.remove(labels, 1)
-
-            -- Shift remaining labels up
+    
             for i, label in ipairs(labels) do
-                label:setPosition(1, i)
+                label:setPosition(1, START_ROW + i - 1)
             end
         end
-
-        -- Create new label
+    
         local newLabel = outputFrame:addLabel()
-            :setText(text)  -- Ensure text is being set
-            :setPosition(1, #labels + 2)
+            :setText(text)
+            :setPosition(1, START_ROW + #labels)
             :setSize(51, 1)
             :setBackground(bgColor)
             :setForeground(fgColor)
             :show()
-
-        -- Debug log
-        print("Label added at position:", #labels + 1)
-
+    
         table.insert(labels, newLabel)
-
-        -- Debug current labels
-        for i, label in ipairs(labels) do
-            print("Label " .. i .. ": " .. (label:getText() or "nil"))
-        end
     end
 
     return {
@@ -78,23 +68,25 @@ local function createShell()
     local manager = labelManager(mainFrame)
 
     local function inputOnKey(self, event, key)
-        if key == 257 then
+        if key == 257 then 
             local input = inputField:getValue()
-            inputField:setValue("")
-            -- Add the input to the output area as a new line
+            inputField:setValue("") 
+    
             manager.addLine("> " .. input, colors.black, colors.orange)
-
+    
             local response = commands.handleCommand(input)
-            if not response then return end
-            for _, line in ipairs(response) do
-                manager.addLine(line)
+            if response then
+                for _, line in ipairs(response) do
+                    manager.addLine(line)
+                end
             end
-
-            mainFrame:setFocusedChild(inputField)
+    
+            inputField:getParent():setFocusedChild(inputField)
+            inputField:getParent():setCursor(true, inputField:getX(), inputField:getY())
+            _G.logger:debug("Focused: " .. tostring(inputField:isFocused()))
         end
     end
 
-    mainFrame:setImportant(inputField)
     inputField:onKey(inputOnKey)
 end
 

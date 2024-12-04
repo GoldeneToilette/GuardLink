@@ -94,6 +94,10 @@ function RequestQueue.pauseQueue()
     paused = true
 end
 
+function RequestQueue.isPaused()
+    return paused
+end
+
 -- Resume the queue
 function RequestQueue.resumeQueue(requestHandler)
     if paused then
