@@ -11,7 +11,7 @@ local processedCount = 0
 local isSorting = false
 
 local isThrottle = false
-local throttle = 2
+local throttle = 0
 
 local priority = {
     LOW = 1,
@@ -70,19 +70,6 @@ local function sortQueueByPriority()
     end
 end
 
--- main loop 
-local function processingLoop(func)
-    while #queue > 0 and not paused do
-        if not isProcessing then
-            isProcessing = true
-            func()
-            isProcessing = false
-        else
-            break
-        end
-    end
-end
-
 -- process a single request
 local function processSingleRequest(requestHandler)
     -- gets the first request in the queue
@@ -102,9 +89,15 @@ end
 -- Process the queue
 local function processQueue(requestHandler)
     sortQueueByPriority()
-    processingLoop(function()
-        processSingleRequest(requestHandler)
-    end)
+    while #queue > 0 and not paused do
+        if not isProcessing then
+            isProcessing = true
+            processSingleRequest(requestHandler)
+            isProcessing = false
+        else
+            break
+        end
+    end
 end
 
 -- Add message to queue
