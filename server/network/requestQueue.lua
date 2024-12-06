@@ -6,11 +6,19 @@ local queue = {}
 local size = 20
 local isProcessing = false
 local paused = false
-local totalTimeSpent = 0 -- seconds
+local totalTimeSpent = 0
 local processedCount = 0
+local isSorting = false
 
 local isThrottle = false
 local throttle = 2
+
+local priority = {
+    LOW = 1,
+    MEDIUM = 2,
+    HIGH = 3,
+    CRITICAL = 4
+}
 
 local function doThrottle()
     if isThrottle then
@@ -44,25 +52,30 @@ local function generateUniqueID()
     return id
 end
 
--- Process the queue
-local function processQueue(requestHandler)
+-- keeps track of requests and their processing time
+local function trackTime(timestamp)
+    local timeSpent = os.clock() - timestamp
+    totalTimeSpent = totalTimeSpent + timeSpent
+    processedCount = processedCount + 1    
+end
+
+-- Sorts the queue based on priority before processing
+local function sortQueueByPriority()
+    if not isProcessing and not isSorting then
+        isSorting = true
+        table.sort(queue, function(a, b)
+            return a.priority > b.priority
+        end)
+        isSorting = false
+    end
+end
+
+-- main loop 
+local function processingLoop(func)
     while #queue > 0 and not paused do
         if not isProcessing then
             isProcessing = true
-            -- gets the first request in the queue
-            local request = table.remove(queue, 1)
-            local message, clientID, timestamp = request.message, request.clientID, request.timestamp
-            local client = clientManager.inspect(clientID)  -- fetch the client by ID
-            if client then
-                -- adds some delay
-                doThrottle()
-                requestHandler.handleRequest(message, client.socket)  -- handles the message
-
-                local timeSpent = os.clock() - timestamp
-                totalTimeSpent = totalTimeSpent + timeSpent
-                processedCount = processedCount + 1
-                _G.logger:debug("[messageQueue] Processing Request with ID '" .. request.id .. "' for client " .. clientID)
-            end
+            func()
             isProcessing = false
         else
             break
@@ -70,8 +83,32 @@ local function processQueue(requestHandler)
     end
 end
 
+-- process a single request
+local function processSingleRequest(requestHandler)
+    -- gets the first request in the queue
+    local request = table.remove(queue, 1)
+    local message, clientID, timestamp = request.message, request.clientID, request.timestamp
+    local client = clientManager.inspect(clientID)  -- fetch the client by ID
+    if client then
+        -- adds some delay
+        doThrottle()
+        requestHandler.handleRequest(message, client.socket)  -- handles the message
+
+        trackTime(timestamp)
+        _G.logger:debug("[messageQueue] Processing Request with ID '" .. request.id .. "' for client " .. clientID)
+    end
+end
+
+-- Process the queue
+local function processQueue(requestHandler)
+    sortQueueByPriority()
+    processingLoop(function()
+        processSingleRequest(requestHandler)
+    end)
+end
+
 -- Add message to queue
-function RequestQueue.addToQueue(message, socket, requestHandler)
+function RequestQueue.addToQueue(message, socket, requestHandler, priorityLevel)
     if #queue >= size then
         return false
     end
@@ -79,7 +116,9 @@ function RequestQueue.addToQueue(message, socket, requestHandler)
     if client then
         local id = generateUniqueID()
         local timestamp = os.clock() 
-        table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp})
+        local priorityArg = priority[priorityLevel] or priority.LOW
+        table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp, priority = priorityArg})
+
         if not paused and not isProcessing then
             processQueue(requestHandler)
         end
@@ -150,28 +189,27 @@ function RequestQueue.removeRequestByID(requestID)
     return false
 end
 
--- Moves a request with the given ID to the front of the queue
-function RequestQueue.prioritize(requestID)
-    for i, request in ipairs(queue) do
+-- set the priority manually
+function RequestQueue.setPriority(requestID, priorityLevel)
+    local priorityArg = priority[priorityLevel] or priority.LOW
+    for _, request in ipairs(queue) do
         if request.id == requestID then
-            table.remove(queue, i)
-            table.insert(queue, 1, request)
+            request.priority = priorityArg
+            sortQueueByPriority()
             return true
         end
     end
     return false
 end
 
+-- Moves a request with the given ID to the front of the queue
+function RequestQueue.prioritize(requestID)
+    RequestQueue.setPriority(requestID, "HIGH")
+end
+
 -- Moves a request with the given ID to the back of the queue
 function RequestQueue.postpone(requestID)
-    for i, request in ipairs(queue) do
-        if request.id == requestID then
-            table.remove(queue, i)
-            table.insert(queue, request)
-            return true 
-        end
-    end
-    return false
+    RequestQueue.setPriority(requestID, "LOW")
 end
 
 -- Returns a request by ID
