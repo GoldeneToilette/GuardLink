@@ -2,6 +2,7 @@ local accountManager = require("/GuardLink/server/economy/accountManager")
 local securityUtils = require("/GuardLink/server/utils/securityUtils")
 local mathUtils = require("/GuardLink/server/utils/mathUtils")
 local clientManager = require("/GuardLink/server/network/clientManager")
+local gpsManager = require("/GuardLink/server/gps/gpsManager")
 
 os.loadAPI("/GuardLink/server/lib/cryptoNet")
 
@@ -88,13 +89,66 @@ local function handleAccountInfoRequest(parts, socket, client)
     end
 end
 
+-- GPS handler
+local function handleGPSRequest(parts, socket, client)
+    local username = parts[2]
+    local type = parts[3]
+    local paramJSON = parts[4]
+    local param = textutils.unserializeJSON(paramJSON)
+    local sessionToken = parts[5]
+    _G.logger:debug("[requestHandler] processing GPS request")   
+
+    if accountManager.verifySessionToken(username, sessionToken) then
+        if type == "single" then
+            local location = gpsManager.getLocationDetails(param.category, param.name)
+            if location then
+                local locationJSON = textutils.serializeJSON(location)
+                cryptoNet.send(socket, "GPS|" .. locationJSON)
+                _G.logger:info("[requestHandler] Successful gps request 'single': " .. username)       
+            else
+                cryptoNet.send(socket, "GPS|UNKNOWN_LOCATION")
+                _G.logger:info("[requestHandler] Failed gps request 'single': " .. username)                       
+            end
+            clientManager.updateLastActivity(client.id, "gps_single")
+
+        elseif type == "list" then
+            local locations = gpsManager.getLocationNamesByCategory(param.category)
+            if locations then
+                local locationsJSON = textutils.serializeJSON(locations)
+                cryptoNet.send(socket, "GPS|" .. locationsJSON)
+                _G.logger:info("[requestHandler] Successful gps request 'list': " .. username)                      
+            else
+                cryptoNet.send(socket, "GPS|UNKNOWN_CATEGORY")
+                _G.logger:info("[requestHandler] Failed gps request 'list': " .. username)        
+            end
+            clientManager.updateLastActivity(client.id, "gps_list")
+
+        elseif type == "add" then
+            if gpsManager.registerLocation(username, param.name, param.coordinates, param.description, param.category) then
+                cryptoNet.send(socket, "GPS|CREATION_SUCCESS") 
+                _G.logger:info("[requestHandler] Successful gps request 'add': " .. username)                      
+            else
+                cryptoNet.send(socket, "GPS|CREATION_FAIL") 
+                _G.logger:info("[requestHandler] Failed gps request 'add': " .. username)         
+            end
+        else
+            cryptoNet.send(socket, "GPS|INVALID_REQUEST") 
+            _G.logger:info("[requestHandler] Unknown gps request: " .. username .. ", " .. type .. ", " .. param .. ", " .. sessionToken)                 
+        end
+    else
+        cryptoNet.send(socket, "SESSION_EXPIRED")
+        _G.logger:info("[requestHandler] Failed account info request: Session expired!")        
+    end
+end
+
 -- registers handler functions
 requestHandlers["LOGIN"] = handleLoginRequest
 requestHandlers["TRANSACTION"] = handleTransactionRequest
 requestHandlers["ACCOUNT_INFO"] = handleAccountInfoRequest
+requestHandlers["GPS"] = handleGPSRequest
 
 -- Main function that passes the requests to the associated handlers
-function handleRequest(message, socket)
+local function handleRequest(message, socket)
     local parts = {}
     -- Parses the message into parts
     for part in message:gmatch("[^|]+") do
@@ -104,6 +158,7 @@ function handleRequest(message, socket)
     local messageType = parts[1]
     local handler = requestHandlers[messageType]
 
+    _G.logger:debug("[requestHandler] message:" .. message)
     local client = clientManager.getClientBySocket(socket)
     if handler then
         handler(parts, socket, client)

@@ -14,7 +14,6 @@ settingsManager.initializeSettings()
 _G.logger = Logger.new("latest")
 _G.logger:clearLog()
 
-_G.logger:info("[startup] Launching GuardLinkBank...")
 _G.logger:info("[startup] Connecting to server...")
 
 -- Connects to the server and catches potential errors (like when the server is unreachable)

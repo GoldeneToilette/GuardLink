@@ -29,10 +29,11 @@ Request GPS Information. There are 3 types:
 2. "list" - Fetch locations by category (requires "category").
 3. "add" - Add a new location (requires "name", "coordinates", "description", "category").
 ]]
-local function sendGPSRequest(type, param, socket, callback) -- param should always be a table
-    _G.logger:debug("[requestHandler] Sending GPS Request with type: " .. type .. " and callback: " .. callback)
+local function sendGPSRequest(username, type, param, socket, callback) -- param should always be a table
+    _G.logger:debug("[requestHandler] Sending GPS Request with type: " .. type .. " and callback: " .. tostring(callback))
     network.registerCallback("GPS", callback)
-    cryptoNet.send(socket, "GPS|" .. type .. "|" .. textutils.serialize(param), sessionToken)
+    local sessionToken = network.getServerData("sessionToken")
+    cryptoNet.send(socket, "GPS|" .. username .. "|" .. type .. "|" .. textutils.serializeJSON(param) .. "|" .. sessionToken)
 end
 
   return {

@@ -8,10 +8,7 @@ local serverData = {
   transactionStatus = nil,
   sessionToken = nil,
   unknownMessage = nil,
-  gpsLocations = {
-    byName = {},
-    byCategory = {}
-  }
+  latestGPS = {}
 }
 
 -- Queue for holding callbacks, mapped by message type
@@ -34,7 +31,7 @@ local function registerCallback(messageType, callback)
         callbackQueue[messageType] = {}
     end
     table.insert(callbackQueue[messageType], callback)
-    _G.logger:debug("[eventHandler] Registering callback for message type " .. messageType .. " and function " .. callback)
+    _G.logger:debug("[eventHandler] Registering callback for message type " .. messageType .. " and function " .. tostring(callback))
 end
 
 -- Handles executing callbacks for a specific message type

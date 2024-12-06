@@ -92,12 +92,14 @@ local function createPopup(frame, title, type, message, yesCallback)
             if event == "mouse_click" and button == 1 then
                 yesCallback()
                 popUpFrame:remove()
+                popUpFrame:disable()
             end
         end)
 
         noButton:onClick(function(self, event, button, x, y)
             if event == "mouse_click" and button == 1 then                
                 popUpFrame:remove()
+                popUpFrame:disable()
             end
         end)
     end
@@ -113,6 +115,7 @@ local function createPopup(frame, title, type, message, yesCallback)
     popUpButton:onClick(function(self, event, button, x, y)
         if event == "mouse_click" and button == 1 then
             popUpFrame:remove()
+            popUpFrame:disable()
         end
     end)
 end

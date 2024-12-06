@@ -37,13 +37,12 @@ local function handleEventMessage(message, serverData)
             end
         end,
 
-        -- GPS response
-        --[[
-                ["GPS|"] = function(msg)
-            _G.logger:info("[messageParser] Received message: GPS")
-            -- implement here
+        -- gps response
+        ["GPS|"] = function(msg)
+            _G.logger:debug("[messageParser] Received message: GPS")
+            serverData.latestGPS = msg:sub(5)
+            return "GPS"
         end,
-        ]]--
 
     }
 
