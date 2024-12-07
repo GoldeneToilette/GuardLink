@@ -14,7 +14,7 @@ local function handleLoginRequest(parts, socket, client)
     local username = parts[2]
     local password = parts[3]
     local success = accountManager.authenticateUser(username, password)
-    
+
     if success then
         local sessionToken = securityUtils.generateSessionToken(16)
         accountManager.setAccountValue(username, "sessionToken", sessionToken)
@@ -96,6 +96,7 @@ local function handleGPSRequest(parts, socket, client)
     local paramJSON = parts[4]
     local param = textutils.unserializeJSON(paramJSON)
     local sessionToken = parts[5]
+
     _G.logger:debug("[requestHandler] processing GPS request")   
 
     if accountManager.verifySessionToken(username, sessionToken) then

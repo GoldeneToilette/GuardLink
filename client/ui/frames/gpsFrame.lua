@@ -3,6 +3,24 @@ local xmlParser = require("/GuardLink/client/ui/xmlParser")
 local network = require("/GuardLink/client/network/eventHandler")
 local requestSender = require("/GuardLink/client/network/requestSender")
 
+local allLocations = {}
+
+function string.lowercase(str)
+    return str:gsub("%u", string.lower)
+end
+
+function isPrefix(first, second)
+    if not first or not second then return false end
+    
+    for i = 1, #first do
+        if first:sub(i, i) ~= second:sub(i, i) then
+            return false
+        end
+    end
+    
+    return true
+end
+
 -- updates the list with given category
 local function updateList(list, category)
     local name = network.getServerData("username")  
@@ -10,6 +28,7 @@ local function updateList(list, category)
     requestSender.sendGPSRequest(name, "list", param,  network.getSocket(), function(serverData)
         local locations = textutils.unserializeJSON(serverData.latestGPS)
         if locations then
+            allLocations = locations
             list:clear()
 
             for i, location in ipairs(locations) do
@@ -27,6 +46,7 @@ local function add(mainFrame)
     :setVisible(true)
 
     local uiElements = xmlParser.loadXML(gpsFrame, "/GuardLink/client/ui/xml/gpsFrame.xml")
+    local searchField = uiElements["searchTextfield"]
 
     local dropdown = utils.addProgramMenu(mainFrame, gpsFrame)   
     dropdown:selectItem(2)
@@ -60,6 +80,29 @@ local function add(mainFrame)
         updateList(list, item.args[1])
     end)
 
+    -- dynamically adjust the list to show the result
+    searchField:onKeyUp(function(self, event, key)
+        local searchTerm = string.lowercase(searchField:getLine(1))   
+        list:clear()
+    
+        if searchTerm == "" then
+            for i, location in ipairs(allLocations) do
+                local bgColor = (i % 2 == 0) and colors.lightBlue or colors.lime
+                list:addItem(location, bgColor, colors.orange)
+            end
+        else
+            for i, location in ipairs(allLocations) do
+                if isPrefix(searchTerm, string.lowercase(location)) then
+                    local bgColor = (i % 2 == 0) and colors.lightBlue or colors.lime
+                    list:addItem(location, bgColor, colors.orange)
+                end
+            end
+        end
+    end)
+
+
+
+    
 end
 
 return {

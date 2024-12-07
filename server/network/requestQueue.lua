@@ -102,6 +102,13 @@ end
 
 -- Add message to queue
 function RequestQueue.addToQueue(message, socket, requestHandler, priorityLevel)
+    local parts = {}
+    for part in message:gmatch("[^|]+") do
+        table.insert(parts, part)
+    end
+
+    clientManager.registerClient(socket, parts[2])
+
     if #queue >= size then
         return false
     end

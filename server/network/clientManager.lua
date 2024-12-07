@@ -13,10 +13,10 @@ local function updateLastActivity(clientID, activityType)
 end
 
 -- adds a client to the table
-local function registerClient(socket)
+local function registerClient(socket, username)
     -- check if the socket already exists or not
     for clientID, client in pairs(clients) do
-        if client.socket.target == socket.target then
+        if client.username == username then
             return false
         end
     end
@@ -33,7 +33,8 @@ local function registerClient(socket)
         id = clientID,
         connectedAt = os.date("%Y-%m-%d %H:%M:%S"),
         lastActivityDate = os.date("%Y-%m-%d %H:%M:%S"),
-        lastActivityType = "connected"
+        lastActivityType = "connected",
+        username = tostring(username),
     }
     _G.logger:info("[clientManager] New client connected: " .. clientID)
     return true
