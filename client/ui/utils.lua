@@ -57,6 +57,16 @@ local function createCheckbox(parent, posX, posY, sizeX, sizeY, bgColor, fgColor
     :setSize(sizeX, sizeY)
 end
 
+-- creates a basalt input field
+local function createInput(parent, posX, posY, sizeX, sizeY, bgColor, fgColor)
+    return parent:addInput()
+    :setInputType("text")
+    :setBackground(bgColor)
+    :setForeground(fgColor)
+    :setPosition(posX, posY)
+    :setSize(sizeX, sizeY)
+end
+
 -- creates a simple pop up frame
 local function createPopup(frame, title, type, message, yesCallback)
     local popUpFrame = frame:addMovableFrame():setSize(23, 5)
@@ -159,5 +169,6 @@ return {
     createButton = createButton,
     formatNumber = formatNumber,
     addProgramMenu = addProgramMenu,
-    createCheckbox = createCheckbox
+    createCheckbox = createCheckbox,
+    createInput = createInput
 }

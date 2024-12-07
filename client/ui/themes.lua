@@ -8,48 +8,56 @@ local themes = {
         {colors.magenta, 0x99B2F2}, -- secondary (light blue)
         {colors.lightBlue, 0xF0F0F0}, -- third (white)
         {colors.yellow, 0xF2B233}, -- highlight (yellow)
+        {colors.lime, 0xD0D0D0}, -- subtle (darker white)
     },
     cyberpunk = {
         {colors.orange, 0x1D1D2C}, -- primary
         {colors.magenta, 0xA64DFF}, -- secondary
         {colors.lightBlue, 0x4A90E2}, -- third
         {colors.yellow, 0xFF4081}, -- highlight 
+        {colors.lime, 0x3C7BB1},
     },
     darkmode = {
         {colors.orange, 0x121212},
         {colors.magenta, 0xB0BEC5},
         {colors.lightBlue, 0x333333},
         {colors.yellow, 0xBB86FC},
+        {colors.lime, 0x222222},
     },
     sunset = {
         {colors.orange, 0x3D1C5D},
         {colors.magenta, 0xFF6F61},
         {colors.lightBlue, 0xFFD54F},
         {colors.yellow, 0xFF8A80},
+        {colors.lime, 0xFFC107},
     },
     monochrome = {
         {colors.orange, 0x121212},
         {colors.magenta, 0x424242},
         {colors.lightBlue, 0xBDBDBD},
         {colors.yellow, 0xFFFFFF},
+        {colors.lime, 0x9E9E9E},
     },
     royal = {
         {colors.orange, 0x1976D2},
         {colors.magenta, 0xFBC02D},
         {colors.lightBlue, 0xFFFFFF},
         {colors.yellow, 0x7bb5ff},
+        {colors.lime, 0xE0E0E0},
     },
     autumn = {
         {colors.orange, 0x6E4B3A},
         {colors.magenta, 0xC75B35},
         {colors.lightBlue, 0xA89F91},
         {colors.yellow, 0xFFB74D},
+        {colors.lime, 0x8D7A65},
     },
     emerald = {
         {colors.orange, 0x2E7D32},
         {colors.magenta, 0x388E3C},
         {colors.lightBlue, 0xC5E1A5},
         {colors.yellow, 0xFFD700},
+        {colors.lime, 0xA5D6A7},
     }
 }
 
@@ -85,7 +93,7 @@ function initializePalette()
     term.setPaletteColour(colors.magenta, 0xffffff) -- secondary color
     term.setPaletteColour(colors.lightBlue, 0xffffff) -- third color
     term.setPaletteColour(colors.yellow, 0xffffff) -- highlight color
-    term.setPaletteColour(colors.lime, 0xffffff) 
+    term.setPaletteColour(colors.lime, 0xffffff) -- subtle color
     term.setPaletteColour(colors.pink, 0xffffff) 
     term.setPaletteColour(colors.cyan, 0xffffff) 
     term.setPaletteColour(colors.purple, 0xffffff) 

@@ -84,6 +84,15 @@ function xmlParser.loadXML(frame, filePath)
                 resolveColor(child["@background"]),
                 resolveColor(child["@foreground"])
             )
+        elseif elementName == "input" then
+            elements[id] = utils.createInput(frame,
+                tonumber(child["@x"]),
+                tonumber(child["@y"]),
+                tonumber(child["@width"]),
+                tonumber(child["@height"]),
+                resolveColor(child["@background"]),
+                resolveColor(child["@foreground"])                
+            )
         end
     end
 
