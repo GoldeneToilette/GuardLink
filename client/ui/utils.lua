@@ -84,7 +84,7 @@ local function createPopup(frame, title, type, message, yesCallback)
     local popUpLabel = popUpFrame:addLabel()
     :setText(message)
     :setBackground(colors.white)
-    :setPosition(2, 3)
+    :setPosition(3, 3)
 
     if type == "error" then
         popUpLabel:setForeground(colors.red)
@@ -92,17 +92,16 @@ local function createPopup(frame, title, type, message, yesCallback)
         popUpLabel:setForeground(colors.green)
     elseif type == "info" then
         popUpLabel:setForeground(colors.black)
-    elseif type == "logout" then
-        popUpLabel.setForeground(colors.black)
-        popUpTitle.setText("Logout?")
-        local yesButton = addButton(frame, "Yes", 2, 3, 3, 1, colors.blue, colors.white)
-        local noButton = addButton(frame, "No", 4, 3, 3, 1, colors.blue, colors.white)
+    elseif type == "action" then
+        popUpLabel:setForeground(colors.black)
+        local yesButton = createButton(popUpFrame, "Yes", 2, 3, 3, 1, colors.blue, colors.white)
+        local noButton = createButton(popUpFrame, "No", 4, 3, 3, 1, colors.blue, colors.white)
 
         yesButton:onClick(function(self, event, button, x, y)
             if event == "mouse_click" and button == 1 then
-                yesCallback()
                 popUpFrame:remove()
                 popUpFrame:disable()
+                yesCallback()
             end
         end)
 

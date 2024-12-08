@@ -5,6 +5,8 @@ local requestSender = require("/GuardLink/client/network/requestSender")
 
 local allLocations = {}
 
+local doubleClickMaxTime = 0.25
+
 function string.lowercase(str)
     return str:gsub("%u", string.lower)
 end
@@ -101,8 +103,24 @@ local function add(mainFrame)
     end)
 
 
+    local function listDoubleClick(list, func)
+        local doubleClick = 0       
+        list:onClick(function()
+            if(os.epoch("local")-doubleClickMaxTime*1000<=doubleClick)then
+                func()
+            end
+            doubleClick = os.epoch("local")    
+        end)        
+    end
 
-    
+
+    listDoubleClick(list, function()
+        utils.createPopup(gpsFrame, "Confirm", "action", "Track location?", function()
+            -- callback here
+            print("balls")
+        end)   
+    end)
+
 end
 
 return {

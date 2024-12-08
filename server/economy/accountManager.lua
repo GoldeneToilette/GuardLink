@@ -84,7 +84,7 @@ function accountManager.changeAccountBalance(operation, name, value)
             accountData.balance = accountData.balance - value
         end
     else
-        _G.logger:error("[accountManager] Failed to modify balance: Invalid operator " .. operator)
+        _G.logger:error("[accountManager] Failed to modify balance: Invalid operator " .. operation)
         return false
     end
 

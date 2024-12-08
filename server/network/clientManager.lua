@@ -95,6 +95,33 @@ local function getClientBySocket(socket)
     return nil
 end
 
+-- get client by name
+local function getClientByName(name)
+    for clientID, client in pairs(clients) do
+        if client.username == name then
+            return client
+        end
+    end
+    return nil
+end
+
+local function updateClientKey(clientID, key, value)
+    clientID = tonumber(clientID)
+    if clients[clientID] then
+        if clients[clientID][key] ~= nil then
+            clients[clientID][key] = value
+            _G.logger:info("[clientManager] Updated key '" .. key .. "' for client ID: " .. clientID)
+            return true
+        else
+            _G.logger:warn("[clientManager] Key '" .. key .. "' does not exist for client ID: " .. clientID)
+            return false
+        end
+    else
+        _G.logger:error("[clientManager] Client ID not found: " .. clientID)
+        return false
+    end
+end
+
 return {
     registerClient = registerClient,
     updateLastActivity = updateLastActivity,
@@ -102,5 +129,7 @@ return {
     list = list,
     inspect = inspect,
     countClients = countClients,
-    getClientBySocket = getClientBySocket
+    getClientBySocket = getClientBySocket,
+    getClientByName = getClientByName,
+    updateClientKey = updateClientKey
 }

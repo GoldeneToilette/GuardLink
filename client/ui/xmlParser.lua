@@ -14,6 +14,8 @@ local function resolveColor(color)
         return colors.lightBlue   
     elseif color == "highlight" then
         return colors.yellow
+    elseif color == "subtle" then
+        return colors.lime
     elseif color == "black" then
         return colors.black
     elseif color == "red" then

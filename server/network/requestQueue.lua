@@ -112,12 +112,13 @@ function RequestQueue.addToQueue(message, socket, requestHandler, priorityLevel)
     if #queue >= size then
         return false
     end
-    local client = clientManager.getClientBySocket(socket)
+    local client = clientManager.getClientByName(parts[2])
     if client then
         local id = generateUniqueID()
         local timestamp = os.clock() 
         local priorityArg = priority[priorityLevel] or priority.LOW
         table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp, priority = priorityArg})
+        clientManager.updateClientKey(client.id, "socket", socket)
 
         if not paused and not isProcessing then
             processQueue(requestHandler)
