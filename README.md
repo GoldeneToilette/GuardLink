@@ -1,7 +1,7 @@
 
 # GuardLink Banking
 
-Personal Computercraft project. It has a fully functional banking system with secure server/client communication. 
+GuardLink is a personal banking project for the CC:Tweaked mod from Minecraft. 
 
 Features:
 -
