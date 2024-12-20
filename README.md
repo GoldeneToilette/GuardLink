@@ -7,7 +7,7 @@ Features:
 -
 - **Banking**: Manage account, transfer money, and track transactions.
 - **Settings**: Customize the user interface and behavior.
-- **GPS**: (WIP) Retrieves coordinates from the server computer and displays a compass on your pocket computer.
+- **GPS**: Retrieves coordinates from the server computer and displays a compass on your pocket computer.
 - **Other features coming soon**: This project is very WIP but I am planning on adding a marketplace, mailbox and a stock market. 
 
 External Libraries:
