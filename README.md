@@ -17,6 +17,7 @@ External Libraries:
 - [Basalt (UI Library)](https://basalt.madefor.cc/#/)
 - [Simple XML-Parser for lua](https://github.com/Cluain/Lua-Simple-XML-Parser)
 - [cryptoNet](https://github.com/SiliconSloth/CryptoNet)
+- [pixelbox](https://github.com/9551-Dev/pixelbox_lite)
 
 Installation:
 - 
