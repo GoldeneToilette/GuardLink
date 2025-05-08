@@ -1,7 +1,7 @@
-local utils = require("/GuardLink/client/ui/utils")
-local xmlParser = require("/GuardLink/client/ui/xmlParser")
-local themes = require("/GuardLink/client/ui/themes")
-local settingsManager = require("/GuardLink/client/settingsManager")
+local utils = require("utils.uihelper")
+local xmlParser = require("utils.xmlParser")
+local themes = require("utils.themes")
+local settingsManager = require("utils.settingsManager")
 
 local function add(mainFrame)
     local settingsFrame = mainFrame:addFrame()

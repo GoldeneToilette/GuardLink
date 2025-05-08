@@ -1,9 +1,12 @@
-local utils = require("/GuardLink/client/ui/utils")
-local xmlParser = require("/GuardLink/client/ui/xmlParser")
-local network = require("/GuardLink/client/network/eventHandler")
-local requestSender = require("/GuardLink/client/network/requestSender")
+local utils = require("utils.uihelper")
+local xmlParser = require("utils.xmlParser")
+local network = require("network.eventHandler")
+local requestSender = require("network.requestSender")
+local compassFrame = require("ui.frames.compassFrame")
+local inspectFrame = require("ui.frames.inspectLocationFrame")
 
 local allLocations = {}
+local latestLocation
 
 local doubleClickMaxTime = 0.25
 
@@ -49,6 +52,9 @@ local function add(mainFrame)
 
     local uiElements = xmlParser.loadXML(gpsFrame, "/GuardLink/client/ui/xml/gpsFrame.xml")
     local searchField = uiElements["searchTextfield"]
+
+    local trackButton = uiElements["trackButton"]
+    local inspectButton = uiElements["inspectButton"]
 
     local dropdown = utils.addProgramMenu(mainFrame, gpsFrame)   
     dropdown:selectItem(2)
@@ -113,13 +119,57 @@ local function add(mainFrame)
         end)        
     end
 
-
     listDoubleClick(list, function()
         utils.createPopup(gpsFrame, "Confirm", "action", "Track location?", function()
             -- callback here
             print("balls")
         end)   
     end)
+
+
+    trackButton:onClick(function(self, event, button, x, y)
+        if event == "mouse_click" and button == 1 then
+            local index = list:getItemIndex()
+            local item = list:getItem(index)
+
+            local dIndex = categoryDropdown:getItemIndex()
+            local dItem = categoryDropdown:getItem(dIndex)
+
+            if item and dItem ~= nil then
+                local name = network.getServerData("username")  
+                local param = {category = dItem.args[1], name = item.text}    
+
+                requestSender.sendGPSRequest(name, "single", param, network.getSocket(), function(serverData)
+                    local location = textutils.unserializeJSON(serverData.latestGPS) 
+                    compassFrame.add(mainFrame, location, item.text)
+                    gpsFrame:remove()   
+                end)
+            end
+        end
+    end)
+
+
+    inspectButton:onClick(function(self, event, button, x, y)
+        if event == "mouse_click" and button == 1 then
+            local index = list:getItemIndex()
+            local item = list:getItem(index)
+
+            local dIndex = categoryDropdown:getItemIndex()
+            local dItem = categoryDropdown:getItem(dIndex)
+
+            if item and dItem ~= nil then
+                local name = network.getServerData("username")  
+                local param = {category = dItem.args[1], name = item.text}    
+
+                requestSender.sendGPSRequest(name, "single", param, network.getSocket(), function(serverData)
+                    local location = textutils.unserializeJSON(serverData.latestGPS) 
+                    inspectFrame.add(mainFrame, location, item.text)
+                    gpsFrame:remove()   
+                end)
+            end
+        end
+    end)
+
 
 end
 

@@ -1,4 +1,4 @@
-local settingsManager = require("/GuardLink/client/settingsManager")
+local settingsManager = require("utils.settingsManager")
 
 local Logger = {}
 Logger.__index = Logger

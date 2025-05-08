@@ -1,4 +1,4 @@
-local network = require("/GuardLink/client/network/eventHandler")
+local network = require("network.eventHandler")
 
 -- Sends a login request to the server
 local function sendLoginRequest(username, password, socket, callback) 

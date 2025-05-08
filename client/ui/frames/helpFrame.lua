@@ -1,6 +1,6 @@
-local utils = require("/GuardLink/client/ui/utils")
-local xmlParser = require("/GuardLink/client/ui/xmlParser")
-local basalt = require("/GuardLink/client/lib/basalt")
+local utils = require("utils.uihelper")
+local xmlParser = require("utils.xmlParser")
+local basalt = require("lib.basalt")
 
 
 local function add(mainFrame)

@@ -1,8 +1,8 @@
-local network = require("/GuardLink/client/network/eventHandler")
-local utils = require("/GuardLink/client/ui/utils")
-local requestSender = require("/GuardLink/client/network/requestSender")
-local ErrorHandler = require("/GuardLink/client/errorHandler")
-local xmlParser = require("/GuardLink/client/ui/xmlParser")
+local network = require("network.eventHandler")
+local utils = require("utils.uihelper")
+local requestSender = require("network.requestSender")
+local ErrorHandler = require("utils.errorHandler")
+local xmlParser = require("utils.xmlParser")
 
 local function add(mainFrame)
     local accountFrame = mainFrame:addFrame()

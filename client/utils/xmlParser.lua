@@ -1,6 +1,6 @@
-local themes = require("/GuardLink/client/ui/themes")
-local utils = require("/GuardLink/client/ui/utils")
-local xml = require("/GuardLink/client/lib/simpleXML").newParser()
+local themes = require("utils.themes")
+local utils = require("utils.uihelper")
+local xml = require("lib.simpleXML").newParser()
 
 local xmlParser = {}
 

@@ -1,5 +1,5 @@
 os.loadAPI("/GuardLink/client/lib/cryptoNet")
-local messageParser = require("/GuardLink/client/network/messageParser")
+local messageParser = require("network.messageParser")
 
 -- Stores all responses from server in memory
 local serverData = {

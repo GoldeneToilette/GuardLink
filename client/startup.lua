@@ -1,11 +1,11 @@
 os.loadAPI("/GuardLink/client/lib/cryptoNet")
-local basalt = require("/GuardLink/client/lib/basalt")
-local network = require("/GuardLink/client/network/eventHandler")
-local loginFrame = require("/GuardLink/client/ui/frames/loginFrame")
-local Logger = require("/GuardLink/client/logger")
-local ErrorHandler = require("/GuardLink/client/errorHandler")
-local themes = require("/GuardLink/client/ui/themes")
-local settingsManager = require("/GuardLink/client/settingsManager")
+local basalt = require("lib.basalt")
+local network = require("network.eventHandler")
+local loginFrame = require("ui.frames.loginFrame")
+local Logger = require("utils.logger")
+local ErrorHandler = require("utils.errorHandler")
+local themes = require("utils.themes")
+local settingsManager = require("utils.settingsManager")
 
 -- initializes settings file
 settingsManager.initializeSettings()
