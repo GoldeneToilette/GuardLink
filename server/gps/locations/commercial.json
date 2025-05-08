@@ -1,0 +1,77 @@
+{
+  [ "building shop" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Creeper Depot" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Create Oddities" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Drug Store" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Botania Hub" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Book Store" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Albert's Tavern" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "black market" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Redstone nexus" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Theresa's fine dining" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Fish Market" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "I am running out of names Inc." ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "literally selling drugs" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Warehouse AG" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+  [ "Boo" ] = {
+    owner = "glittersh1tter",
+    description = "selling building blocks! :D",
+    coordinates = "3,5",
+  },
+}

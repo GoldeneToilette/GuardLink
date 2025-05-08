@@ -21,9 +21,9 @@ end
 
 -- Writes "data" into the file
 function fileUtils.writeFile(path, data)
-        local file = fs.open(path, "w")
-        file.write(data)
-        file.close()
+    local file = fs.open(path, "w")
+    file.write(data)
+    file.close()
 end
 
 -- deletes a file
