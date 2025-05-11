@@ -1,3 +1,7 @@
+-- Basic wrapper file for the basalt API. Makes it easier to add specific UI elements and other 
+-- stuff that persists through all frames
+
+
 -- formats the balance correctly, so it doesnt go out of bounds
 local function formatNumber(balance)
     if balance >= 1e9 then

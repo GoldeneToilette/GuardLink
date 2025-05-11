@@ -7,6 +7,8 @@ local ErrorHandler = require("utils.errorHandler")
 local themes = require("utils.themes")
 local settingsManager = require("utils.settingsManager")
 
+-- Entry point of the client program. It loads all the important stuff like UI, themes, server connection etc
+
 -- initializes settings file
 settingsManager.initializeSettings()
 

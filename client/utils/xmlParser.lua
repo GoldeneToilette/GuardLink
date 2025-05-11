@@ -1,3 +1,5 @@
+-- Loads UIs from xml files. 
+
 local themes = require("utils.themes")
 local utils = require("utils.uihelper")
 local xml = require("lib.simpleXML").newParser()

@@ -1,6 +1,6 @@
--- This script defines a few themes for the app
--- It changes the entire 16 color palette. There are system colors that are always the same
--- the other colors are up to the theme
+-- This file defines all the system themes. The client consists of 16 colors which
+-- Are split up into system colors (are the same regardless of theme) and
+-- theme colors. These differ between the themes. All the other colors are just placeholders (0xffffff) 
 
 local themes = {
     default = {

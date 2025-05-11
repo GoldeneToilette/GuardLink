@@ -1,3 +1,6 @@
+-- This file manages the connection to the server and has the main event loop. 
+-- It passes all messages over to the appropriate handler
+
 os.loadAPI("/GuardLink/client/lib/cryptoNet")
 local messageParser = require("network.messageParser")
 

@@ -1,3 +1,5 @@
+-- This file implements a simple try/catch function similar to java.
+
 local ErrorHandler = {}
 
 function ErrorHandler.tryCatch(tryBlock, catchBlock)

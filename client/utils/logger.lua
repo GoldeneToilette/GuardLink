@@ -1,3 +1,5 @@
+-- Logger utility file for... well logging. As of right now it does not support verbosity levels (maybe in the future)
+
 local settingsManager = require("utils.settingsManager")
 
 local Logger = {}

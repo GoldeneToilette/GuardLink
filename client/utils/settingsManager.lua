@@ -1,3 +1,5 @@
+-- Manages everything related to settings that should persist through reboots
+
 local settingsFilePath = "/GuardLink/client/settings.json"
 local settings = {}
 

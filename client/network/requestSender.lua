@@ -1,3 +1,5 @@
+-- File for sending requests to the server. Functions require a callback (what to do when the client receives an answer)
+
 local network = require("network.eventHandler")
 
 -- Sends a login request to the server
