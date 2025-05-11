@@ -62,5 +62,5 @@ end
 
 
 return {
-    handleEventMessage = handleEventMessage
+    handleEventMessage
 }
