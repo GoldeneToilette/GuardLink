@@ -1,3 +1,4 @@
+--------------- THIS PROJECT IS BEING REWRITTEN; CODE IS NOT UP TO DATE ----------------------
 
 # GuardLink Banking
 
