@@ -95,11 +95,10 @@ local function getServerData(key)
 end
 
 return {
-    startEventListener,
-    getServerData,
-    connectServer,
-    getSocket,
-    registerCallback,
-    setServerData,
-    getServerData
+    startEventListener = startEventListener,
+    connectServer = connectServer,
+    getSocket = getSocket,
+    registerCallback = registerCallback,
+    setServerData = setServerData,
+    getServerData = getServerData
 }

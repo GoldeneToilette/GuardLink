@@ -4,7 +4,7 @@ local ErrorHandler = {}
 
 function ErrorHandler.tryCatch(tryBlock, catchBlock)
     local function errorHandler(err)
-        local stackTrace = debug.traceback(err)  -- xpcall gives the error as argument
+        local stackTrace = debug.traceback(err)
         if catchBlock then
             catchBlock(err, stackTrace)
         else
@@ -12,7 +12,6 @@ function ErrorHandler.tryCatch(tryBlock, catchBlock)
         end
     end
     
-    -- Use xpcall to catch errors and pass the custom errorHandler
     local success = xpcall(tryBlock, errorHandler)
     
     if not success then

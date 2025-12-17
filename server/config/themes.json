@@ -1,0 +1,66 @@
+{
+  "default": [
+    ["primary", "3366CC"],
+    ["secondary", "99B2F2"],
+    ["tertiary", "F0F0F0"],
+    ["highlight", "F2B233"],
+    ["subtle", "D0D0D0"],
+    ["accent", "2A4D99"]
+  ],
+  "cyberpunk": [
+    ["primary", "1D1D2C"],
+    ["secondary", "A64DFF"],
+    ["tertiary", "4A90E2"],
+    ["highlight", "FF4081"],
+    ["subtle", "3C7BB1"],
+    ["accent", "0F0F18"]
+  ],
+  "darkmode": [
+    ["primary", "121212"],
+    ["secondary", "B0BEC5"],
+    ["tertiary", "333333"],
+    ["highlight", "BB86FC"],
+    ["subtle", "222222"],
+    ["accent", "0D0D0D"]
+  ],
+  "sunset": [
+    ["primary", "3D1C5D"],
+    ["secondary", "FF6F61"],
+    ["tertiary", "FFD54F"],
+    ["highlight", "FF8A80"],
+    ["subtle", "FFC107"],
+    ["accent", "2F1746"]
+  ],
+  "monochrome": [
+    ["primary", "121212"],
+    ["secondary", "424242"],
+    ["tertiary", "BDBDBD"],
+    ["highlight", "FFFFFF"],
+    ["subtle", "9E9E9E"],
+    ["accent", "0D0D0D"]
+  ],
+  "royal": [
+    ["primary", "1976D2"],
+    ["secondary", "FBC02D"],
+    ["tertiary", "FFFFFF"],
+    ["highlight", "7BB5FF"],
+    ["subtle", "E0E0E0"],
+    ["accent", "125F91"]
+  ],
+  "autumn": [
+    ["primary", "6E4B3A"],
+    ["secondary", "C75B35"],
+    ["tertiary", "A89F91"],
+    ["highlight", "FFB74D"],
+    ["subtle", "8D7A65"],
+    ["accent", "4B3929"]
+  ],
+  "emerald": [
+    ["primary", "2E7D32"],
+    ["secondary", "388E3C"],
+    ["tertiary", "C5E1A5"],
+    ["highlight", "FFD700"],
+    ["subtle", "A5D6A7"],
+    ["accent", "1D5A26"]
+  ]
+}

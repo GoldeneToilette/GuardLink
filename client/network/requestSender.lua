@@ -39,8 +39,8 @@ local function sendGPSRequest(username, type, param, socket, callback) -- param 
 end
 
   return {
-    sendLoginRequest,
-    sendTransactionRequest,
-    sendAccountInfoRequest,
-    sendGPSRequest
+    sendLoginRequest = sendLoginRequest,
+    sendTransactionRequest = sendTransactionRequest,
+    sendAccountInfoRequest = sendAccountInfoRequest,
+    sendGPSRequest = sendGPSRequest
   }

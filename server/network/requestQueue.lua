@@ -1,243 +1,102 @@
-local RequestQueue = {}
-local clientManager = require("/GuardLink/server/network/clientManager")
-local securityUtils = require("/GuardLink/server/utils/securityUtils")
+local errors = require "lib.errors"
+local dispatcher = require "modules.dispatcher"
+local rsa = require "lib.rsa-keygen"
 
-local queue = {}
-local size = 20
-local isProcessing = false
-local paused = false
-local totalTimeSpent = 0
-local processedCount = 0
-local isSorting = false
+local requestQueue = {}
+requestQueue.__index = requestQueue
 
-local isThrottle = false
-local throttle = 0
+-- one request has the following fields: id, timestamp, message, clientID
+function requestQueue.new(session, settings)
+    local self = setmetatable({}, requestQueue)
+    self.queue = {}
+    self.session = session or nil
+    dispatcher.new(self.session)
 
-local priority = {
-    LOW = 1,
-    MEDIUM = 2,
-    HIGH = 3,
-    CRITICAL = 4
-}
+    self.queueSize = settings.queue.queueSize or 40
+    self.paused = false
+    self.processedCount = 0
 
-local function doThrottle()
-    if isThrottle then
-        os.sleep(throttle)
-    end
+    self.throttle = 0
+    self.lastProcessed = 0
+
+    return self
 end
 
-function RequestQueue.setThrottle(flag, number)
-    isThrottle = flag
-    throttle = number
+function requestQueue:setThrottle(seconds)
+    self.throttle = (seconds or 0) * 1000
 end
 
-function RequestQueue.getThrottle()
-    return isThrottle, throttle
+function requestQueue:addRequest(message)
+    if #self.queue + 1 > self.queueSize then return errors.QUEUE_FULL end
+    local msg = textutils.unserialize(message)
+    if msg.clientID and not self.session.clientManager:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
+    local tbl = {
+        id = msg.id,
+        message = msg.message,
+        client = msg.clientID,
+        timestamp = msg.timestamp,
+        isPlaintext = msg.isPlaintext ~= false
+    }
+    table.insert(self.queue, tbl)
+    return 0
 end
 
--- Helper function to generate a unique ID
-local function generateUniqueID()
-    local id
-    local idExists
-    repeat
-        id = securityUtils.generateRandomID(5)
-        idExists = false
-        for _, request in ipairs(queue) do
-            if request.id == id then
-                idExists = true
-                break
-            end
+function requestQueue:processQueue()
+    while true do
+        if not self.paused then 
+            local time = os.epoch("utc")
+            local processed = {}
+            if time - self.lastProcessed < ((self.throttle or 0) * 1000) then goto nothing_to_do end
+            self.lastProcessed = time
+
+            for i, request in ipairs(self.queue) do -- REQUEST LOOP ------------------------------------
+                local clientID = request.client
+                local client = self.session.clientManager:getClient(clientID)
+                if not client then
+                    if request.isPlaintext then
+                        _G.logger:debug("[requestQueue] Received plaintext message: " .. request.message)
+                        local result = dispatcher.dispatch(textutils.unserialize(request.message), nil, request.id)
+                        if result ~= 0 then _G.logger:debug(result[2]) end
+                    else
+                    local ok, data = pcall(function() return rsa.rsaDecrypt(request.message, self.session.privateKey) end)
+                    if ok then
+                            _G.logger:debug("[requestQueue] Received RSA-encrypted message: " .. data)
+                            local result = dispatcher.dispatch(textutils.unserialize(data), nil, request.id)
+                            if result ~= 0 then _G.logger:debug(result[2]) end
+                    else
+                            _G.logger:debug("[requestQueue] RSA decryption failed for unknown client! ")
+                    end
+                    end
+                    table.insert(processed, i)
+                else 
+                    if time - client.lastActivityTime > ((client.throttle or 0) * 1000) then
+                        local cipher = client.aesKey
+                        local ok, plaintext = pcall(function()
+                            return cipher:decrypt(request.message)
+                        end)
+                        _G.logger:debug("[requestQueue] Received AES-encrypted message: " .. plaintext)
+                        if not ok or not plaintext then
+                            _G.logger:debug("[requestQueue] AES decryption failed for " .. clientID)
+                            table.insert(processed, i)
+                            goto skip
+                        end
+                        local data = textutils.unserialize(plaintext)
+                        local result = dispatcher.dispatch(data, client, request.id)
+                        if result ~= 0 then _G.logger:debug(result[2]) end
+                        client.lastActivityTime = time
+                        table.insert(processed, i)
+                    end
+                end
+                ::skip::
+            end -- REQUEST LOOP ------------------------------------------------------------------------
+
+            for p = #processed, 1, -1 do
+                table.remove(self.queue, processed[p])
+            end     
         end
-    until not idExists
-    return id
-end
-
--- keeps track of requests and their processing time
-local function trackTime(timestamp)
-    local timeSpent = os.clock() - timestamp
-    totalTimeSpent = totalTimeSpent + timeSpent
-    processedCount = processedCount + 1    
-end
-
--- Sorts the queue based on priority before processing
-local function sortQueueByPriority()
-    if not isProcessing and not isSorting then
-        isSorting = true
-        table.sort(queue, function(a, b)
-            return a.priority > b.priority
-        end)
-        isSorting = false
+        ::nothing_to_do::
+        os.sleep(0.01)
     end
 end
 
--- process a single request
-local function processSingleRequest(requestHandler)
-    -- gets the first request in the queue
-    local request = table.remove(queue, 1)
-    local message, clientID, timestamp = request.message, request.clientID, request.timestamp
-    local client = clientManager.inspect(clientID)  -- fetch the client by ID
-    if client then
-        -- adds some delay
-        doThrottle()
-        requestHandler.handleRequest(message, client.socket)  -- handles the message
-
-        trackTime(timestamp)
-        _G.logger:debug("[messageQueue] Processing Request with ID '" .. request.id .. "' for client " .. clientID)
-    end
-end
-
--- Process the queue
-local function processQueue(requestHandler)
-    sortQueueByPriority()
-    while #queue > 0 and not paused do
-        if not isProcessing then
-            isProcessing = true
-            processSingleRequest(requestHandler)
-            isProcessing = false
-        else
-            break
-        end
-    end
-end
-
--- Add message to queue
-function RequestQueue.addToQueue(message, socket, requestHandler, priorityLevel)
-    local parts = {}
-    for part in message:gmatch("[^|]+") do
-        table.insert(parts, part)
-    end
-
-    clientManager.registerClient(socket, parts[2])
-
-    if #queue >= size then
-        return false
-    end
-    local client = clientManager.getClientByName(parts[2])
-    if client then
-        local id = generateUniqueID()
-        local timestamp = os.clock() 
-        local priorityArg = priority[priorityLevel] or priority.LOW
-        table.insert(queue, {id = id, message = message, clientID = client.id, timestamp = timestamp, priority = priorityArg})
-        clientManager.updateClientKey(client.id, "socket", socket)
-
-        if not paused and not isProcessing then
-            processQueue(requestHandler)
-        end
-        return true
-    end
-    return false
-end
-
-
--- Pause the queue
-function RequestQueue.pauseQueue()
-    paused = true
-end
-
-function RequestQueue.isPaused()
-    return paused
-end
-
--- Resume the queue
-function RequestQueue.resumeQueue(requestHandler)
-    if paused then
-        paused = false
-        processQueue(requestHandler)
-    end
-end
-
--- Get max size limit
-function RequestQueue.getSize()
-    return size
-end
-
--- Get the current number of messages in the queue
-function RequestQueue.getPopulation()
-    return #queue
-end
-
--- Set new size limit
-function RequestQueue.setSize(newSize)
-    size = newSize
-end
-
--- Clears the entire queue
-function RequestQueue.clearQueue()
-    queue = {}
-    totalTimeSpent = 0
-    processedCount = 0 
-end
-
--- Adds message without executing it
-function RequestQueue.queuePending(message, clientID, id)
-    if #queue >= size then
-        return false
-    end
-    local id = id or generateUniqueID()
-    local timestamp = os.time()
-    table.insert(queue, {id = id, message = message, clientID = clientID, timestamp = timestamp})
-    return true
-end
-
--- Removes a specific request by ID
-function RequestQueue.removeRequestByID(requestID)
-    for i, request in ipairs(queue) do
-        if request.id == requestID then
-            table.remove(queue, i)
-            return true
-        end
-    end
-    return false
-end
-
--- set the priority manually
-function RequestQueue.setPriority(requestID, priorityLevel)
-    local priorityArg = priority[priorityLevel] or priority.LOW
-    for _, request in ipairs(queue) do
-        if request.id == requestID then
-            request.priority = priorityArg
-            sortQueueByPriority()
-            return true
-        end
-    end
-    return false
-end
-
--- Moves a request with the given ID to the front of the queue
-function RequestQueue.prioritize(requestID)
-    RequestQueue.setPriority(requestID, "HIGH")
-end
-
--- Moves a request with the given ID to the back of the queue
-function RequestQueue.postpone(requestID)
-    RequestQueue.setPriority(requestID, "LOW")
-end
-
--- Returns a request by ID
-function RequestQueue.inspect(requestID)
-    for _, request in ipairs(queue) do
-        if request.id == requestID then
-            return request
-        end
-    end
-    return nil
-end
-
--- Get the average time spent in the queue
-function RequestQueue.getAverageTimeSpent()
-    if processedCount == 0 then
-        return 0
-    end
-    return totalTimeSpent / processedCount
-end
-
--- List all request IDs in the queue
-function RequestQueue.listRequestIDs()
-    local ids = {}
-    for _, request in ipairs(queue) do
-        table.insert(ids, request.id)
-    end
-    return ids
-end
-
-return RequestQueue
+return requestQueue

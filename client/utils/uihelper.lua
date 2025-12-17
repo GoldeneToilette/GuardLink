@@ -18,7 +18,7 @@ local function createLabel(parent, text, posX, posY, sizeX, sizeY, bgColor, fgCo
     return parent:addLabel()
         :setText(text)
         :setPosition(posX, posY)
-        :setSize(sizeX, sizeY)
+        :setSize(sizeX or #text, sizeY)
         :setBackground(bgColor)
         :setForeground(fgColor)
         :setFontSize(fontSize or 1)
