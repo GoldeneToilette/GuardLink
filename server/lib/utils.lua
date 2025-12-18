@@ -76,16 +76,4 @@ function utils.deepCopy(orig)
     return copy
 end
 
-function utils.cprint(text, color, w)
-    term.setTextColor(color or colors.white)
-    if w then
-        write(text)
-    else
-        print(text)
-    end
-    term.setTextColor(colors.white)
-end
-
-
-
 return utils
