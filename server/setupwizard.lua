@@ -83,7 +83,10 @@ end)
 
 
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
-local nation_label = uiHelper.newLabel(steps["nation"].frame, "select your nation :D", 2, 2, 30, 1, colors.white, colors.black, 1)
+local nation_pane = uiHelper.newPane(steps["nation"].frame, 2, 2, 20, 16, colors.lightGray)
+local nation_label = uiHelper.newLabel(steps["nation"].frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.black, 1)
+local nation_name_label = uiHelper.newTextfield(steps["nation"].frame, 12, 3, 9, 1, colors.gray, colors.white)
+
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 setActive("start")
 
