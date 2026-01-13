@@ -4,7 +4,7 @@ local input = read()
 if input ~= "Y" and input ~= "y" then return end
 local files = fs.list("/")
 for i = 1, #files do
-    if files[i] ~= "rom" then fs.delete(files[i]) end
+    if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
 end
 
 fs.makeDir("/GuardLink/server/config")
