@@ -21,6 +21,10 @@ request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/
 code = load(request.readAll(), "pixelbox", "t", _G)
 local pixelbox = code()
 
+request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua")
+code = load(request.readAll(), "rules", "t", _G)
+local rules = code()
+
 local frame = basalt.createFrame():setVisible(true)
 local timeline = uiHelper.newLabel(frame, "  \45   \45   \45   \45   \45  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
 
@@ -57,7 +61,7 @@ local function setActive(name)
 end
 
 -- START FRAME ---------------------------------------------------------------------------------------------------------
-local start_label = uiHelper.newLabel(steps["start"].frame, "Welcome to GuardLink Setup!", 2, 2, 27, 1, colors.white, colors.blue, 1)
+local start_label = uiHelper.newLabel(steps["start"].frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
 local start_pane = uiHelper.newPane(steps["start"].frame, 32, 2, 19, 15, colors.lightGray)
 :setBorder(colors.gray, "left")
 
@@ -69,7 +73,6 @@ function(self, event, button, x, y)
     setActive("nation")
 end)
 
--- i DONT know how the spinning cube works
 local function spinningCube(box)local cx,cy=box.width/2,box.height/2;local scale=math.min(box.width,box.height)/3.7;local baseSpeed=0.05;local verts={{-1,-1,-1},{1,-1,-1},{1,1,-1},{-1,1,-1},{-1,-1,1},{1,-1,1},{1,1,1},{-1,1,1}}local edges={{1,2},{2,3},{3,4},{4,1},{5,6},{6,7},{7,8},{8,5},{1,5},{2,6},{3,7},{4,8}}local rotX,rotY=0,0;while true do box:clear(colors.white)local projected={}for i,v in ipairs(verts)do local x,y,z=v[1],v[2],v[3]local y1=y*math.cos(rotX)-z*math.sin(rotX)local z1=y*math.sin(rotX)+z*math.cos(rotX)local x2=x*math.cos(rotY)-z1*math.sin(rotY)projected[i]={cx+x2*scale,cy+y1*scale}end;for _,e in ipairs(edges)do local v1,v2=projected[e[1]],projected[e[2]]local x1,y1=math.floor(v1[1]),math.floor(v1[2])local x2,y2=math.floor(v2[1]),math.floor(v2[2])local dx,dy=math.abs(x2-x1),math.abs(y2-y1)local sx,sy=x1<x2 and 1 or-1,y1<y2 and 1 or-1;local err=dx-dy;while true do if x1>=1 and x1<=box.width and y1>=1 and y1<=box.height then box.canvas[y1][x1]=colors.blue end;if x1==x2 and y1==y2 then break end;local e2=err*2;if e2>-dy then err=err-dy;x1=x1+sx end;if e2<dx then err=err+dx;y1=y1+sy end end end;box:render()local t=os.clock()local speed=baseSpeed*(0.85+0.15*math.sin(t*0.8))rotX=rotX+speed;rotY=rotY+speed*0.7;os.sleep(0.05)end end
 local start_animation = steps["start"].frame:addProgram():setSize(25, 14):setPosition(3, 5)
 :execute(function()
@@ -83,11 +86,27 @@ end)
 
 
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
-local nation_pane = uiHelper.newPane(steps["nation"].frame, 2, 2, 20, 16, colors.lightGray)
-local nation_label = uiHelper.newLabel(steps["nation"].frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.black, 1)
-local nation_name_label = uiHelper.newTextfield(steps["nation"].frame, 12, 3, 9, 1, colors.gray, colors.white)
+local nation_pane = uiHelper.newPane(steps["nation"].frame, 2, 2, 21, 7, colors.lightGray)
+local nation_name_label = uiHelper.newLabel(steps["nation"].frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.gray, 1)
+local nation_name_field = uiHelper.newTextfield(steps["nation"].frame, 9, 3, 13, 1, colors.gray, colors.white)
 
+local nation_tag_label = uiHelper.newLabel(steps["nation"].frame, "Tag (3 chars):", 3, 5, 14, 1, colors.lightGray, colors.gray, 1)
+local nation_tag_field = uiHelper.newTextfield(steps["nation"].frame, 18, 5, 4, 1, colors.gray, colors.white)
+:onChange(function(self, event, value)
+    
+end)
+
+local nation_ethic_label = uiHelper.newLabel(steps["nation"].frame, "Ethic:", 3, 7, 6, 1, colors.lightGray, colors.gray, 1)
+local nation_ethic_dropdown = steps["nation"].frame:addDropdown()
+:setForeground(colors.white)
+:setBackground(colors.gray)
+:setPosition(10, 7)
+
+for k,v in pairs(rules.ethics) do
+    nation_ethic_dropdown:addItem(v.name, colors.gray, colors.white)
+end
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
+
 setActive("start")
 
 term.setPaletteColor(colors.blue, 0x2563EB)
