@@ -1,146 +1,176 @@
--- Exhibit A: comically ugly installer
+local dep = {
+    basalt = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/basalt.lua",
+    uiHelper = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/uiHelper.lua",
+    pixelbox = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/pixelbox_lite.lua",
+    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua",
+}
 
-term.setTextColor(colors.red)
-print("Computer will be wiped. Proceed with install? Y/N:")
-local input = read()
-if input ~= "Y" and input ~= "y" then return end
-local files = fs.list("/")
-for i = 1, #files do
-    if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
+local lib = {}
+for k,v in pairs(dep) do
+  lib[k] = load(http.get(v).readAll(), k, "t", _G)()
 end
 
-fs.makeDir("/GuardLink/server/config")
+local function wipePC()
+    term.setTextColor(colors.red)
+    local x,y = term.getSize()
+    if x ~= 51 then error("You cannot install GuardLink server on a pocket computer!") end
+    print("Computer will be wiped. Proceed with install? Y/N:")
+    local input = read()
+    if input ~= "Y" and input ~= "y" then return end
+    local files = fs.list("/")
+    for i = 1, #files do
+        if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
+    end
+    print("Done! Creating folders...")
+    os.sleep(1)
+    fs.makeDir("/GuardLink/server/config")
+end
 
-local request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/basalt.lua")
-local code = load(request.readAll(), "basalt", "t", _G)
-local basalt = code()
-
-request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/uiHelper.lua")
-code = load(request.readAll(), "uiHelper", "t", _G)
-local uiHelper = code()
-
-request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/pixelbox_lite.lua")
-code = load(request.readAll(), "pixelbox", "t", _G)
-local pixelbox = code()
-
-request = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua")
-code = load(request.readAll(), "rules", "t", _G)
-local settings = code()
-
-local frame = basalt.createFrame():setVisible(true)
-local timeline = uiHelper.newLabel(frame, "  \45   \45   \45   \45   \45  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
+-- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
+local mainframe = lib.basalt.createFrame():setVisible(true)
+local timeline = lib.uiHelper.newLabel(mainframe, "  \26   \26   \26   \26   \26  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
+local stepLabels = {}
+local activeStep = 0
+for i = 1, 21, 4 do
+    table.insert(stepLabels, lib.uiHelper.newLabel(mainframe, "\186", i, 1, 1, 1, colors.lightGray, colors.gray, 1))
+end
 
 local function createFrame(scrollable)
-    local f = scrollable and frame:addScrollableFrame() or frame:addFrame()
+    local f = scrollable and mainframe:addScrollableFrame() or mainframe:addFrame()
     return f:setSize("parent.w", "parent.h - 1"):setPosition(1, 2):setBackground(colors.white):setVisible(false)
 end
-local function createLabel(x)
-    return uiHelper.newLabel(frame, "\186", x, 1, 1, 1, colors.lightGray, colors.gray, 1)
-end
 
-local steps = {
-    start = {frame = createFrame()},
-    nation = {frame = createFrame(true), finished = false, data = {}, label = createLabel(1)},
-    economy = {frame = createFrame(), finished = false, data = {}, label = createLabel(5)},
-    core = {frame = createFrame(), finished = false, data = {}, label = createLabel(9)},
-    partitions = {frame = createFrame(), finished = false, data = {}, label = createLabel(13)},
-    features = {frame = createFrame(), finished = false, data = {}, label = createLabel(17)},
-    final = {frame = createFrame(), finished = false, data = {}, label = createLabel(21)}
-}
-local activeStep = ""
+local panels = {}
 
-local function setActive(name)
-    if activeStep ~= "" then 
-        steps[activeStep].frame:setVisible(false)
-        if steps[activeStep].label then
-            steps[activeStep].label:setForeground(colors.gray)
+local function next()
+    if activeStep >= #panels then
+        error("Tried to load panel that doesn't exist!")
+    end
+    if activeStep > 0 then
+        panels[activeStep].frame:setVisible(false)
+
+        if activeStep > 1 and stepLabels and stepLabels[activeStep-1] then
+            stepLabels[activeStep-1]:setForeground(colors.green)
         end
     end
-    if steps[name].label then steps[name].label:setForeground(colors.green) end
-    
-    steps[name].frame:setVisible(true)
-    activeStep = name
+    activeStep = activeStep + 1
+    panels[activeStep].frame:setVisible(true)
 end
 
--- START FRAME ---------------------------------------------------------------------------------------------------------
-local start_frame = steps["start"].frame
 
-local start_label = uiHelper.newLabel(start_frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
-local start_pane = uiHelper.newPane(start_frame, 32, 2, 19, 15, colors.lightGray)
-:setBorder(colors.gray, "left")
-
-local start_text = uiHelper.newLabel(start_frame, 
-"1.Nation          2.Economy         3.Core Settings   4.Partitions      5.RP Features     6.Final", 33, 3, 18, 9, colors.lightGray, colors.gray)
-
-local start_button = uiHelper.newButton(start_frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
-function(self, event, button, x, y)
-    setActive("nation")
-end)
-
-local function spinningCube(box)local cx,cy=box.width/2,box.height/2;local scale=math.min(box.width,box.height)/3.7;local baseSpeed=0.05;local verts={{-1,-1,-1},{1,-1,-1},{1,1,-1},{-1,1,-1},{-1,-1,1},{1,-1,1},{1,1,1},{-1,1,1}}local edges={{1,2},{2,3},{3,4},{4,1},{5,6},{6,7},{7,8},{8,5},{1,5},{2,6},{3,7},{4,8}}local rotX,rotY=0,0;while true do box:clear(colors.white)local projected={}for i,v in ipairs(verts)do local x,y,z=v[1],v[2],v[3]local y1=y*math.cos(rotX)-z*math.sin(rotX)local z1=y*math.sin(rotX)+z*math.cos(rotX)local x2=x*math.cos(rotY)-z1*math.sin(rotY)projected[i]={cx+x2*scale,cy+y1*scale}end;for _,e in ipairs(edges)do local v1,v2=projected[e[1]],projected[e[2]]local x1,y1=math.floor(v1[1]),math.floor(v1[2])local x2,y2=math.floor(v2[1]),math.floor(v2[2])local dx,dy=math.abs(x2-x1),math.abs(y2-y1)local sx,sy=x1<x2 and 1 or-1,y1<y2 and 1 or-1;local err=dx-dy;while true do if x1>=1 and x1<=box.width and y1>=1 and y1<=box.height then box.canvas[y1][x1]=colors.blue end;if x1==x2 and y1==y2 then break end;local e2=err*2;if e2>-dy then err=err-dy;x1=x1+sx end;if e2<dx then err=err+dx;y1=y1+sy end end end;box:render()local t=os.clock()local speed=baseSpeed*(0.85+0.15*math.sin(t*0.8))rotX=rotX+speed;rotY=rotY+speed*0.7;os.sleep(0.05)end end
-local start_animation = start_frame:addProgram():setSize(25, 14):setPosition(3, 5)
-:execute(function()
-    local box = pixelbox.new(term.current())
-    spinningCube(box)
-end)
--- START FRAME ---------------------------------------------------------------------------------------------------------
-
-
-
-
-
--- NATION FRAME --------------------------------------------------------------------------------------------------------
-local nation_frame = steps["nation"].frame
-
-local nation_pane = uiHelper.newPane(nation_frame, 2, 2, 21, 7, colors.lightGray)
-local nation_name_label = uiHelper.newLabel(nation_frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.gray, 1)
-local nation_name_field = uiHelper.newTextfield(nation_frame, 9, 3, 13, 1, colors.gray, colors.white)
-
-local nation_tag_label = uiHelper.newLabel(nation_frame, "Tag (3 chars):", 3, 5, 14, 1, colors.lightGray, colors.gray, 1)
-local nation_tag_field = uiHelper.newTextfield(nation_frame, 18, 5, 4, 1, colors.gray, colors.white)
-:onChange(function(self, event, value)
-    
-end)
-
-local nation_ethic_label = uiHelper.newLabel(nation_frame, "Ethic:", 3, 7, 6, 1, colors.lightGray, colors.gray, 1)
-local nation_ethic_dropdown = nation_frame:addDropdown()
-:setForeground(colors.white)
-:setBackground(colors.gray)
-:setPosition(10, 7)
-
-local fi = ""
-for k,v in pairs(settings.rules.ethics) do
-    if fi == "" then fi = k end
-    nation_ethic_dropdown:addItem(v.name, colors.gray, colors.white, k)
-end
-
-local selectedEthic
-if steps["nation"].data.ethic ~= nil then
-    selectedEthic = steps["nation"].data.ethic
-else
-    selectedEthic = fi
-end
-for i = 1, nation_ethic_dropdown:getItemCount() do
-    if nation_ethic_dropdown:getItem(i).args.k == selectedEthic then
-        nation_ethic_dropdown:selectItem(i)     
+local function previous()
+    if activeStep <= 2 then 
+        error("Tried to load invalid panel!")
     end
+
+    panels[activeStep].frame:setVisible(false)
+    if stepLabels and stepLabels[activeStep-1] then
+        stepLabels[activeStep-1]:setForeground(colors.gray)
+    end
+    activeStep = activeStep - 1
+    panels[activeStep].frame:setVisible(true)
 end
+-- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 
-local nation_ethic_pane = uiHelper.newPane(nation_frame, 2, 10, 1, 3, colors.white):setBorder(colors.blue, "left")
-local nation_ethic_desc = uiHelper.newLabel(nation_frame, settings.rules.ethics[selectedEthic].description, 
-3, 10, 21, 3, colors.white, colors.gray)
 
-nation_ethic_dropdown:onChange(function(self, event, item)
-    nation_ethic_desc:setText(settings.rules.ethics[item.args[1]].description)
-end)
 
-local nation_roles_button = uiHelper.newButton(nation_frame, "Manage Roles", 2, 16, 14, 3, colors.blue, colors.white, 
-function(self, event, button, x, y)
-    basalt.debug("BUTTON GOT CLICKED;")
-end)
+
+
+-- START FRAME ---------------------------------------------------------------------------------------------------------
+panels[1] = {
+    frame = createFrame(),
+    build = function(self) 
+        self.ui.title = lib.uiHelper.newLabel(self.frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
+        self.ui.pane = lib.uiHelper.newPane(self.frame, 32, 2, 19, 15, colors.lightGray)
+        :setBorder(colors.gray, "left")
+
+        self.ui.table = lib.uiHelper.newLabel(self.frame, 
+        "1.Nation          2.Economy         3.Core Settings   4.Partitions      5.RP Features     6.Final", 
+        33, 3, 18, 9, colors.lightGray, colors.gray)
+
+        self.ui.button = lib.uiHelper.newButton(self.frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
+        function() 
+            panels[2]:build()
+            next() 
+        end)
+
+        local function spinningCube(box)local cx,cy=box.width/2,box.height/2;local scale=math.min(box.width,box.height)/3.7;local baseSpeed=0.05;local verts={{-1,-1,-1},{1,-1,-1},{1,1,-1},{-1,1,-1},{-1,-1,1},{1,-1,1},{1,1,1},{-1,1,1}}local edges={{1,2},{2,3},{3,4},{4,1},{5,6},{6,7},{7,8},{8,5},{1,5},{2,6},{3,7},{4,8}}local rotX,rotY=0,0;while true do box:clear(colors.white)local projected={}for i,v in ipairs(verts)do local x,y,z=v[1],v[2],v[3]local y1=y*math.cos(rotX)-z*math.sin(rotX)local z1=y*math.sin(rotX)+z*math.cos(rotX)local x2=x*math.cos(rotY)-z1*math.sin(rotY)projected[i]={cx+x2*scale,cy+y1*scale}end;for _,e in ipairs(edges)do local v1,v2=projected[e[1]],projected[e[2]]local x1,y1=math.floor(v1[1]),math.floor(v1[2])local x2,y2=math.floor(v2[1]),math.floor(v2[2])local dx,dy=math.abs(x2-x1),math.abs(y2-y1)local sx,sy=x1<x2 and 1 or-1,y1<y2 and 1 or-1;local err=dx-dy;while true do if x1>=1 and x1<=box.width and y1>=1 and y1<=box.height then box.canvas[y1][x1]=colors.blue end;if x1==x2 and y1==y2 then break end;local e2=err*2;if e2>-dy then err=err-dy;x1=x1+sx end;if e2<dx then err=err+dx;y1=y1+sy end end end;box:render()local t=os.clock()local speed=baseSpeed*(0.85+0.15*math.sin(t*0.8))rotX=rotX+speed;rotY=rotY+speed*0.7;os.sleep(0.05)end end
+        self.ui.animation = self.frame:addProgram():setSize(25, 14):setPosition(3, 5)
+        :execute(function()
+            local box = lib.pixelbox.new(term.current())
+            spinningCube(box)
+        end)
+    end,
+    validate = function(self) 
+        error("NOTHING TO VALIDATE; IF YOU SEE THIS SOMETHING BROKE")
+    end,
+    data = {},
+    ui = {}
+}
+-- START FRAME ---------------------------------------------------------------------------------------------------------
+
+
+
+
+
+-- NATION FRAME --------------------------------------------------------------------------------------------------------
+panels[2] = {
+    frame = createFrame(),
+    build = function(self) 
+        self.ui.pane = lib.uiHelper.newPane(self.frame, 2, 2, 21, 7, colors.lightGray)
+
+        self.ui.nation_name = lib.uiHelper.newLabel(self.frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.gray, 1)
+        self.ui.nation_field = lib.uiHelper.newTextfield(self.frame, 9, 3, 13, 1, colors.gray, colors.white)
+
+        self.ui.tag_name = lib.uiHelper.newLabel(self.frame, "Tag (3 chars):", 3, 5, 14, 1, colors.lightGray, colors.gray, 1)
+        self.ui.tag_field = lib.uiHelper.newTextfield(self.frame, 18, 5, 4, 1, colors.gray, colors.white)        
+
+        self.ui.ethic_label = lib.uiHelper.newLabel(self.frame, "Ethic:", 3, 7, 6, 1, colors.lightGray, colors.gray, 1)
+        self.ui.ethic_dropdown = self.frame:addDropdown()
+        :setForeground(colors.white)
+        :setBackground(colors.gray)
+        :setPosition(10, 7)
+
+        local fi = ""
+        for k,v in pairs(lib.settings.rules.ethics) do
+            if fi == "" then fi = k end
+            self.ui.ethic_dropdown:addItem(v.name, colors.gray, colors.white, k)
+        end
+
+        if not self.data.selectedEthic then 
+            self.data.selectedEthic = fi
+        end
+
+        for i = 1, self.ui.ethic_dropdown:getItemCount() do
+            if self.ui.ethic_dropdown:getItem(i).args.k == self.data.selectedEthic then
+                self.ui.ethic_dropdown:selectItem(i)
+            end
+        end
+
+        self.ui.ethic_pane = lib.uiHelper.newPane(self.frame, 2, 10, 1, 3, colors.white):setBorder(colors.blue, "left")
+        self.ui.ethic_desc = lib.uiHelper.newLabel(self.frame, lib.settings.rules.ethics[self.data.selectedEthic].description, 
+        3, 10, 21, 3, colors.white, colors.gray)
+
+        self.ui.ethic_dropdown:onChange(function(self, event, item)
+            self.ui.ethic_desc:setText(lib.settings.rules.ethics[item.args[1]].description)
+        end)
+
+        self.ui.roles_button = lib.uiHelper.newButton(self.frame, "Manage Roles", 2, 15, 14, 3, colors.gray, colors.white, 
+        function(self, event, button, x, y)
+            basalt.debug("BUTTON GOT CLICKED;")
+        end)
+    end,
+    validate = function(self)
+
+    end,
+    data = {},
+    ui = {}
+}
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 
-setActive("start")
+wipePC()
+panels[1]:build()
+next()
 
 term.setPaletteColor(colors.blue, 0x2563EB)
 term.setPaletteColor(colors.pink, 0xF7F8F8)
@@ -150,4 +180,4 @@ term.setPaletteColor(colors.lightGray, 0xd1d2de)
 term.setPaletteColor(colors.green, 0x4CAF50)
 term.setPaletteColor(colors.black, 0x2B2F36)
 
-basalt.autoUpdate()
+lib.basalt.autoUpdate()

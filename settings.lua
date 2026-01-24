@@ -39,7 +39,7 @@ data.rules.maxNameLength = 26
 data.rules.ethics = {
     pacifist = {
         name = "Pacifist",
-        description = "'Stability and peace are the foundation of any nation'",
+        description = "Stability and peace are the foundation of any nation",
         values = {
             force = 0.3,
             stability = 1.0,
@@ -50,7 +50,7 @@ data.rules.ethics = {
     },
     militarist = {
         name = "Militarist",
-        description = "'To stay relevant, you need to project your power on everyone'",
+        description = "To stay relevant, you need to project your power on everyone",
         values = {
             force = 1.8,
             stability = 1.2,
@@ -61,7 +61,7 @@ data.rules.ethics = {
     },
     authoritarian = {
         name = "Authoritarian",
-        description = "'Order and law over individual freedom'",
+        description = "Order and law over individual freedom",
         values = {
             force = 1.4,
             stability = 1.8,
@@ -72,7 +72,7 @@ data.rules.ethics = {
     },
     egalitarian = {
         name = "Egalitarian",
-        description = "'Everyone has a voice, and we are here to listen'",
+        description = "Everyone has a voice, and we are here to listen",
         values = {
             force = 0.7,
             stability = 0.5,
@@ -83,7 +83,7 @@ data.rules.ethics = {
     },
     megacorporation = {
         name = "Megacorporation",
-        description = "'Money talks, and the market rules supreme'",
+        description = "Money talks, and the market rules supreme",
         values = {
             force = 0.5,
             stability = 0.8,
