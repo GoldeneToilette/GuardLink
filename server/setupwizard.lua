@@ -117,7 +117,9 @@ panels[1] = {
 
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 panels[2] = {
-    data = {},
+    data = {
+        roles = {}
+    },
     ui = {},
     frame = createFrame(),
     build = function(self) 
@@ -159,9 +161,21 @@ panels[2] = {
             self.ui.ethic_desc:setText(lib.settings.rules.ethics[item.args[1]].description)
         end)
 
+        self.ui.roles_frame = self.frame:addMovableFrame():setVisible(false):setSize(45, 13):setPosition(4, 4):setBackground(colors.white)
+        :setBorder(colors.lightGray, "right", "bottom")
+        self.ui.roles_title = self.ui.roles_frame:addLabel():setText("Manage Roles"):setSize(44, 1):setPosition(1,1)
+        :setBackground(colors.blue)
+        :setForeground(colors.white)
+
+        self.ui.roles_name = lib.uiHelper.newLabel(self.ui.roles_frame, "Title:", 2, 3, 6, 1, colors.white, colors.gray, 1)
+        self.ui.roles_name_text = lib.uiHelper.newTextfield(self.ui.roles_frame, 10, 3, 20, 1, colors.lightGray, colors.gray)
+
+        self.ui.roles_count = lib.uiHelper.newLabel(self.ui.roles_frame, "Seats:", 32, 3, 6, 1, colors.white, colors.gray, 1)
+        self.ui.roles_count_text = lib.uiHelper.newTextfield(self.ui.roles_frame, 40, 3, 4, 1, colors.lightGray, colors.gray)
+
         self.ui.roles_button = lib.uiHelper.newButton(self.frame, "Manage Roles", 2, 15, 14, 3, colors.gray, colors.white, 
         function(s, event, button, x, y)
-            -- HEHEHHEHEHEHE
+            self.ui.roles_frame:setVisible(true)
         end)
     end,
     validate = function(self)

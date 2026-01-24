@@ -35,7 +35,8 @@ data.server.debug = false
 
 
 -- RULES ---------------------------------------------------------------------------
-data.rules.maxNameLength = 26
+data.rules.maxNationLength = 26
+data.rules.maxRoleLength = 20
 data.rules.ethics = {
     pacifist = {
         name = "Pacifist",
@@ -74,8 +75,8 @@ data.rules.ethics = {
         name = "Egalitarian",
         description = "Everyone has a voice, and we are here to listen",
         values = {
-            force = 0.7,
-            stability = 0.5,
+            force = 0.6,
+            stability = 1.1,
             commerce = 1.0,
             autonomy = 1.8,
             consent = 1.8
@@ -93,7 +94,14 @@ data.rules.ethics = {
         }
     }
 }
-
+data.server.formulas = {
+    roleLimit = function(stability)
+        return math.floor(5 * stability)
+    end,
+    lawLimit = function(stability, force)
+        return math.floor(35 * (0.8 * stability + 0.2 * force))
+    end
+}
 -- RULES ---------------------------------------------------------------------------
 return data
 
