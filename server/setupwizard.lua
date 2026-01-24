@@ -70,6 +70,8 @@ local function previous()
     activeStep = activeStep - 1
     panels[activeStep].frame:setVisible(true)
 end
+
+
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 
 
@@ -78,6 +80,8 @@ end
 
 -- START FRAME ---------------------------------------------------------------------------------------------------------
 panels[1] = {
+    data = {},
+    ui = {},
     frame = createFrame(),
     build = function(self) 
         self.ui.title = lib.uiHelper.newLabel(self.frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
@@ -103,9 +107,7 @@ panels[1] = {
     end,
     validate = function(self) 
         error("NOTHING TO VALIDATE; IF YOU SEE THIS SOMETHING BROKE")
-    end,
-    data = {},
-    ui = {}
+    end
 }
 -- START FRAME ---------------------------------------------------------------------------------------------------------
 
@@ -115,6 +117,8 @@ panels[1] = {
 
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 panels[2] = {
+    data = {},
+    ui = {},
     frame = createFrame(),
     build = function(self) 
         self.ui.pane = lib.uiHelper.newPane(self.frame, 2, 2, 21, 7, colors.lightGray)
@@ -151,20 +155,18 @@ panels[2] = {
         self.ui.ethic_desc = lib.uiHelper.newLabel(self.frame, lib.settings.rules.ethics[self.data.selectedEthic].description, 
         3, 10, 21, 3, colors.white, colors.gray)
 
-        self.ui.ethic_dropdown:onChange(function(self, event, item)
+        self.ui.ethic_dropdown:onChange(function(s, event, item)
             self.ui.ethic_desc:setText(lib.settings.rules.ethics[item.args[1]].description)
         end)
 
         self.ui.roles_button = lib.uiHelper.newButton(self.frame, "Manage Roles", 2, 15, 14, 3, colors.gray, colors.white, 
-        function(self, event, button, x, y)
-            basalt.debug("BUTTON GOT CLICKED;")
+        function(s, event, button, x, y)
+            -- HEHEHHEHEHEHE
         end)
     end,
     validate = function(self)
 
-    end,
-    data = {},
-    ui = {}
+    end
 }
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 
