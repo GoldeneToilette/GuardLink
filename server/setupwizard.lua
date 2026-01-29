@@ -29,10 +29,10 @@ end
 
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 local mainframe = lib.basalt.createFrame():setVisible(true)
-local timeline = lib.uiHelper.newLabel(mainframe, "  \26   \26   \26   \26   \26  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
+local timeline = lib.uiHelper.newLabel(mainframe, "  \26   \26   \26  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
 local stepLabels = {}
 local activeStep = 0
-for i = 1, 21, 4 do
+for i = 1, 13, 4 do
     table.insert(stepLabels, lib.uiHelper.newLabel(mainframe, "\186", i, 1, 1, 1, colors.lightGray, colors.gray, 1))
 end
 local function createFrame(scrollable)
@@ -109,7 +109,7 @@ panels[1] = {
         :setBorder(colors.gray, "left")
 
         ui.table = lib.uiHelper.newLabel(frame, 
-        "1.Nation          2.Economy         3.Core Settings   4.Partitions      5.RP Features     6.Final", 
+        "1.Nation          2.Core Settings   3.Partitions      4.Final", 
         33, 3, 18, 9, colors.lightGray, colors.gray)
 
         ui.button = lib.uiHelper.newButton(frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
@@ -284,7 +284,10 @@ panels[2] = {
 
         ui.trade = lib.uiHelper.newLabel(frame, "Inter-Nation Trade:", 26, 7, 19, 1, colors.lightGray, colors.gray)
         ui.tradeCheck = frame:addCheckbox():setPosition(46, 7):setBackground(colors.gray):setForeground(colors.white)
-        :setValue(data.tradeCheck or true)
+        :setValue(data.tradeCheck)
+        :onChange(function(s, event, value)
+            data.tradeCheck = value
+        end)
 
         ui.next_button = lib.uiHelper.newButton(frame, "Next", 45, 15, 6, 3, colors.blue, colors.white,
         function(s, event, button, x, y)
@@ -296,7 +299,6 @@ panels[2] = {
                 data.nation_tag = ui.tag_field:getLine(1)
                 data.currency_name = ui.ecoField:getLine(1)
                 data.balance = ui.balanceField:getLine(1)
-                data.tradeCheck = ui.tradeCheck:getValue()
 
                 -- Store roles
                 for i = 1, ui.roles_list:getItemCount() do
@@ -314,8 +316,8 @@ panels[2] = {
         if #ui.nation_field:getLine(1) == 0 or #ui.nation_field:getLine(1) > lib.settings.rules.maxNationLength then 
             return "Nation name must be 1-" .. lib.settings.rules.maxNationLength .. " characters!"
         end
-        if #ui.tag_field:getLine(1) > 3 then 
-            return "Tag cannot be longer than 3 characters!"
+        if #ui.tag_field:getLine(1) ~= 3 then 
+            return "Tag must be 3 characters!"
         end
         local n = lib.settings.server.formulas.roleLimit(lib.settings.rules.ethics[self.data.selectedEthic].values.stability) 
         - ui.roles_list:getItemCount()
@@ -334,6 +336,24 @@ panels[2] = {
     end
 }
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
+
+panels[3] = {
+    data = {},
+    ui = {},
+    frame = createFrame(),
+    build = function(self)
+        local data, ui, frame = self.data, self.ui, self.frame
+
+        ui.test_button = lib.uiHelper.newButton(frame, "BACK", 1, 1, 4, 1, colors.blue, colors.white, 
+        function(s, event, button, x, y)
+            panels[2]:build()
+            previous() 
+        end)
+    end,
+    validate = function(self)
+
+    end
+}
 
 wipePC()
 panels[1]:build()
