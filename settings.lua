@@ -2,15 +2,16 @@
 This file acts as a source of truth for various guardlink related things.
 the "rules" table has rules for RP/world stuff, and "server" contains default settings for the computer itself.
 
-"Values" are multipliers that define how the system behaves. Its basically just a way to configure your nation but "gamified".
+"Values" are multipliers that define how the system behaves.
 Force -> Nation can start offensive wars or take aggressive diplomatic actions
 Stability -> How much capacity the nation has to pass laws + extra space for roles and surveillance
-Commerce -> Changes how the economy behaves, more complex stock market behavior, higher focus on economy, etc
+Commerce -> Changes how the economy behaves, more complex stock market behavior, currency worth more, etc
 Autonomy -> Defines how much power the individual has. If its low, normal citizens do not own specific things
 Consent -> Some actions need public approval & system has more transparency (public logs, etc)
 ]]--
 
 local data = { rules = {}, server = {}}
+data.version = "0.1.1"
 
 -- SERVER --------------------------------------------------------------------------
 data.server.session = {
@@ -27,7 +28,7 @@ data.server.clients = {
 }
 data.server.queue = {
     queueSize = 40,
-    throttle = 1
+    throttle = 0
 }
 data.server.theme = "default"
 data.server.debug = false
@@ -37,6 +38,7 @@ data.server.debug = false
 -- RULES ---------------------------------------------------------------------------
 data.rules.maxNationLength = 26
 data.rules.maxRoleLength = 20
+data.rules.maxCurrencyLength = 12
 data.rules.ethics = {
     pacifist = {
         name = "Pacifist",
@@ -100,6 +102,14 @@ data.server.formulas = {
     end,
     lawLimit = function(stability, force)
         return math.floor(35 * (0.8 * stability + 0.2 * force))
+    end,
+    exchangeRate = function(nationA, nationB)
+        local base = 1
+        local ratio = (nationA.total / nationB.total) * (nationA.commerce / nationB.commerce)
+        local damping = 0.5
+        local rate = base * (1 + damping * (ratio - 1))
+
+        return rate
     end
 }
 -- RULES ---------------------------------------------------------------------------

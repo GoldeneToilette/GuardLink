@@ -1,8 +1,10 @@
+-- Exhibit A: comically messy installer
+
 local dep = {
     basalt = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/basalt.lua",
     uiHelper = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/uiHelper.lua",
     pixelbox = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/pixelbox_lite.lua",
-    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua",
+    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua"
 }
 
 local lib = {}
@@ -22,7 +24,6 @@ local function wipePC()
         if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
     end
     print("Done! Creating folders...")
-    os.sleep(1)
     fs.makeDir("/GuardLink/server/config")
 end
 
@@ -34,7 +35,6 @@ local activeStep = 0
 for i = 1, 21, 4 do
     table.insert(stepLabels, lib.uiHelper.newLabel(mainframe, "\186", i, 1, 1, 1, colors.lightGray, colors.gray, 1))
 end
-
 local function createFrame(scrollable)
     local f = scrollable and mainframe:addScrollableFrame() or mainframe:addFrame()
     return f:setSize("parent.w", "parent.h - 1"):setPosition(1, 2):setBackground(colors.white):setVisible(false)
@@ -57,7 +57,6 @@ local function next()
     panels[activeStep].frame:setVisible(true)
 end
 
-
 local function previous()
     if activeStep <= 2 then 
         error("Tried to load invalid panel!")
@@ -71,6 +70,26 @@ local function previous()
     panels[activeStep].frame:setVisible(true)
 end
 
+local function popUp(frame, message, type)
+    local title = type == "error" and "Error" or "Info"
+    local color = type == "error" and colors.red or colors.green
+
+    local frame = frame:addMovableFrame()
+    :setVisible(true):setSize(35, 7):setPosition(6, 4):setBackground(colors.white)
+    :setBorder(colors.lightGray, "right", "bottom")
+
+    frame:addLabel():setText(title):setSize(34, 1):setPosition(1,1)
+    :setBackground(colors.blue):setForeground(colors.white)
+
+    frame:addLabel():setText(message):setPosition(2, 3):setSize(30, 4)
+    :setBackground(colors.white):setForeground(color)
+
+    lib.uiHelper.newButton(frame, "X", 35, 1, 1, 1, colors.blue, colors.red,
+    function(s, event, button, x, y)
+        frame:setVisible(false)
+        frame:remove()
+    end)
+end
 
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 
@@ -84,29 +103,30 @@ panels[1] = {
     ui = {},
     frame = createFrame(),
     build = function(self) 
-        self.ui.title = lib.uiHelper.newLabel(self.frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
-        self.ui.pane = lib.uiHelper.newPane(self.frame, 32, 2, 19, 15, colors.lightGray)
+        local ui, frame = self.ui, self.frame
+        ui.title = lib.uiHelper.newLabel(frame, "Welcome to GuardLink Setup!", 1, 2, 28, 1, colors.white, colors.blue, 1)
+        ui.pane = lib.uiHelper.newPane(frame, 32, 2, 19, 15, colors.lightGray)
         :setBorder(colors.gray, "left")
 
-        self.ui.table = lib.uiHelper.newLabel(self.frame, 
+        ui.table = lib.uiHelper.newLabel(frame, 
         "1.Nation          2.Economy         3.Core Settings   4.Partitions      5.RP Features     6.Final", 
         33, 3, 18, 9, colors.lightGray, colors.gray)
 
-        self.ui.button = lib.uiHelper.newButton(self.frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
+        ui.button = lib.uiHelper.newButton(frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
         function() 
             panels[2]:build()
             next() 
         end)
 
         local function spinningCube(box)local cx,cy=box.width/2,box.height/2;local scale=math.min(box.width,box.height)/3.7;local baseSpeed=0.05;local verts={{-1,-1,-1},{1,-1,-1},{1,1,-1},{-1,1,-1},{-1,-1,1},{1,-1,1},{1,1,1},{-1,1,1}}local edges={{1,2},{2,3},{3,4},{4,1},{5,6},{6,7},{7,8},{8,5},{1,5},{2,6},{3,7},{4,8}}local rotX,rotY=0,0;while true do box:clear(colors.white)local projected={}for i,v in ipairs(verts)do local x,y,z=v[1],v[2],v[3]local y1=y*math.cos(rotX)-z*math.sin(rotX)local z1=y*math.sin(rotX)+z*math.cos(rotX)local x2=x*math.cos(rotY)-z1*math.sin(rotY)projected[i]={cx+x2*scale,cy+y1*scale}end;for _,e in ipairs(edges)do local v1,v2=projected[e[1]],projected[e[2]]local x1,y1=math.floor(v1[1]),math.floor(v1[2])local x2,y2=math.floor(v2[1]),math.floor(v2[2])local dx,dy=math.abs(x2-x1),math.abs(y2-y1)local sx,sy=x1<x2 and 1 or-1,y1<y2 and 1 or-1;local err=dx-dy;while true do if x1>=1 and x1<=box.width and y1>=1 and y1<=box.height then box.canvas[y1][x1]=colors.blue end;if x1==x2 and y1==y2 then break end;local e2=err*2;if e2>-dy then err=err-dy;x1=x1+sx end;if e2<dx then err=err+dx;y1=y1+sy end end end;box:render()local t=os.clock()local speed=baseSpeed*(0.85+0.15*math.sin(t*0.8))rotX=rotX+speed;rotY=rotY+speed*0.7;os.sleep(0.05)end end
-        self.ui.animation = self.frame:addProgram():setSize(25, 14):setPosition(3, 5)
+        ui.animation = frame:addProgram():setSize(25, 14):setPosition(3, 5)
         :execute(function()
             local box = lib.pixelbox.new(term.current())
             spinningCube(box)
         end)
     end,
     validate = function(self) 
-        error("NOTHING TO VALIDATE; IF YOU SEE THIS SOMETHING BROKE")
+        popUp(self.frame, "NOTHING TO VALIDATE; IF YOU SEE THIS SOMETHING BROKE", "error")
     end
 }
 -- START FRAME ---------------------------------------------------------------------------------------------------------
@@ -123,16 +143,19 @@ panels[2] = {
     ui = {},
     frame = createFrame(),
     build = function(self) 
-        self.ui.pane = lib.uiHelper.newPane(self.frame, 2, 2, 21, 7, colors.lightGray)
+        local ui, frame, data = self.ui, self.frame, self.data
+        ui.pane = lib.uiHelper.newPane(frame, 2, 2, 21, 7, colors.lightGray)
 
-        self.ui.nation_name = lib.uiHelper.newLabel(self.frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.gray, 1)
-        self.ui.nation_field = lib.uiHelper.newTextfield(self.frame, 9, 3, 13, 1, colors.gray, colors.white)
+        ui.nation_name = lib.uiHelper.newLabel(frame, "Name:", 3, 3, 5, 1, colors.lightGray, colors.gray, 1)
+        ui.nation_field = lib.uiHelper.newTextfield(frame, 9, 3, 13, 1, colors.gray, colors.white)
+        :editLine(1, data.nation_name or "")
 
-        self.ui.tag_name = lib.uiHelper.newLabel(self.frame, "Tag (3 chars):", 3, 5, 14, 1, colors.lightGray, colors.gray, 1)
-        self.ui.tag_field = lib.uiHelper.newTextfield(self.frame, 18, 5, 4, 1, colors.gray, colors.white)        
+        ui.tag_name = lib.uiHelper.newLabel(frame, "Tag (3 chars):", 3, 5, 14, 1, colors.lightGray, colors.gray, 1)
+        ui.tag_field = lib.uiHelper.newTextfield(frame, 18, 5, 4, 1, colors.gray, colors.white)        
+        :editLine(1, data.nation_tag or "")
 
-        self.ui.ethic_label = lib.uiHelper.newLabel(self.frame, "Ethic:", 3, 7, 6, 1, colors.lightGray, colors.gray, 1)
-        self.ui.ethic_dropdown = self.frame:addDropdown()
+        ui.ethic_label = lib.uiHelper.newLabel(frame, "Ethic:", 3, 7, 6, 1, colors.lightGray, colors.gray, 1)
+        ui.ethic_dropdown = frame:addDropdown()
         :setForeground(colors.white)
         :setBackground(colors.gray)
         :setPosition(10, 7)
@@ -140,46 +163,174 @@ panels[2] = {
         local fi = ""
         for k,v in pairs(lib.settings.rules.ethics) do
             if fi == "" then fi = k end
-            self.ui.ethic_dropdown:addItem(v.name, colors.gray, colors.white, k)
+            ui.ethic_dropdown:addItem(v.name, colors.gray, colors.white, k)
         end
 
-        if not self.data.selectedEthic then 
-            self.data.selectedEthic = fi
+        if not data.selectedEthic then 
+            data.selectedEthic = fi
         end
 
-        for i = 1, self.ui.ethic_dropdown:getItemCount() do
-            if self.ui.ethic_dropdown:getItem(i).args.k == self.data.selectedEthic then
-                self.ui.ethic_dropdown:selectItem(i)
+        for i = 1, ui.ethic_dropdown:getItemCount() do
+            if ui.ethic_dropdown:getItem(i).args.k == data.selectedEthic then
+                ui.ethic_dropdown:selectItem(i)
             end
         end
 
-        self.ui.ethic_pane = lib.uiHelper.newPane(self.frame, 2, 10, 1, 3, colors.white):setBorder(colors.blue, "left")
-        self.ui.ethic_desc = lib.uiHelper.newLabel(self.frame, lib.settings.rules.ethics[self.data.selectedEthic].description, 
+        ui.ethic_pane = lib.uiHelper.newPane(frame, 2, 10, 1, 3, colors.white):setBorder(colors.blue, "left")
+        ui.ethic_desc = lib.uiHelper.newLabel(frame, lib.settings.rules.ethics[data.selectedEthic].description, 
         3, 10, 21, 3, colors.white, colors.gray)
 
-        self.ui.ethic_dropdown:onChange(function(s, event, item)
-            self.ui.ethic_desc:setText(lib.settings.rules.ethics[item.args[1]].description)
+        ui.ethic_dropdown:onChange(function(s, event, item)
+            ui.ethic_desc:setText(lib.settings.rules.ethics[item.args[1]].description)
+            data.selectedEthic = item.args[1]
         end)
 
-        self.ui.roles_frame = self.frame:addMovableFrame():setVisible(false):setSize(45, 13):setPosition(4, 4):setBackground(colors.white)
+        -- ROLES ---------------------------------------------------------
+        ui.roles_frame = frame:addMovableFrame():setVisible(false):setSize(45, 13):setPosition(4, 4):setBackground(colors.white)
         :setBorder(colors.lightGray, "right", "bottom")
-        self.ui.roles_title = self.ui.roles_frame:addLabel():setText("Manage Roles"):setSize(44, 1):setPosition(1,1)
+        ui.roles_title = ui.roles_frame:addLabel():setText("Manage Roles"):setSize(44, 1):setPosition(1,1)
         :setBackground(colors.blue)
         :setForeground(colors.white)
 
-        self.ui.roles_name = lib.uiHelper.newLabel(self.ui.roles_frame, "Title:", 2, 3, 6, 1, colors.white, colors.gray, 1)
-        self.ui.roles_name_text = lib.uiHelper.newTextfield(self.ui.roles_frame, 10, 3, 20, 1, colors.lightGray, colors.gray)
+        ui.roles_name = lib.uiHelper.newLabel(ui.roles_frame, "Title:", 2, 3, 6, 1, colors.white, colors.gray, 1)
+        ui.roles_name_text = lib.uiHelper.newTextfield(ui.roles_frame, 10, 3, 20, 1, colors.lightGray, colors.gray)
 
-        self.ui.roles_count = lib.uiHelper.newLabel(self.ui.roles_frame, "Seats:", 32, 3, 6, 1, colors.white, colors.gray, 1)
-        self.ui.roles_count_text = lib.uiHelper.newTextfield(self.ui.roles_frame, 40, 3, 4, 1, colors.lightGray, colors.gray)
+        ui.roles_count = lib.uiHelper.newLabel(ui.roles_frame, "Count:", 32, 3, 6, 1, colors.white, colors.gray, 1)
+        ui.roles_count_text = lib.uiHelper.newTextfield(ui.roles_frame, 40, 3, 4, 1, colors.lightGray, colors.gray)
 
-        self.ui.roles_button = lib.uiHelper.newButton(self.frame, "Manage Roles", 2, 15, 14, 3, colors.gray, colors.white, 
+        ui.roles_list = ui.roles_frame:addList()
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+        :setPosition(2, 5)
+        :setSize(28, 6)
+        :setSelectionColor(nil, colors.black)
+        :setScrollable(true)
+
+        for i,v in ipairs(data.roles) do
+            ui.roles_list:addItem(v[1], colors.lightGray, colors.gray, v[2])
+        end
+
+        local function getRoleCap()
+            return lib.settings.server.formulas.roleLimit(lib.settings.rules.ethics[data.selectedEthic].values.stability) 
+        end
+        local function remainingRoleCap()
+            return getRoleCap() - ui.roles_list:getItemCount()
+        end
+
+        ui.roles_capacity = lib.uiHelper.newLabel(ui.roles_frame, "Role Capacity: " .. remainingRoleCap(), 2, 12, 17, 1, colors.white, colors.gray, 1)
+
+        ui.roles_new = lib.uiHelper.newButton(ui.roles_frame, "Add", 32, 5, 5, 3, colors.blue, colors.white)
+        :setBorder(colors.white, "top")
+        :onClick(function(s, event, button, x, y)
+            local cap = getRoleCap()
+            local count = ui.roles_list:getItemCount()
+            local text = ui.roles_name_text:getLine(1)
+            local seats = tonumber(ui.roles_count_text:getLine(1))
+            if remainingRoleCap() > 0 and #text <= lib.settings.rules.maxRoleLength and #text >= 1 and (seats and seats >= 1) and type(seats) == "number" then
+                ui.roles_list:addItem(text, colors.lightGray, colors.gray, math.min(seats, 500))
+                if cap < 0 then
+                    ui.roles_capacity:setForeground(colors.red)
+                else
+                    ui.roles_capacity:setForeground(colors.green)
+                end
+                ui.roles_capacity:setText("Role Capacity: " .. remainingRoleCap())
+            end
+        end)
+
+        ui.roles_del = lib.uiHelper.newButton(ui.roles_frame, "Remove", 32, 8, 8, 3, colors.blue, colors.white)
+        :setBorder(colors.white, "top")
+        :onClick(function(s, event, button, x, y)
+            local selected = ui.roles_list:getItemIndex()
+            if selected and selected >= 1 then
+                ui.roles_list:removeItem(selected)
+                local cap = remainingRoleCap()
+                if cap < 0 then
+                    ui.roles_capacity:setForeground(colors.red)
+                else
+                    ui.roles_capacity:setForeground(colors.green)
+                end
+                ui.roles_capacity:setText("Role Capacity: " .. cap)                
+            end
+        end)
+
+        ui.roles_exit = lib.uiHelper.newButton(ui.roles_frame, "X", 45, 1, 1, 1, colors.blue, colors.red,
         function(s, event, button, x, y)
-            self.ui.roles_frame:setVisible(true)
+            ui.roles_frame:setVisible(false)
+        end)
+        -- ROLES ---------------------------------------------------------
+
+        ui.roles_button = lib.uiHelper.newButton(frame, "Manage Roles", 2, 15, 14, 3, colors.gray, colors.white, 
+        function(s, event, button, x, y)
+            local cap = remainingRoleCap()
+            if cap < 0 then
+                ui.roles_capacity:setForeground(colors.red)
+            else
+                ui.roles_capacity:setForeground(colors.green)
+            end
+            ui.roles_capacity:setText("Role Capacity: " .. cap)
+            ui.roles_frame:setVisible(true)
+        end)
+
+        
+        ui.paneEco = lib.uiHelper.newPane(frame, 25, 2, 26, 7, colors.lightGray)
+
+        ui.ecoName = lib.uiHelper.newLabel(frame, "Currency Name:", 26, 3, 14, 1, colors.lightGray, colors.gray)
+        ui.ecoField = lib.uiHelper.newTextfield(frame, 41, 3, 9, 1, colors.gray, colors.white)
+        :editLine(1, data.currency_name or "")
+
+        ui.balance = lib.uiHelper.newLabel(frame, "Starting Balance:", 26, 5, 17, 1, colors.lightGray, colors.gray)
+        ui.balanceField = lib.uiHelper.newTextfield(frame, 44, 5, 6, 1, colors.gray, colors.white)
+        ui.balanceField:editLine(1, data.balance or "0")
+
+        ui.trade = lib.uiHelper.newLabel(frame, "Inter-Nation Trade:", 26, 7, 19, 1, colors.lightGray, colors.gray)
+        ui.tradeCheck = frame:addCheckbox():setPosition(46, 7):setBackground(colors.gray):setForeground(colors.white)
+        :setValue(data.tradeCheck or true)
+
+        ui.next_button = lib.uiHelper.newButton(frame, "Next", 45, 15, 6, 3, colors.blue, colors.white,
+        function(s, event, button, x, y)
+            local status = self:validate()
+            if status ~= 0 then 
+                popUp(frame, status, "error")
+            else
+                data.nation_name = ui.nation_field:getLine(1)
+                data.nation_tag = ui.tag_field:getLine(1)
+                data.currency_name = ui.ecoField:getLine(1)
+                data.balance = ui.balanceField:getLine(1)
+                data.tradeCheck = ui.tradeCheck:getValue()
+
+                -- Store roles
+                for i = 1, ui.roles_list:getItemCount() do
+                    local item = ui.roles_list:getItem(i)
+                    data.roles[i] = {item.text, item.args[1]}
+                end
+
+                panels[3]:build()
+                next() 
+            end
         end)
     end,
     validate = function(self)
+        local ui = self.ui
+        if #ui.nation_field:getLine(1) == 0 or #ui.nation_field:getLine(1) > lib.settings.rules.maxNationLength then 
+            return "Nation name must be 1-" .. lib.settings.rules.maxNationLength .. " characters!"
+        end
+        if #ui.tag_field:getLine(1) > 3 then 
+            return "Tag cannot be longer than 3 characters!"
+        end
+        local n = lib.settings.server.formulas.roleLimit(lib.settings.rules.ethics[self.data.selectedEthic].values.stability) 
+        - ui.roles_list:getItemCount()
+        if n < 0 then 
+            return "Exceeding role capacity! " .. n
+        end
+        if #ui.ecoField:getLine(1) == 0 or #ui.ecoField:getLine(1) > lib.settings.rules.maxCurrencyLength then 
+            return "Currency name must be 1-" .. lib.settings.rules.maxCurrencyLength .. " characters!"
+        end
+        local bal = tonumber(ui.balanceField:getLine(1))
+        if not bal or bal < 0 then
+            return "Invalid starting balance: " .. ui.balanceField:getLine(1)
+        end
 
+        return 0 
     end
 }
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
@@ -188,6 +339,7 @@ wipePC()
 panels[1]:build()
 next()
 
+term.setPaletteColor(colors.red, 0xff0000)
 term.setPaletteColor(colors.blue, 0x2563EB)
 term.setPaletteColor(colors.pink, 0xF7F8F8)
 term.setPaletteColor(colors.white, 0xf2f8fb)
