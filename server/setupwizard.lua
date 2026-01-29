@@ -406,6 +406,7 @@ panels[3] = {
             data.debug = value
         end)
 
+        
         --[[
         ui.back_button = lib.uiHelper.newButton(frame, "Back", 1, 1, 4, 1, colors.blue, colors.white, 
         function(s, event, button, x, y)
