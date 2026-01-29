@@ -337,18 +337,83 @@ panels[2] = {
 }
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 
+local themes_table = textutils.unserializeJSON(http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/config/themes.json").readAll())
 panels[3] = {
     data = {},
     ui = {},
     frame = createFrame(),
     build = function(self)
+        local function paletteSwap(theme)
+            local t = themes_table[theme]
+            if t then
+                local colorsMap = {}
+                for _, pair in ipairs(t) do
+                    colorsMap[pair[1]] = pair[2]
+                end
+                term.setPaletteColor(colors.orange, tonumber("0x" .. colorsMap.primary))
+                term.setPaletteColor(colors.magenta, tonumber("0x" .. colorsMap.secondary))
+                term.setPaletteColor(colors.lightBlue, tonumber("0x" .. colorsMap.tertiary))
+                term.setPaletteColor(colors.yellow, tonumber("0x" .. colorsMap.highlight))
+                term.setPaletteColor(colors.lime, tonumber("0x" .. colorsMap.subtle))
+                term.setPaletteColor(colors.cyan, tonumber("0x" .. colorsMap.accent))
+            end
+        end
+
         local data, ui, frame = self.data, self.ui, self.frame
 
-        ui.test_button = lib.uiHelper.newButton(frame, "BACK", 1, 1, 4, 1, colors.blue, colors.white, 
+        ui.title_label = lib.uiHelper.newLabel(frame, "Server Settings", 3, 3, 17, 1, colors.lightGray, colors.gray)        
+        ui.pane = lib.uiHelper.newPane(frame, 2, 2, 21, 13, colors.lightGray)
+
+        
+        ui.theme_label = lib.uiHelper.newLabel(frame, "Theme:", 3, 5, 6, 1, colors.lightGray, colors.gray)
+        ui.theme_dropdown = frame:addDropdown()
+        :setForeground(colors.white)
+        :setBackground(colors.gray)
+        :setPosition(10, 5)
+
+        ui.primary = lib.uiHelper.newPane(frame, 3, 7, 3, 1, colors.orange)
+        ui.secondary = lib.uiHelper.newPane(frame, 6, 7, 3, 1, colors.magenta)
+        ui.tertiary = lib.uiHelper.newPane(frame, 9, 7, 3, 1, colors.lightBlue)
+        ui.highlight = lib.uiHelper.newPane(frame, 12, 7, 3, 1, colors.yellow)
+        ui.subtle = lib.uiHelper.newPane(frame, 15, 7, 3, 1, colors.lime)
+        ui.accent = lib.uiHelper.newPane(frame, 18, 7, 3, 1, colors.cyan)
+
+        local fi = ""
+        for k,v in pairs(themes_table) do
+            if fi == "" then fi = k end
+            if k == "default" then fi = k end
+            ui.theme_dropdown:addItem(k, colors.gray, colors.white)
+        end
+        if not data.theme then 
+            data.theme = fi
+        end
+        for i = 1, ui.theme_dropdown:getItemCount() do
+            if ui.theme_dropdown:getItem(i).text == data.theme then
+                ui.theme_dropdown:selectItem(i)
+            end
+        end
+        paletteSwap(data.theme)
+
+        ui.theme_dropdown:onChange(function(s, event, item)
+            paletteSwap(item.text)
+            data.theme = item.text
+        end)
+
+        ui.debug_label = lib.uiHelper.newLabel(frame, "Debug logs:", 3, 9, 11, 1, colors.lightGray, colors.gray)
+        ui.debug_check = frame:addCheckbox():setPosition(15, 9):setBackground(colors.gray):setForeground(colors.white)
+        :setValue(data.debug)
+        :onChange(function(s, event, value)
+            data.debug = value
+        end)
+
+        --[[
+        ui.back_button = lib.uiHelper.newButton(frame, "Back", 1, 1, 4, 1, colors.blue, colors.white, 
         function(s, event, button, x, y)
             panels[2]:build()
             previous() 
         end)
+        ]]--
+
     end,
     validate = function(self)
 
@@ -367,5 +432,13 @@ term.setPaletteColor(colors.gray, 0x767e7c)
 term.setPaletteColor(colors.lightGray, 0xd1d2de)
 term.setPaletteColor(colors.green, 0x4CAF50)
 term.setPaletteColor(colors.black, 0x2B2F36)
+
+-- COLORS FOR THEME
+term.setPaletteColor(colors.orange, 0xFFFFFF)
+term.setPaletteColor(colors.magenta, 0xFFFFFF)
+term.setPaletteColor(colors.lightBlue, 0xFFFFFF)
+term.setPaletteColor(colors.yellow, 0xFFFFFF)
+term.setPaletteColor(colors.lime, 0xFFFFFF)
+term.setPaletteColor(colors.cyan, 0xFFFFFF)
 
 lib.basalt.autoUpdate()
