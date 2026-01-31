@@ -1,6 +1,2 @@
-Scope.lua
-strict.lua
-Util.lua
-FormatMini.lua
-ParseLua.lua
 packager/
+.vscode
