@@ -38,7 +38,8 @@ local settings = {
         queueSize = 40,
         throttle = 1
     },
-    theme = "default"
+    theme = "default",
+    debugMode = false
 }
 
 _G.theme = require("lib.themes")

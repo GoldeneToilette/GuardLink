@@ -7,28 +7,6 @@ NetworkSession.__index = NetworkSession
 
 local defaultKeyPath = "/GuardLink/server/"
 
---[[
-Settings table example:
-local settings = {
-    session = {
-        discoveryChannel = 65535,
-        keyPath = "/GuardLink/server/"
-    },
-    clients = {
-        maxClients = 120,
-        throttleLimit = 7200,
-        max_idle = 60,
-        heartbeat_interval = 30,
-        channelRotation = 20,
-        clientIDLength = 5
-    },
-    queue = {
-        queueSize = 40,
-        throttle = 1 -- meaning its gonna process the entire queue once every second
-    }
-}
-]]--
-
 function NetworkSession.new(settings)
     local self = setmetatable({}, NetworkSession)
     self.clientManager = require("network.clientManager").new(self, settings)

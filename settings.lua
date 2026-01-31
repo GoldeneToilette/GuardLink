@@ -32,6 +32,12 @@ data.server.queue = {
 }
 data.server.theme = "default"
 data.server.debug = false
+data.server.partitions = {
+        {name = "accounts", percentage = 10},
+        {name = "logs", percentage = 60},
+        {name = "cache", percentage = 20},
+        {name = "wallets", percentage = 10}
+}
 -- SERVER --------------------------------------------------------------------------
 
 
@@ -110,6 +116,20 @@ data.server.formulas = {
         local rate = base * (1 + damping * (ratio - 1))
 
         return rate
+    end,
+    telemetryAllowed = function(stability, autonomy, commerce)
+        local score = (stability + (1 - autonomy)) + (commerce - 1) * 0.5
+        return score >= 1.5
+    end,
+    logsAccessible = function(autonomy, consent)
+        local score = 0.7 * autonomy + 0.3 * consent
+        return score >= 1.5
+    end,
+    marketVolatility = function(commerce, stability)
+        local minVol, maxVol = 0.05, 0.35
+        local base = minVol + commerce * (maxVol - minVol) / 2
+        local adjusted = base * (1 - (stability or 0) * 0.1)
+        return math.min(maxVol, math.max(minVol, adjusted))
     end
 }
 -- RULES ---------------------------------------------------------------------------
