@@ -34,7 +34,7 @@ local mainframe = lib.basalt.createFrame():setVisible(true)
 local timeline = lib.uiHelper.newLabel(mainframe, "  \26   \26   \26  ", 1, 1, 51, 1, colors.lightGray, colors.gray, 1) 
 local stepLabels = {}
 local activeStep = 0
-for i = 1, 13, 4 do
+for i = 1, 9, 4 do
     table.insert(stepLabels, lib.uiHelper.newLabel(mainframe, "\186", i, 1, 1, 1, colors.lightGray, colors.gray, 1))
 end
 local function createFrame(scrollable)
@@ -65,8 +65,8 @@ local function previous()
     end
 
     panels[activeStep].frame:setVisible(false)
-    if stepLabels and stepLabels[activeStep-1] then
-        stepLabels[activeStep-1]:setForeground(colors.gray)
+    if stepLabels[activeStep-2] then
+        stepLabels[activeStep-2]:setForeground(colors.gray)
     end
     activeStep = activeStep - 1
     panels[activeStep].frame:setVisible(true)
@@ -111,7 +111,7 @@ panels[1] = {
         :setBorder(colors.gray, "left")
 
         ui.table = lib.uiHelper.newLabel(frame, 
-        "1.Nation          2.Core Settings   3.Partitions      4.Final", 
+        "1.Nation          2.Core Settings   3.Final", 
         33, 3, 18, 9, colors.lightGray, colors.gray)
 
         ui.button = lib.uiHelper.newButton(frame, "Start", 43, 13, 7, 3, colors.gray, colors.white, 
