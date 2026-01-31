@@ -414,7 +414,7 @@ panels[3] = {
         ui.pane2 = lib.uiHelper.newPane(frame, 24, 2, 27, 13, colors.lightGray)
         ui.disksTitle = lib.uiHelper.newLabel(frame, "Disks", 25, 3, 5, 1, colors.lightGray, colors.gray)
         ui.detected = lib.uiHelper.newLabel(frame, "Detected: " .. data.diskManager:diskCount(), 25, 5, 13, 1, colors.lightGray, colors.gray)
-        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. data.diskManager.capacity, 25, 6, 12, 1, colors.lightGray, colors.gray)
+        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. (data.diskManager.capacity / 1000) .. "MB", 25, 6, 13, 1, colors.lightGray, colors.gray)
 
         ui.list = frame:addList()
         :setBackground(colors.white)
@@ -423,23 +423,23 @@ panels[3] = {
         :setSize(10, 11)
         :setSelectionColor(nil, colors.black)
         :setScrollable(true)
-        local labels = data.diskManager:getDisklabels()
+        local labels = data.diskManager:getDiskLabels()
         for i,v in ipairs(labels) do
-            ui.roles_list:addItem(v)
+            ui.list:addItem(v)
         end
  
         ui.detect = lib.uiHelper.newButton(frame, "Detect", 25, 11, 8, 3, colors.blue, colors.white,
         function(s, event, button, x, y)
             data.diskManager:scan()
             ui.detected:setText("Detected: " .. data.diskManager:diskCount())
-            ui.capacity:setText("Space: " .. data.diskManager.capacity)
+            ui.capacity:setText("Space: " .. data.diskManager.capacity / 1000 .. "MB")
 
-            for i = 1, ui.list:getItemCount() do
+            for i = ui.list:getItemCount(), 1, -1 do
                 ui.list:removeItem(i)
             end
-            local labels = data.diskManager:getDisklabels()
+            local labels = data.diskManager:getDiskLabels()
             for i,v in ipairs(labels) do
-                ui.roles_list:addItem(v)
+                ui.list:addItem(v)
             end
         end)
         --[[
