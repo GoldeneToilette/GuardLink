@@ -1,4 +1,4 @@
-local fileUtils = require "lib.fileUtils"
+local fileUtils
 
 local diskManager = {}
 diskManager.__index = diskManager
@@ -21,14 +21,15 @@ local errors = {
     "Percentages dont add up to 100: "
 }
 
-function diskManager.new(configPath, labelPrefix)
+function diskManager.new(configPath, labelPrefix, futil)
     local self = setmetatable({}, diskManager)
     self.disks = {}
     self.capacity = 0
     self.freeSpace = 0
     self.configPath = configPath or "/GuardLink/server/config/partitions.json"
-    self.labelPrefix = labelPrefix or "GLB"
+    self.labelPrefix = labelPrefix or "DISK"
 
+    fileUtils = futil
     return self
 end
 
@@ -38,6 +39,14 @@ end
 
 function diskManager:getDisks()
     return self.disks
+end
+
+function diskManager:diskCount()
+    local i = 0
+    for _,_ in pairs(self.disks) do
+        i = i+1
+    end
+    return i
 end
 
 function diskManager:disksToString()
@@ -51,6 +60,14 @@ end
 
 function diskManager:getDisk(label)
     return self.disks[label]
+end
+
+function diskManager:getDiskLabels()
+    local tbl = {}
+    for _,v in pairs(self.disks) do
+        table.insert(tbl, v.label)
+    end
+    return tbl
 end
 
 function diskManager:clearDisk(label)

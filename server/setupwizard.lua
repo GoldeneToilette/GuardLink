@@ -4,7 +4,9 @@ local dep = {
     basalt = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/basalt.lua",
     uiHelper = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/uiHelper.lua",
     pixelbox = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/pixelbox_lite.lua",
-    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua"
+    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua",
+    disk = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/modules/disk.lua",
+    fileUtils = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/fileUtils.lua"
 }
 
 local lib = {}
@@ -406,6 +408,40 @@ panels[3] = {
             data.debug = value
         end)
 
+
+        data.diskManager = lib.disk.new(nil, nil, lib.fileUtils)
+        data.diskManager:scan()
+        ui.pane2 = lib.uiHelper.newPane(frame, 24, 2, 27, 13, colors.lightGray)
+        ui.disksTitle = lib.uiHelper.newLabel(frame, "Disks", 25, 3, 5, 1, colors.lightGray, colors.gray)
+        ui.detected = lib.uiHelper.newLabel(frame, "Detected: " .. data.diskManager:diskCount(), 25, 5, 13, 1, colors.lightGray, colors.gray)
+        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. data.diskManager.capacity, 25, 6, 12, 1, colors.lightGray, colors.gray)
+
+        ui.list = frame:addList()
+        :setBackground(colors.white)
+        :setForeground(colors.gray)
+        :setPosition(39, 3)
+        :setSize(10, 11)
+        :setSelectionColor(nil, colors.black)
+        :setScrollable(true)
+        local labels = data.diskManager:getDisklabels()
+        for i,v in ipairs(labels) do
+            ui.roles_list:addItem(v)
+        end
+ 
+        ui.detect = lib.uiHelper.newButton(frame, "Detect", 25, 11, 8, 3, colors.blue, colors.white,
+        function(s, event, button, x, y)
+            data.diskManager:scan()
+            ui.detected:setText("Detected: " .. data.diskManager:diskCount())
+            ui.capacity:setText("Space: " .. data.diskManager.capacity)
+
+            for i = 1, ui.list:getItemCount() do
+                ui.list:removeItem(i)
+            end
+            local labels = data.diskManager:getDisklabels()
+            for i,v in ipairs(labels) do
+                ui.roles_list:addItem(v)
+            end
+        end)
         --[[
         ui.back_button = lib.uiHelper.newButton(frame, "Back", 1, 1, 4, 1, colors.blue, colors.white, 
         function(s, event, button, x, y)

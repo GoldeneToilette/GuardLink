@@ -32,6 +32,7 @@ data.server.queue = {
 }
 data.server.theme = "default"
 data.server.debug = false
+data.server.minDiskCount = 20
 data.server.partitions = {
         {name = "accounts", percentage = 10},
         {name = "logs", percentage = 60},
