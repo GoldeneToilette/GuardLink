@@ -29,7 +29,7 @@ function diskManager.new(configPath, labelPrefix, futil)
     self.configPath = configPath or "/GuardLink/server/config/partitions.json"
     self.labelPrefix = labelPrefix or "DISK"
 
-    fileUtils = futil
+    fileUtils = futil or require("lib.fileUtils")
     return self
 end
 

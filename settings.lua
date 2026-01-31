@@ -11,7 +11,6 @@ Consent -> Some actions need public approval & system has more transparency (pub
 ]]--
 
 local data = { rules = {}, server = {}}
-data.version = "0.1.1"
 
 -- SERVER --------------------------------------------------------------------------
 data.server.session = {

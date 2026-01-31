@@ -21,6 +21,7 @@ External Libraries:
 - [cryptoNet](https://github.com/SiliconSloth/CryptoNet)
 - [pixelbox](https://github.com/9551-Dev/pixelbox_lite)
 - [AES Encrypt library](https://forums.computercraft.cc/index.php?topic=487.0)
+- [BigFont](https://pastebin.com/3LfWxRWh)
 
 Installation:
 - 
