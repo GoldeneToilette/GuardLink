@@ -350,12 +350,12 @@ panels[3] = {
                 for _, pair in ipairs(t) do
                     colorsMap[pair[1]] = pair[2]
                 end
-                term.setPaletteColor(colors.orange, tonumber("0x" .. colorsMap.primary))
-                term.setPaletteColor(colors.magenta, tonumber("0x" .. colorsMap.secondary))
-                term.setPaletteColor(colors.lightBlue, tonumber("0x" .. colorsMap.tertiary))
-                term.setPaletteColor(colors.yellow, tonumber("0x" .. colorsMap.highlight))
-                term.setPaletteColor(colors.lime, tonumber("0x" .. colorsMap.subtle))
-                term.setPaletteColor(colors.cyan, tonumber("0x" .. colorsMap.accent))
+                term.setPaletteColor(colors.orange, tonumber(colorsMap.primary))
+                term.setPaletteColor(colors.magenta, tonumber(colorsMap.secondary))
+                term.setPaletteColor(colors.lightBlue, tonumber(colorsMap.tertiary))
+                term.setPaletteColor(colors.yellow, tonumber(colorsMap.highlight))
+                term.setPaletteColor(colors.lime, tonumber(colorsMap.subtle))
+                term.setPaletteColor(colors.cyan, tonumber(colorsMap.accent))
             end
         end
 
