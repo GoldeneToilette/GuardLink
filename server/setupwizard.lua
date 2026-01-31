@@ -339,6 +339,11 @@ panels[2] = {
 }
 -- NATION FRAME --------------------------------------------------------------------------------------------------------
 
+
+
+
+
+-- SETTINGS FRAME --------------------------------------------------------------------------------------------------------
 local themes_table = textutils.unserializeJSON(http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/config/themes.json").readAll())
 panels[3] = {
     data = {},
@@ -414,7 +419,7 @@ panels[3] = {
         ui.pane2 = lib.uiHelper.newPane(frame, 24, 2, 27, 13, colors.lightGray)
         ui.disksTitle = lib.uiHelper.newLabel(frame, "Disks", 25, 3, 5, 1, colors.lightGray, colors.gray)
         ui.detected = lib.uiHelper.newLabel(frame, "Detected: " .. data.diskManager:diskCount(), 25, 5, 13, 1, colors.lightGray, colors.gray)
-        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. (data.diskManager.capacity / 1000) .. "MB", 25, 6, 13, 1, colors.lightGray, colors.gray)
+        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. (data.diskManager.capacity / 1000000) .. "MB", 25, 6, 13, 1, colors.lightGray, colors.gray)
 
         ui.list = frame:addList()
         :setBackground(colors.white)
@@ -432,7 +437,7 @@ panels[3] = {
         function(s, event, button, x, y)
             data.diskManager:scan()
             ui.detected:setText("Detected: " .. data.diskManager:diskCount())
-            ui.capacity:setText("Space: " .. data.diskManager.capacity / 1000 .. "MB")
+            ui.capacity:setText("Space: " .. (data.diskManager.capacity / 1000000) .. "MB")
 
             for i = ui.list:getItemCount(), 1, -1 do
                 ui.list:removeItem(i)
@@ -442,19 +447,54 @@ panels[3] = {
                 ui.list:addItem(v)
             end
         end)
-        --[[
-        ui.back_button = lib.uiHelper.newButton(frame, "Back", 1, 1, 4, 1, colors.blue, colors.white, 
+
+        ui.back_button = lib.uiHelper.newButton(frame, "Back", 38, 16, 6, 3, colors.blue, colors.white, 
         function(s, event, button, x, y)
             panels[2]:build()
             previous() 
         end)
-        ]]--
+        ui.back_button:setBorder(colors.white, "bottom")
+
+        ui.next_button = lib.uiHelper.newButton(frame, "Next", 45, 16, 6, 3, colors.blue, colors.white,
+        function(s, event, button, x, y)
+            local status = self:validate()
+            if status ~= 0 then
+                popUp(frame, status, "error")
+            else
+                panels[4]:build()
+                next()
+            end
+        end)
+        ui.next_button:setBorder(colors.white, "bottom")
+    end,
+    validate = function(self)
+        self.data.diskManager:scan()
+        if self.data.diskManager.capacity < 1250000 then
+            return "Not enough space! Minimum: 1.25MB, Recommended: 2,5MB (~20 disks)"
+        end
+        return 0
+    end
+}
+-- SETTINGS FRAME --------------------------------------------------------------------------------------------------------
+
+
+
+
+
+-- FINAL FRAME -----------------------------------------------------------------------------------------------------------
+panels[4] = {
+    data = {},
+    ui = {},
+    frame = createFrame(),
+    build = function(self)
 
     end,
     validate = function(self)
 
     end
 }
+-- FINAL FRAME -----------------------------------------------------------------------------------------------------------
+
 
 wipePC()
 panels[1]:build()
