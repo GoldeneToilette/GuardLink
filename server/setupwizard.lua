@@ -330,30 +330,6 @@ for k,v in pairs(dep) do
   lib[k] = load(http.get(v).readAll(), k, "t", _G)()
 end
 
-local runbasalt = true
-local function autoUpdate()
-    parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
-
-    --local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
-    --release = textutils.unserializeJSON(release)
-    --local tag = release.tag_name
-    os.sleep(1)
-    term.clear()
-    term.setBackgroundColor(colors.black)
-    term.setTextColor(colors.white)
-    term.setCursorPos(1,1)
-    print("Getting latest release...")
-    local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/v0.1.0/releases/guardlink_server.lua"
-    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
-    for k,v in pairs(package.files) do
-        lib.fileUtils.newFile("GuardLink/" .. k)
-        lib.fileUtils.write("GuardLink/" .. k, v)
-        print("Created file: " .. k)
-        os.sleep(0.05)
-    end
-    print("Done! Reboot required")
-end
-
 local function wipePC()
     term.setTextColor(colors.red)
     local x,y = term.getSize()
@@ -365,9 +341,38 @@ local function wipePC()
     for i = 1, #files do
         if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
     end
-    print("Done! Creating folders...")
+    print("Done! Creating config folder...")
     fs.makeDir("/GuardLink/server/config")
 end
+
+local runbasalt = true
+local function autoUpdate()
+    parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
+
+    --local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
+    --release = textutils.unserializeJSON(release)
+    --local tag = release.tag_name
+    
+    term.clear()
+    term.setBackgroundColor(colors.black)
+    term.setCursorPos(1,1)
+    wipePC()
+    term.setTextColor(colors.white)
+    print("Getting latest release...")
+    local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/v0.1.0/releases/guardlink_server.lua"
+    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    for k,v in pairs(package.files) do
+        local file = fs.open("GuardLink/" .. k, "wb")
+        file.write(v)
+        file.close()
+        print("Created file: " .. k)
+        os.sleep(0.05)
+    end
+    term.setTextColor(colors.green)
+    print("Done! Reboot required")
+end
+
+
 
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 local mainframe = lib.basalt.createFrame():setVisible(true)
@@ -910,6 +915,7 @@ panels[4] = {
 
         ui.next_button = lib.uiHelper.newButton(frame, "Finish", 43, 16, 8, 3, colors.blue, colors.white,
         function(s, event, button, x, y)
+            ui.title:stop()
             runbasalt = false
         end)
         ui.next_button:setBorder(colors.white, "bottom")
@@ -920,8 +926,6 @@ panels[4] = {
 }
 -- FINAL FRAME -----------------------------------------------------------------------------------------------------------
 
-
-wipePC()
 panels[1]:build()
 next()
 
