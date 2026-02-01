@@ -334,9 +334,23 @@ local runbasalt = true
 local function autoUpdate()
     parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
 
-    local release = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/releases/latest").readAll()
-    release = textutils.unserializeJSON(release)
-    
+    --local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
+    --release = textutils.unserializeJSON(release)
+    --local tag = release.tag_name
+    term.clear()
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.white)
+    term.setCursorPos(1,1)
+    print("Getting latest release...")
+    local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/v0.1.0/releases/guardlink_server.lua"
+    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    for k,v in pairs(package.files) do
+        lib.fileUtils.newFile("GuardLink/" .. k)
+        lib.fileUtils.write("GuardLink/" .. k, v)
+        print("Created file: " .. k)
+        os.sleep(0.05)
+    end
+    print("Done! Reboot required")
 end
 
 local function wipePC()
@@ -850,7 +864,7 @@ panels[4] = {
                 b.bigPrint(str2)
 
                 for i = 1, #target do
-                    local retries = math.random(3, 6)
+                    local retries = math.random(1, 3)
                     while retries > 0 do
                         str = replaceChar(str, i, randomChar())
                         term.setCursorPos(2, 2)
@@ -866,7 +880,7 @@ panels[4] = {
                 os.sleep(0.0004)
                 term.setCursorPos(2, 8)
                 for i = 1, #target2 do
-                    local retries = math.random(3, 6)
+                    local retries = math.random(1, 3)
                     while retries > 0 do
                         str2 = replaceChar(str2, i, randomChar())
                         term.setCursorPos(2, 8)
