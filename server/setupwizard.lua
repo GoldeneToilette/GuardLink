@@ -334,7 +334,9 @@ local runbasalt = true
 local function autoUpdate()
     parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
 
-    -- INSTALL GUARDLINK HERE 
+    local release = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/releases/latest").readAll()
+    release = textutils.unserializeJSON(release)
+    
 end
 
 local function wipePC()
