@@ -337,6 +337,7 @@ local function autoUpdate()
     --local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
     --release = textutils.unserializeJSON(release)
     --local tag = release.tag_name
+    os.sleep(1)
     term.clear()
     term.setBackgroundColor(colors.black)
     term.setTextColor(colors.white)
