@@ -7,8 +7,18 @@ local dep = {
     disk = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/modules/disk.lua",
     fileUtils = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/fileUtils.lua"
 }
-local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
-release = textutils.unserializeJSON(release)
+
+local runbasalt = true
+
+local response = http.get(
+    "https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest",
+    { ["User-Agent"] = "CCInstaller" }
+)
+if not response then
+    error("Failed to fetch release info")
+end
+local release = textutils.unserializeJSON(response.readAll())
+response.close()
 local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/" .. release.tag_name .. "/releases/guardlink_server.lua"
 
 local lib = {}
@@ -527,12 +537,17 @@ local function finishInstall()
         file.close()
         print("Creating file: " .. k)
     end
-    diskManager.scan()
+    diskManager:scan()
     print("Found " .. diskManager:diskCount() .. " disks")
     print("Creating partitions...")
-    diskManager:partition(lib.settings.server.partitions)
+
+    local partitions = {
+        whitelist = diskManager:getDiskLabels(),
+        layout = lib.settings.server.partitions
+    }
+    diskManager:partition(partitions)
     print("Partition config saved under " .. diskManager.configPath)
-    
+
     local settings = {
         session = lib.settings.server.session,
         clients = lib.settings.server.clients,
@@ -540,7 +555,8 @@ local function finishInstall()
         theme = panels[3].data.theme,
         debug = panels[3].data.debug
     }
-    lib.fileUtils().write(lib.settings.server.settingsPath, textutils.serialize(settings))
+    lib.fileUtils.newFile(lib.settings.server.settingsPath)
+    lib.fileUtils.write(lib.settings.server.settingsPath, textutils.serialize(settings))
     print("Settings saved under " .. lib.settings.server.settingsPath)
 
     local manifest = {}
@@ -549,19 +565,31 @@ local function finishInstall()
             manifest[k] = v
         end
     end
-    lib.fileUtils().write(lib.settings.server.manifestPath, textutils.serializeJSON(manifest))
+    lib.fileUtils.newFile(lib.settings.server.manifestPath)
+    lib.fileUtils.write(lib.settings.server.manifestPath, textutils.serializeJSON(manifest))
     print("Manifest saved under " .. lib.settings.server.manifestPath)
+
+    print("Generating nation identity...")
+    local nation = {
+        nation_name = panels[2].data.nation_name,
+        nation_tag = panels[2].data.nation_tag,
+        selectedEthic = panels[2].data.selectedEthic,
+        currency_name = panels[2].data.currency_name,
+        starting_balance = panels[2].data.balance,
+        nation_trade = panels[2].data.tradeCheck,
+        roles = panels[2].data.roles
+    }
+    lib.fileUtils.newFile(lib.settings.server.identityPath)
+    lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))
 
     term.setTextColor(colors.green)
     print("Done! Reboot required")
 end
 
-local runbasalt = true
 local function runInstaller()
     parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
     finishInstall()
 end
-
 
 
 panels[1]:build()

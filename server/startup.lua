@@ -12,7 +12,8 @@ _G.logger:clearLog()
 
 _G.shutdown = require("modules.shutdown")
 
-local settings = require("config.settings")
+local fileUtils = require("lib.fileUtils")
+local settings = textutils.unserialize(fileUtils.read("/GuardLink/config/settings.conf"))
 if not settings then
     _G.logger:fatal("[startup] Settings file not found!")
     error("Couldn't find settings file!")
