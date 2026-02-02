@@ -1,15 +1,6 @@
 local diskManager = require("modules.disk").new()
 
 diskManager:scan()
-diskManager:partition({
-    whitelist = {"GLB_1", "GLB_2", "GLB_3", "GLB_4"},
-    layout = {
-        {name = "accounts", percentage = 10},
-        {name = "logs", percentage = 60},
-        {name = "cache", percentage = 20},
-        {name = "wallets", percentage = 10}
-    }
-})
 
 _G.vfs = require("modules.virtualFilesystem").new(diskManager)
 
@@ -21,26 +12,12 @@ _G.logger:clearLog()
 
 _G.shutdown = require("modules.shutdown")
 
-local settings = {
-    session = {
-        discoveryChannel = 65535,
-        keyPath = "/GuardLink/server/"
-    },
-    clients = {
-        maxClients = 120,
-        throttleLimit = 7200,
-        max_idle = 60,
-        heartbeat_interval = 30,
-        channelRotation = 20,
-        clientIDLength = 5
-    },
-    queue = {
-        queueSize = 40,
-        throttle = 1
-    },
-    theme = "default",
-    debugMode = false
-}
+local settings = require("config.settings")
+if not settings then
+    _G.logger:fatal("[startup] Settings file not found!")
+    error("Couldn't find settings file!")
+    os.shutdown()
+end
 
 _G.theme = require("lib.themes")
 _G.theme.init()

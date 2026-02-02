@@ -663,16 +663,15 @@ local function modinv(a, m)
 end
 
 local function generateKeyPair()
+	term.setCursorPos(1,1)
+	print("Generating RSA keypair, this can take a few minutes...\n")
 	while true do
 		local e = generateLargePrime()
-		write("-")
-		sleep(0.1)
+		write("\7")
 		local p = generatePQ(e)
-		write("-")
-		sleep(0.1)
+		write("\7")
 		local q = generatePQ(e)
-		write("-")
-		sleep(0.1)
+		write("\7")
 
 		local n = p * q
 		local phi = (p - 1) * (q - 1)
@@ -682,12 +681,12 @@ local function generateKeyPair()
 		local encrypted = modexp(bigint(104328), e, n)
 		local decrypted = modexp(encrypted, d, n)
 
-		write("+")
-		sleep(0.1)
+		write("\111")
 		counter = 0
 
 		if decrypted == bigint(104328) then
 			counter = 0
+			print("Done!")
 			return {
 				shared = tostring(n),
 				public = tostring(e),

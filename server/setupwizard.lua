@@ -7,55 +7,16 @@ local dep = {
     disk = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/modules/disk.lua",
     fileUtils = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/fileUtils.lua"
 }
+local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
+release = textutils.unserializeJSON(release)
+local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/" .. release.tag_name .. "/releases/guardlink_server.lua"
 
 local lib = {}
 for k,v in pairs(dep) do
   lib[k] = load(http.get(v).readAll(), k, "t", _G)()
 end
 
-local function wipePC()
-    term.setTextColor(colors.red)
-    local x,y = term.getSize()
-    if x ~= 51 then error("You cannot install GuardLink server on a pocket computer!") end
-    print("Computer will be wiped. Proceed with install? Y/N:")
-    local input = read()
-    if input ~= "Y" and input ~= "y" then return end
-    local files = fs.list("/")
-    for i = 1, #files do
-        if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
-    end
-    term.setTextColor(colors.white)
-    print("Done! Creating config folder...")
-    fs.makeDir("/GuardLink/server/config")
-end
-
-local runbasalt = true
-local function autoUpdate()
-    parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
-
-    local release = http.get("https://api.github.com/repos/GoldeneToilette/GuardLink/releases/latest").readAll()
-    release = textutils.unserializeJSON(release)
-    local tag = release.tag_name
-    
-    term.clear()
-    term.setBackgroundColor(colors.black)
-    term.setCursorPos(1,1)
-    wipePC()
-    print("Getting latest release...")
-    local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/" .. tag .. "/releases/guardlink_server.lua"
-    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
-    for k,v in pairs(package.files) do
-        local file = fs.open("GuardLink/" .. k, "wb")
-        file.write(v)
-        file.close()
-        print("Created file: " .. k)
-        os.sleep(0.05)
-    end
-    term.setTextColor(colors.green)
-    print("Done! Reboot required")
-end
-
-
+local diskManager = lib.disk.new(nil, nil, lib.fileUtils) 
 
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 local mainframe = lib.basalt.createFrame():setVisible(true)
@@ -442,12 +403,11 @@ panels[3] = {
         end)
 
 
-        data.diskManager = lib.disk.new(nil, nil, lib.fileUtils)
-        data.diskManager:scan()
+        diskManager:scan()
         ui.pane2 = lib.uiHelper.newPane(frame, 24, 2, 27, 13, colors.lightGray)
         ui.disksTitle = lib.uiHelper.newLabel(frame, "Disks", 25, 3, 5, 1, colors.lightGray, colors.gray)
-        ui.detected = lib.uiHelper.newLabel(frame, "Detected: " .. data.diskManager:diskCount(), 25, 5, 13, 1, colors.lightGray, colors.gray)
-        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. (data.diskManager.capacity / 1000000) .. "MB", 25, 6, 13, 1, colors.lightGray, colors.gray)
+        ui.detected = lib.uiHelper.newLabel(frame, "Detected: " .. diskManager:diskCount(), 25, 5, 13, 1, colors.lightGray, colors.gray)
+        ui.capacity = lib.uiHelper.newLabel(frame, "Space: " .. (diskManager.capacity / 1000000) .. "MB", 25, 6, 13, 1, colors.lightGray, colors.gray)
 
         ui.list = frame:addList()
         :setBackground(colors.white)
@@ -456,21 +416,21 @@ panels[3] = {
         :setSize(10, 11)
         :setSelectionColor(nil, colors.black)
         :setScrollable(true)
-        local labels = data.diskManager:getDiskLabels()
+        local labels = diskManager:getDiskLabels()
         for i,v in ipairs(labels) do
             ui.list:addItem(v)
         end
  
         ui.detect = lib.uiHelper.newButton(frame, "Detect", 25, 11, 8, 3, colors.blue, colors.white,
         function(s, event, button, x, y)
-            data.diskManager:scan()
-            ui.detected:setText("Detected: " .. data.diskManager:diskCount())
-            ui.capacity:setText("Space: " .. (data.diskManager.capacity / 1000000) .. "MB")
+            diskManager:scan()
+            ui.detected:setText("Detected: " .. diskManager:diskCount())
+            ui.capacity:setText("Space: " .. (diskManager.capacity / 1000000) .. "MB")
 
             for i = ui.list:getItemCount(), 1, -1 do
                 ui.list:removeItem(i)
             end
-            local labels = data.diskManager:getDiskLabels()
+            local labels = diskManager:getDiskLabels()
             for i,v in ipairs(labels) do
                 ui.list:addItem(v)
             end
@@ -496,8 +456,8 @@ panels[3] = {
         ui.next_button:setBorder(colors.white, "bottom")
     end,
     validate = function(self)
-        self.data.diskManager:scan()
-        if self.data.diskManager.capacity < 1250000 then
+        diskManager:scan()
+        if diskManager.capacity < 1250000 then
             return "Not enough space! Minimum: 1.25MB, Recommended: 2,5MB (~20 disks)"
         end
         return 0
@@ -538,6 +498,72 @@ panels[4] = {
 }
 -- FINAL FRAME -----------------------------------------------------------------------------------------------------------
 
+local function wipePC()
+    term.setTextColor(colors.red)
+    local x,y = term.getSize()
+    if x ~= 51 then error("You cannot install GuardLink server on a pocket computer!") end
+    print("Computer will be wiped. Proceed with install? Y/N:")
+    local input = read()
+    if input ~= "Y" and input ~= "y" then return end
+    local files = fs.list("/")
+    for i = 1, #files do
+        if files[i] ~= "rom" and files[i]:sub(1,4) ~= "disk" then fs.delete(files[i]) end
+    end
+    term.setTextColor(colors.white)
+    print("Done! Creating config folder...")
+    fs.makeDir("/GuardLink/server/config")
+end
+
+local function finishInstall()
+    term.clear()
+    term.setBackgroundColor(colors.black)
+    term.setCursorPos(1,1)
+    wipePC()
+    print("Getting latest release...")
+    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    for k,v in pairs(package.files) do
+        local file = fs.open("GuardLink/" .. k, "wb")
+        file.write(v)
+        file.close()
+        print("Creating file: " .. k)
+    end
+    diskManager.scan()
+    print("Found " .. diskManager:diskCount() .. " disks")
+    print("Creating partitions...")
+    diskManager:partition(lib.settings.server.partitions)
+    print("Partition config saved under " .. diskManager.configPath)
+    
+    local settings = {
+        session = lib.settings.server.session,
+        clients = lib.settings.server.clients,
+        queue = lib.settings.server.queue,
+        theme = panels[3].data.theme,
+        debug = panels[3].data.debug
+    }
+    lib.fileUtils().write(lib.settings.server.settingsPath, textutils.serialize(settings))
+    print("Settings saved under " .. lib.settings.server.settingsPath)
+
+    local manifest = {}
+    for k,v in pairs(package) do
+        if k ~= "files" then
+            manifest[k] = v
+        end
+    end
+    lib.fileUtils().write(lib.settings.server.manifestPath, textutils.serializeJSON(manifest))
+    print("Manifest saved under " .. lib.settings.server.manifestPath)
+
+    term.setTextColor(colors.green)
+    print("Done! Reboot required")
+end
+
+local runbasalt = true
+local function runInstaller()
+    parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)
+    finishInstall()
+end
+
+
+
 panels[1]:build()
 next()
 
@@ -558,4 +584,4 @@ term.setPaletteColor(colors.yellow, 0xFFFFFF)
 term.setPaletteColor(colors.lime, 0xFFFFFF)
 term.setPaletteColor(colors.cyan, 0xFFFFFF)
 
-autoUpdate()
+runInstaller()
