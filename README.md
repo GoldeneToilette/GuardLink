@@ -9,7 +9,7 @@ GuardLink is a RP toolkit and "nation" simulator providing various systems for a
 - Properties & Real Estate
 - Companies & Jobs
 - Interactions between other computers (trade, diplomacy, currency exchange etc)
-- Setup wizard (half done)
+- Setup wizard (done)
 
 Some features do not work with every government type/ethic.
 
