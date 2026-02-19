@@ -1,4 +1,5 @@
 local rsa = require "lib.rsa-keygen"
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local message = {}
 -- Types: response, request, notification
@@ -10,7 +11,7 @@ function message.create(action, payload, key, rsaFlag)
             payload = payload
         },
         timestamp = os.epoch("utc"),
-        id = _G.utils.randomString(16, "generic"),
+        id = utils.randomString(16, "generic"),
         isPlaintext = false
     }
     if key then 

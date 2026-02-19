@@ -29,7 +29,8 @@ function diskManager.new(configPath, labelPrefix, futil)
     self.configPath = configPath or "/GuardLink/server/config/partitions.json"
     self.labelPrefix = labelPrefix or "DISK"
 
-    fileUtils = futil or require("lib.fileUtils")
+    self:scan()
+    fileUtils = futil or requireC("/GuardLink/server/lib/fileUtils.lua")
     return self
 end
 
@@ -246,4 +247,42 @@ function diskManager:partition(partitions)
     return fileUtils.write(self.configPath, json)
 end
 
-return diskManager
+local service = {
+    name = "disk_manager",
+    deps = {},
+    init = function(ctx)
+        return diskManager.new(nil, nil)
+    end,
+    runtime = nil,
+    tasks = nil,
+    shutdown = nil,
+    api = {
+        ["disk"] = {
+            scan = function(self)
+                local result = self:scan()
+                if result[1] ~= 0 then return {{}, log = "[diskManager] Failed to scan disks "} end
+                return self:getDiskLabels()
+            end,
+            list = function(self) return self:getDisks() end,
+            info = function(self, args) 
+                local disk = self:getDisk(args.label)
+                if not disk then return {{}, log = "[diskManager] Disk not found "} end
+                return disk
+            end,
+            clear = function(self, args)
+                local result = self:clearDisk(args.label)
+                if result[1] ~= 0 then return {{}, log = "[diskManager] " .. result[2]} end
+                return true
+            end,
+            update = function(self, args)
+                local result = self:updateDisk(args.label) 
+                if result[1] ~= 0 then return {{}, log = "[diskManager] " .. result[2]} end
+                return true
+            end,
+            count = function(self) return self:diskCount() end,
+            get_labels = function(self) return self:getDiskLabels() end
+        }
+    }
+}
+
+return service

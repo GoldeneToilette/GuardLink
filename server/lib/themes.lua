@@ -1,4 +1,4 @@
-local fileUtils = require "lib.fileUtils"
+local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
 local themes = {}
 
 local defaultPath = "/GuardLink/server/config/themes.json"
@@ -45,10 +45,7 @@ local function init(path)
 end
 
 local function setTheme(theme)
-    if not themes[theme] then
-        _G.Logger:info("[themes] Theme not found! Using default theme")
-        return 1
-    end
+    if not themes[theme] then return "UNKNOWN_THEME" end
     for i, color in ipairs(themes[theme]) do
         term.setPaletteColour(c[color[1]], tonumber(color[2], 16))
     end

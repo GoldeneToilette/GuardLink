@@ -3,7 +3,7 @@ local frame
 
 local commands = {}
 for _, file in ipairs(fs.list("/GuardLink/server/commands")) do
-    local cmd = require("commands." .. file:sub(1, #file-4))
+    local cmd = require("/GuardLink/server/commands/" .. file:sub(1, #file-4))
     commands[cmd.name] = cmd
 end
 

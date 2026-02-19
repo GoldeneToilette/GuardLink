@@ -1,4 +1,4 @@
-local fileUtils = require "lib.fileUtils"
+local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
 
 local VFS = {}
 VFS.__index = VFS
@@ -160,4 +160,29 @@ function VFS:listDir(path)
     return #results > 0 and results or nil
 end
 
-return VFS
+local service = {
+    name = "vfs",
+    deps = {"disk_manager"},
+    init = function(ctx)
+        return VFS.new(ctx.services["disk_manager"])
+    end,
+    runtime = nil,
+    tasks = nil,
+    shutdown = nil,
+    api = {
+        ["vfs"] = {
+            read = function(self, args) return self:readFile(args.path) end,
+            write = function(self, args) return self:writeFile(args.path, args.data) end,
+            append = function(self, args) return self:appendFile(args.path, args.data) end,
+            new = function(self, args) return self:newFile(args.path) end,
+            delete = function(self, args) return self:deleteFile(args.path) end,
+            deleteDir = function(self, args) return self:deleteDir(args.path) end,
+            mkdir = function(self, args) return self:makeDir(args.path) end,
+            list = function(self, args) return self:listDir(args.path) end,
+            existsFile = function(self, args) return self:existsFile(args.path) ~= false end,
+            existsDir = function(self, args) return self:existsDir(args.path) end            
+        }
+    }
+}
+
+return service

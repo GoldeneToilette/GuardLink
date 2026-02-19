@@ -18,9 +18,10 @@ External Libraries:
 - [SHA256-Algorithm](https://pastebin.com/6UV4qfNF)
 - [Basalt (UI Library)](https://basalt.madefor.cc/#/)
 - [Simple XML-Parser for lua](https://github.com/Cluain/Lua-Simple-XML-Parser)
-- [cryptoNet](https://github.com/SiliconSloth/CryptoNet)
 - [pixelbox](https://github.com/9551-Dev/pixelbox_lite)
 - [AES Encrypt library](https://forums.computercraft.cc/index.php?topic=487.0)
+- [LibDeflate](https://github.com/safeteeWow/LibDeflate?tab=readme-ov-file)
+Note: All libraries except for RSA Key generator are unmodified
 
 Installation:
 - 

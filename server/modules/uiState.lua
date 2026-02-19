@@ -1,20 +1,30 @@
-local errors   = require "lib.errors"
+local errors   = requireC("/GuardLink/server/lib/errors.lua")
+local theme = requireC("/GuardLink/server/lib/themes.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local uiState = {}
 uiState.__index = uiState
 -- width: 51, height: 19
 
-function uiState.new(framepath)
+local log
+
+function uiState.new(framepath, manifest, settings, logger)
     local self = setmetatable({}, uiState)
-    self.basalt = require("lib.basalt")
-    self.uiHelper = require("lib.uiHelper")
+    theme = requireC("/GuardLink/server/lib/themes.lua")
+    theme.init()
+    theme.setTheme(settings.theme)
+
+    self.basalt = requireC("/GuardLink/server/lib/basalt.lua")
+    self.uiHelper = requireC("/GuardLink/server/lib/uiHelper.lua")
     self.path = framepath or "/GuardLink/server/ui/" 
     self.x, self.y = term.getSize()
     self.mainframe = self.basalt.createFrame():setVisible(true):setZIndex(2)
     self.frames = {}
     self.activeFrame = nil
 
-    self.titleBar = self.uiHelper.newLabel(self.mainframe, "GLB 1.0.1", 1, 1, 51, 1, colors.blue, colors.white, 1)
+    log = logger:create("uiState", {timestamp = true, level = "INFO", clear = true})
+
+    self.titleBar = self.uiHelper.newLabel(self.mainframe, "GL " .. (manifest.version or "???"), 1, 1, 51, 1, colors.blue, colors.white, 1)
     self.dropdown = self.mainframe:addDropdown()
     :setForeground(colors.white)
     :setBackground(colors.blue)
@@ -28,7 +38,7 @@ function uiState.new(framepath)
 
     for _, v in ipairs(fs.list(self.path)) do
         local name = v:gsub("%.lua$", "")
-        local m = require(self.path .. name)
+        local m = requireC(self.path .. name .. ".lua")
         m.setContext(self)
         
         self.frames[name] = m
@@ -42,19 +52,19 @@ function uiState.new(framepath)
         end
     end)
 
-    local result = self:setFrame("shell")
+    local result = self:setFrame("someUI")
     if result ~= 0 then self.uiHelper.newPopup(self.mainframe, 25, 5, "Error", "error", "UI not found! :(", true) end
     return self
 end
 
 function uiState:run()
-    _G.utils.tryCatch(
+    utils.tryCatch(
         function()
             self.basalt.autoUpdate()
         end,
         function(err, stackTrace)
-            _G.logger:fatal("[uiState] Basalt died.")
-            _G.logger:error("[uiState] Error:" .. err)
+            log:fatal("Basalt died.")
+            log:error("Error:" .. err)
             error(err)
         end        
     )
@@ -68,5 +78,25 @@ function uiState:setFrame(name)
     return 0
 end
 
-return uiState
+local service = {
+    name = "ui_manager",
+    deps = {},
+    init = function(ctx)
+        return uiState.new(nil, ctx.configs["manifest"], ctx.configs["settings"], ctx.services["logger"])
+    end,
+    runtime = function(self)
+        self:run()
+    end,
+    tasks = nil,
+    shutdown = nil,
+    api = {
+        ["ui"] = {
+            frame_set = function(self, args) return self:setFrame(args.name) end,
+            set_theme = function(self, args) return theme.setTheme(args.theme) end,
+            get_themes = function(self) return theme.getThemes() end
+        }
+    }
+}
+
+return service
 

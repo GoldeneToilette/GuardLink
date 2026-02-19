@@ -1,5 +1,5 @@
-local errors = require "lib.errors"
-local message = require "network.message"
+local errors = requireC("/GuardLink/server/lib/errors.lua")
+local message = requireC("/GuardLink/server/network.message.lua")
 
 local handlers = {}
 

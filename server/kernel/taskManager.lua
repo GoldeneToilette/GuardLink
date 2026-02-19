@@ -1,3 +1,5 @@
+local utils = requireC("/GuardLink/server/lib/utils.lua")
+
 local taskManager = {}
 taskManager.tasks = {}
 
@@ -31,7 +33,7 @@ function taskManager.run()
                 if now - task.lastRun >= task.interval then
                     local ok, err = pcall(task.callback)
                     if not ok then
-                        _G.logger:error("[taskManager] Task error: " .. tostring(err))
+                        -- idk do something i guess
                     end
                     task.lastRun = now
                 end

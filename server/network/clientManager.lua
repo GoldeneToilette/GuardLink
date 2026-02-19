@@ -1,16 +1,19 @@
-local errors = require "lib.errors"
-local message = require "network.message"
-local aes = require "lib.aes"
-os.loadAPI('/GuardLink/server/lib/aes.lua')
-
+local errors = requireC("/GuardLink/server/lib/errors.lua")
+local message = requireC("/GuardLink/server/network.message.lua")
+local aes = requireC("/GuardLink/server/lib/aes.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local clientManager = {}
 clientManager.__index = clientManager
 
-function clientManager.new(session, settings)
+local log
+
+function clientManager.new(session, settings, logger)
     local self = setmetatable({}, clientManager)
     self.clients = {}
     self.session = session or nil
+
+    log = logger:create("clients", {timestamp = true, level = "INFO", clear = true})
 
     self.max_idle = (settings.clients.max_idle or 60) * 1000
     self.heartbeat_interval = (settings.clients.heartbeat_interval or 60)
@@ -19,7 +22,6 @@ function clientManager.new(session, settings)
     self.channelRotation = settings.clients.channelRotation or 30
     self.clientIDLength = settings.clients.idLength or 5
 
-    _G.shutdown.register(function() self:disconnectAll("SERVER_SHUTDOWN") end)
     return self
 end
 
@@ -73,7 +75,7 @@ function clientManager:disconnectAll(reason)
         i = i + 1
     end
     self.clients = {}
-    _G.logger:info("[clientManager] Disconnected " .. i .. " clients!")
+    log:info("Disconnected " .. i .. " clients!")
     return 0
 end
 
@@ -87,7 +89,7 @@ end
 
 function clientManager:computeChannel(sessionToken)
     local t = math.floor(os.epoch("utc") / 1000)
-    local seed = _G.utils.stringToNumber(sessionToken) + t
+    local seed = utils.stringToNumber(sessionToken) + t
     return (seed % 65534) + 1
 end
 
@@ -96,8 +98,8 @@ function clientManager:registerClient(account, aesKey)
     local clientID
     local sessionToken
     repeat
-        clientID = _G.utils.randomString(self.clientIDLength, "numbers")
-        sessionToken = _G.utils.randomString(32, "generic")
+        clientID = utils.randomString(self.clientIDLength, "numbers")
+        sessionToken = utils.randomString(32, "generic")
         local f = false
         for k, v in pairs(self.clients) do
             if v.token == sessionToken then f = true break end
@@ -167,6 +169,7 @@ function clientManager:heartbeats()
 end
 
 function clientManager:updateChannels()
+    local f = false
     for _, v in pairs(self.clients) do
         local newchannel = self:computeChannel(v.token)
 
@@ -175,12 +178,42 @@ function clientManager:updateChannels()
 
         self.session:close(v.channel)
         v.channel = newchannel
+        f = true
     end
 
     for _, v in pairs(self.clients) do
         self.session:open(v.channel)
     end
-    return 0
+    return not f and errors.NO_CLIENTS or 0
 end
 
-return clientManager
+local service = {
+    name = "client_manager",
+    deps = {"network_session"},
+    init = function(ctx)
+        return clientManager.new(ctx.services["network_session"], ctx.configs["settings"], ctx.services["logger"])
+    end,
+    runtime = nil,
+    tasks = function(self)
+        return {
+            client_heartbeats = {function(self) self:heartbeats() end, self.channelRotation},
+            client_update_channel = {function(self) self:updateChannels() end, self.heartbeat_interval}      
+        }
+    end,
+    shutdown = {
+        function(self) self:disconnectAll("SERVER_SHUTDOWN") end
+    },
+    api = {
+        ["clients"] = {
+            update_channels = function(self) return self:updateChannels() end,
+            throttle = function(self, args) return self:setThrottle(args.id, args.throttle) end,
+            list = function(self) return self:listClients() end,
+            disconnect = function(self, args) return self:disconnectClient(args.id) end,
+            disconnect_all = function(self, args) return self:disconnectAll(args.reason) end,
+            count = function(self) return self:count() end,
+            stale = function(self) return self:getStaleClients() end
+        }
+    }
+}
+
+return service

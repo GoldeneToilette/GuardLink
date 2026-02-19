@@ -1,12 +1,22 @@
-local sha256 = require "lib.sha256"
-local errors = require "lib.errors"
-
-if not _G.vfs:existsDir("accounts") then 
-    _G.logger:fatal("[AccountManager] Failed to load accountManager: malformed partitions?") 
-    error("Failed to load accountManager: malformed partitions?")
-end
+local sha256 = requireC("/GuardLink/server/lib/sha256.lua")
+local errors = requireC("/GuardLink/server/lib/errors.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local accountManager = {}
+accountManager.__index = accountManager
+
+local log
+
+function accountManager.new(vfs, logger)
+    local self = setmetatable({}, accountManager)
+    self.vfs = vfs
+    log = logger:create("accounts", {timestamp = true, level = "INFO", clear = true})
+    if not vfs:existsDir("accounts") then
+        log:fatal("Failed to load accountManager: malformed partitions?") 
+        error("Failed to load accountManager: malformed partitions?")        
+    end
+    return self
+end
 
 local accountTemplate = {
     name = "",
@@ -26,79 +36,79 @@ local accountTemplate = {
     wallets = {}
 }
 
-function accountManager.isValidAccountName(name)
+function accountManager:isValidAccountName(name)
     if not name then return errors.ACCOUNT_NAME_EMPTY end
     name = name:match("^%s*(.-)%s*$")
     if name == "" then return errors.ACCOUNT_NAME_EMPTY end
     if name:find("[/\\:*?\"<>|]") then return errors.ACCOUNT_INVALID_CHAR end
     if #name > 20 then return errors.ACCOUNT_NAME_TOO_LONG end
     if #name < 3 then return errors.ACCOUNT_NAME_TOO_SHORT end
-    if _G.vfs:existsFile("accounts/" .. name .. ".json") then return errors.ACCOUNT_EXISTS end
+    if self.vfs:existsFile("accounts/" .. name .. ".json") then return errors.ACCOUNT_EXISTS end
     return 0
 end
 
-function accountManager.getTemplate()
-    return _G.utils.deepCopy(accountTemplate)
+function accountManager:getTemplate()
+    return utils.deepCopy(accountTemplate)
 end
 
-function accountManager.exists(name)
-    return _G.vfs:existsFile("accounts/" .. name .. ".json")
+function accountManager:exists(name)
+    return self.vfs:existsFile("accounts/" .. name .. ".json")
 end
 
-function accountManager.createAccount(name, password)
-    local valid = accountManager.isValidAccountName(name)
+function accountManager:createAccount(name, password)
+    local valid = self:isValidAccountName(name)
     if valid ~= 0 then
-        _G.logger:error(valid.log)
+        log:error(valid.log)
         return valid
     end
     if not password or password == "" then
-        _G.logger:error(errors.ACCOUNT_PASSWORD_EMPTY.log)
+        log:error(errors.ACCOUNT_PASSWORD_EMPTY.log)
         return errors.ACCOUNT_PASSWORD_EMPTY
     end
 
     local filePath = "accounts/" .. name .. ".json"
-    local template = accountManager.getTemplate()
+    local template = self:getTemplate()
     template.name = name
-    template.uuid = _G.utils.generateUUID()
+    template.uuid = utils.generateUUID()
     template.creationDate = os.date("%Y-%m-%d")
     template.creationTime = os.date("%H:%M:%S")
-    local salt = _G.utils.randomString(16, "generic")
+    local salt = utils.randomString(16, "generic")
     template.salt = salt
     template.password = sha256.digest(salt .. password):toHex()
 
-    _G.vfs:newFile(filePath)
-    _G.vfs:writeFile(filePath, textutils.serializeJSON(template))
+    self.vfs:newFile(filePath)
+    self.vfs:writeFile(filePath, textutils.serializeJSON(template))
     return 0
 end
 
-function accountManager.deleteAccount(name)
-    _G.vfs:deleteFile("accounts/" .. name .. ".json")
+function accountManager:deleteAccount(name)
+    self.vfs:deleteFile("accounts/" .. name .. ".json")
 end
 
-function accountManager.getAccountData(name)
-    if name and accountManager.exists(name) then
-        return textutils.unserializeJSON(_G.vfs:readFile("accounts/" .. name .. ".json"))
+function accountManager:getAccountData(name)
+    if name and self:exists(name) then
+        return textutils.unserializeJSON(self.vfs:readFile("accounts/" .. name .. ".json"))
     else
         return nil
     end
 end
 
-function accountManager.setAccountValue(name, key, value)
-    local values = accountManager.getAccountData(name)
+function accountManager:setAccountValue(name, key, value)
+    local values = self:getAccountData(name)
     values[key] = value
-    _G.vfs:writeFile("accounts/" .. name .. ".json", textutils.serializeJSON(values))
+    self.vfs:writeFile("accounts/" .. name .. ".json", textutils.serializeJSON(values))
 end
 
-function accountManager.getAccountValue(name, key)
-    local values = accountManager.getAccountData(name)
+function accountManager:getAccountValue(name, key)
+    local values = self:getAccountData(name)
     if not values then return nil end
     return values[key]
 end
 
-function accountManager.listAccounts()
+function accountManager:listAccounts()
     local accountNames = {}
 
-    local files = _G.vfs:listDir("accounts/") or {}
+    local files = self.vfs:listDir("accounts/") or {}
     for _, file in ipairs(files) do
         if file:sub(-5) == ".json" then
             table.insert(accountNames, file:sub(1, -6))
@@ -107,8 +117,8 @@ function accountManager.listAccounts()
     return accountNames
 end
 
-function accountManager.getSanitizedAccountValues(name)
-    local accountData = accountManager.getAccountData(name)
+function accountManager:getSanitizedAccountValues(name)
+    local accountData = self:getAccountData(name)
     if accountData then
         return {
             name = accountData.name,
@@ -124,8 +134,8 @@ function accountManager.getSanitizedAccountValues(name)
     end
 end
 
-function accountManager.authenticateUser(username, password)
-    local account = accountManager.getAccountData(username)
+function accountManager:authenticateUser(username, password)
+    local account = self:getAccountData(username)
     if not account then return errors.ACCOUNT_NOT_FOUND end
     if username == "" then return errors.ACCOUNT_NAME_EMPTY end
     if password == "" then return errors.ACCOUNT_PASSWORD_EMPTY end
@@ -141,8 +151,8 @@ function accountManager.authenticateUser(username, password)
     end
 end
 
-function accountManager.banAccount(name, duration, reason)
-    local account = accountManager.getAccountData(name)
+function accountManager:banAccount(name, duration, reason)
+    local account = self:getAccountData(name)
     if not account then return false end
 
     local seconds = 0
@@ -168,12 +178,12 @@ function accountManager.banAccount(name, duration, reason)
         reason = reason or ""
     }
 
-    accountManager.setAccountValue(name, "ban", account.ban)
+    self:setAccountValue(name, "ban", account.ban)
     return true
 end
 
-function accountManager.pardon(name)
-    local account = accountManager.getAccountData(name)
+function accountManager:pardon(name)
+    local account = self:getAccountData(name)
     if not account then return false end
     account.ban = {
         active = false,
@@ -181,12 +191,12 @@ function accountManager.pardon(name)
         duration = 0,
         reason = ""
     }
-    accountManager.setAccountValue(name, "ban", account.ban)
+    self:setAccountValue(name, "ban", account.ban)
     return true
 end
 
-function accountManager.isBanned(name)
-    local account = accountManager.getAccountData(name)
+function accountManager:isBanned(name)
+    local account = self:getAccountData(name)
     if not account then return false end
 
     local ban = account.ban
@@ -203,11 +213,38 @@ function accountManager.isBanned(name)
             duration = 0,
             reason = ""
         }
-        accountManager.setAccountValue(name, "ban", account.ban)
+        self:setAccountValue(name, "ban", account.ban)
         return false
     end
 
     return true, account.ban.reason
 end
 
-return accountManager
+local service = {
+    name = "accounts",
+    deps = {"vfs"},
+    init = function(ctx)
+        return accountManager.new(ctx.services["vfs"], ctx.services["logger"])
+    end,
+    runtime = nil,
+    tasks = nil,
+    shutdown = nil,
+    api = {
+        ["accounts"] = {
+            create = function(self, args) return self:createAccount(args.name, args.password) end,
+            delete = function(self, args) return self:deleteAccount(args.name) end,
+            exists = function(self, args) return self:exists(args.name) end,
+            list = function(self) return self:listAccounts() end,
+            get = function(self, args) return self:getAccountData(args.name) end,
+            get_sanitized = function(self, args) return self:getSanitizedAccountValues(args.name) end,
+            get_value = function(self, args) return self:getAccountValue(args.name, args.key) end,
+            set_value = function(self, args) return self:setAccountValue(args.name, args.key, args.value) end,
+            authenticate = function(self, args) return self:authenticateUser(args.name, args.password) end,
+            ban = function(self, args) return self:banAccount(args.name, args.duration, args.reason) end,
+            pardon = function(self, args) return self:pardon(args.name) end,
+            is_banned = function(self, args) return self:isBanned(args.name) end
+        }
+    }
+}
+
+return service

@@ -35,6 +35,7 @@ data.server.minDiskCount = 20
 data.server.settingsPath = "/GuardLink/server/config/settings.conf"
 data.server.manifestPath = "/GuardLink/server/config/manifest.json"
 data.server.identityPath = "/GuardLink/server/config/identity.lua"
+data.server.rulesPath = "/GuardLink/server/config/rules.lua"
 data.server.partitions = {
         {name = "accounts", percentage = 10},
         {name = "logs", percentage = 60},

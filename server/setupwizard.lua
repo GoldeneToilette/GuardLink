@@ -530,13 +530,40 @@ local function finishInstall()
     term.setCursorPos(1,1)
     wipePC()
     print("Getting latest release...")
-    local package = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    local raw = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    local marker = "%-%-%[%[__BLOB_START__%]%]%-%-"
+    local splitStart, splitEnd = raw:find(marker)
+    assert(splitStart, "Blob marker not found!")    
+    local luaPart = raw:sub(1, splitStart - 1)
+    local blob = raw:sub(splitEnd + 1)
+    local package = load(luaPart)()
+    local indexed = {}
     for k,v in pairs(package.files) do
-        local file = fs.open("GuardLink/" .. k, "wb")
-        file.write(v)
-        file.close()
-        print("Creating file: " .. k)
+        indexed[v.index + 1] = {info = v, path = k}
     end
+    local pos = 1
+    for i = 1, #indexed do
+        local entry = indexed[i]
+        if entry then
+            local v, k = entry.info, entry.path
+            local filePath = "GuardLink/" .. k
+            local dir = filePath:match("(.*/)")
+            if dir then fs.makeDir(dir) end
+
+            local f = fs.open(filePath, "wb")
+            if v.compression == false then
+                f.write(v.str)
+            else
+                local startPos = pos
+                local endPos = pos + v.length - 1
+                f.write(blob:sub(startPos, endPos))
+                pos = endPos + 1
+            end
+            f.close()
+            print("Created file: " .. k)
+        end
+    end    
+
     diskManager:scan()
     print("Found " .. diskManager:diskCount() .. " disks")
     print("Creating partitions...")
@@ -582,6 +609,8 @@ local function finishInstall()
     lib.fileUtils.newFile(lib.settings.server.identityPath)
     lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))
 
+    lib.fileUtils.newFile(lib.settings.server.rulesPath)
+    lib.fileUtils.write(lib.settings.server.rulesPath, textutils.serialize(lib.settings))
     term.setTextColor(colors.green)
     print("Done! Reboot required")
 end

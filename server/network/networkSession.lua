@@ -1,16 +1,20 @@
-local errors = require "lib.errors"
-local fileUtils = require "lib.fileUtils"
-local rsa = require "lib.rsa-keygen"
+local errors = requireC("/GuardLink/server/lib/errors.lua")
+local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
+local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local NetworkSession = {}
 NetworkSession.__index = NetworkSession
 
 local defaultKeyPath = "/GuardLink/server/"
 
-function NetworkSession.new(settings)
+local log
+
+function NetworkSession.new(queue, settings, logger)
     local self = setmetatable({}, NetworkSession)
-    self.clientManager = require("network.clientManager").new(self, settings)
-    self.requestQueue = require("network.requestQueue").new(self, settings)
+    self.requestQueue = queue
+
+    log = logger:create("session", {timestamp = true, level = "INFO", clear = true})
 
     self.discovery = settings.discoveryChannel or 65535
     self.channels = {}
@@ -32,8 +36,8 @@ function NetworkSession:shutdown(reason, code)
 end
 
 function NetworkSession:initModem()
-    self.modem = peripheral.find("modem") or _G.logger:fatal("[networkSession] Failed to launch server: No modems found!")
-    if not self.modem.isWireless() then _G.logger:fatal("[networkSession] Failed to launch server: Modem is not wireless!") end
+    self.modem = peripheral.find("modem") or log:fatal("[networkSession] Failed to launch server: No modems found!")
+    if not self.modem.isWireless() then log:fatal("[networkSession] Failed to launch server: Modem is not wireless!") end
 end
 
 function NetworkSession:initKeys(keyPath)
@@ -41,7 +45,7 @@ function NetworkSession:initKeys(keyPath)
     local publicPath  = (keyPath or defaultKeyPath) .. "public.key"
     if not fileUtils.read(privatePath) then
         local start = os.clock()
-        _G.logger:info("[networkSession] Couldnt find keypair, generating... ")
+        log:info("[networkSession] Couldnt find keypair, generating... ")
         local privateKey, publicKey = rsa.generateKeyPair()
         self.privateKey, self.publicKey = privateKey, publicKey
         fileUtils.newFile(privatePath)
@@ -49,8 +53,8 @@ function NetworkSession:initKeys(keyPath)
         fileUtils.write(privatePath, textutils.serialize(privateKey))
         fileUtils.write(publicPath, textutils.serialize(publicKey))
 
-        _G.logger:info("[networkSession] Finished generating keypair: Took " .. math.ceil(os.clock() - start) .. " seconds.")
-        _G.logger:info("[networkSession] Keys saved to " .. privatePath .. " and " .. publicPath)
+        log:info("[networkSession] Finished generating keypair: Took " .. math.ceil(os.clock() - start) .. " seconds.")
+        log:info("[networkSession] Keys saved to " .. privatePath .. " and " .. publicPath)
     else
         self.privateKey = textutils.unserialize(fileUtils.read(privatePath))
         self.publicKey  = textutils.unserialize(fileUtils.read(publicPath))
@@ -96,29 +100,41 @@ function NetworkSession:listen()
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
         if self.channels[channel]  then
             local status = self.requestQueue:addRequest(message)
-            if status ~= 0 then _G.logger:error(status[2]) end 
+            if status ~= 0 then log:error(status[2]) end 
         end
     end
     return self.exitCode or 0
 end
 
 function NetworkSession:start()
-    _G.utils.tryCatch(
+    utils.tryCatch(
         function()
-            _G.logger:info("[networkSession] Launching Server with discovery channel: " .. self.discovery)
+            log:info("[networkSession] Launching Server with discovery channel: " .. self.discovery)
 
             self:open(self.discovery) 
             local code = self:listen() -- listener loop runs here until it exits with a code
-            _G.logger:info("[networkSession] Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
-            if code ~= 0 then _G.logger:error("[networkSession] Exit code: " .. code) end
+            log:info("[networkSession] Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
+            if code ~= 0 then log:error("[networkSession] Exit code: " .. code) end
             self:closeAll()
         end,
         function(err, stackTrace)
-            _G.logger:fatal("[networkSession] Server crashed :(")
-            _G.logger:error("[networkSession] Error:" .. err)
+            log:fatal("[networkSession] Server crashed :(")
+            log:error("[networkSession] Error:" .. err)
             os.shutdown()            
         end        
     )
 end
 
-return NetworkSession
+local service = {
+    name = "network_session",
+    deps = {"request_queue"},
+    init = function(ctx)
+        return NetworkSession.new(ctx.services["request_queue"], ctx.configs["settings"], ctx.services["logger"])
+    end,
+    runtime = function(self) self:start() end,
+    tasks = nil,
+    shutdown = nil,
+    api = nil
+}
+
+return service
