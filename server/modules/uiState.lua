@@ -96,6 +96,7 @@ local service = {
             set_theme = function(self, args) return theme.setTheme(args) end,
             get_themes = function(self) return theme.getThemes() end,
             get_color = function(self, args) return theme.colors[args] end,
+            get_theme = function(self, args) return theme.getTheme() end,
         }
     }
 }

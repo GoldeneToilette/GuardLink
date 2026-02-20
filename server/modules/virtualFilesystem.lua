@@ -29,6 +29,10 @@ function VFS:parsePath(path)
     return parts, partitionName, partition
 end
 
+function VFS:isPartition(partition)
+    return self.config[partition] ~= nil
+end
+
 function VFS:makeDir(path)
     local _, _, partition = self:parsePath(path)
 
@@ -171,16 +175,17 @@ local service = {
     shutdown = nil,
     api = {
         ["vfs"] = {
-            read = function(self, args) return self:readFile(args.path) end,
+            read = function(self, args) return self:readFile(args) end,
             write = function(self, args) return self:writeFile(args.path, args.data) end,
             append = function(self, args) return self:appendFile(args.path, args.data) end,
-            new = function(self, args) return self:newFile(args.path) end,
-            delete = function(self, args) return self:deleteFile(args.path) end,
-            deleteDir = function(self, args) return self:deleteDir(args.path) end,
-            mkdir = function(self, args) return self:makeDir(args.path) end,
-            list = function(self, args) return self:listDir(args.path) end,
-            existsFile = function(self, args) return self:existsFile(args.path) ~= false end,
-            existsDir = function(self, args) return self:existsDir(args.path) end            
+            new = function(self, args) return self:newFile(args) end,
+            delete = function(self, args) return self:deleteFile(args) end,
+            delete_dir = function(self, args) return self:deleteDir(args) end,
+            mkdir = function(self, args) return self:makeDir(args) end,
+            list = function(self, args) return self:listDir(args) end,
+            exists_file = function(self, args) return self:existsFile(args) ~= false end,
+            exists_dir = function(self, args) return self:existsDir(args) end,
+            is_partition = function(self, args) return self:isPartition(args) end,
         }
     }
 }

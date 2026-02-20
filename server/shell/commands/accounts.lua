@@ -1,8 +1,10 @@
 local cmds = {}
+cmds.name = "accounts"
 
 cmds["view"] = {
     desc = "View someone's account information",
-    func = function(kernel, state, args)
+    func = function(args, ctx)
+        local kernel, cwd = ctx.kernel, ctx.cwd
         local name = tostring(args[2])
         local values = kernel:execute("accounts.get_sanitized", {name=name})
         if not values then
@@ -26,7 +28,8 @@ cmds["view"] = {
 
 cmds["ban"] = {
     desc = "Ban an account: account ban <name> <duration> <time unit> <reason>",
-    func = function(kernel, state, args)
+    func = function(args, ctx)
+        local kernel = ctx.kernel
         local name, value, unit, reason = args[2], tonumber(args[3]), args[4], args[5]
         local duration = {}
         duration[unit] = value
@@ -40,7 +43,8 @@ cmds["ban"] = {
 
 cmds["unban"] = {
     desc = "Unban an account",
-    func = function(kernel, state, args)
+    func = function(args, ctx)
+        local kernel = ctx.kernel
         local name = args[2]
         local success = kernel:execute("accounts.pardon", {name=name})
         if success ~= 0 then
@@ -53,7 +57,8 @@ cmds["pardon"] = cmds["unban"]
 
 cmds["delete"] = {
     desc = "Permanently delete an account",
-    func = function(kernel, state, args)
+    func = function(args, ctx)
+        local kernel = ctx.kernel
         local name = args[2]
         local success = kernel:execute("accounts.delete", {name=name})
         if success ~= 0 then
@@ -65,7 +70,8 @@ cmds["delete"] = {
 
 cmds["create"] = {
     desc = "Create a new account: account create <name> <password>",
-    func = function(kernel, state, args)
+    func = function(args, ctx)
+        local kernel = ctx.kernel
         local name, pass = args[2], args[3]
         local success = kernel:execute("accounts.create", {name=name, password=pass})
         if success ~= 0 then
@@ -76,7 +82,7 @@ cmds["create"] = {
 }
 
 cmds["help"] = {
-    func = function(kernel, state, args)
+    func = function(args, ctx)
         local output = {"Account commands -------------------------"}
         for k,v in pairs(cmds) do
             if v.desc then
@@ -88,13 +94,10 @@ cmds["help"] = {
     end
 }
 
-local function run(kernel, state, args)
+function cmds.run(args, ctx)
     if not args[1] or args[1] == "" then return {str="Unknown command: accounts ", type="fail"} end
     if not cmds[args[1]] then return {str=("Unknown command: account " .. args[1]), type="fail"} end
-    return cmds[args[1]].func(kernel, state, args)
+    return cmds[args[1]].func(args, ctx)
 end
 
-return {
-    name = "accounts",
-    run = run
-}
+return cmds

@@ -40,6 +40,7 @@ function kernel:addCommand(prefix, suffix, func)
 end
 
 kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.configs[args] or nil end)
+kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
 
 function kernel:execute(cmd, args)
     return self.cmds[cmd](args)

@@ -1,6 +1,6 @@
 local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
 local themes = {}
-
+local active = nil
 local defaultPath = "/GuardLink/server/config/themes.json"
 
 local c = {
@@ -50,6 +50,7 @@ local function setTheme(theme)
         term.setPaletteColour(c[color[1]], tonumber(color[2], 16))
     end
     term.clear()
+    active = theme
     return 0
 end
 
@@ -57,9 +58,14 @@ local function getThemes()
     return themes
 end
 
+local function getTheme()
+    return active
+end
+
 return {
     init = init,
     setTheme = setTheme,
     getThemes = getThemes,
-    colors = c
+    colors = c,
+    getTheme = getTheme
 }

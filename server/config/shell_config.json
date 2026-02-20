@@ -1,7 +1,7 @@
 {
     "prompt": "> ",
     "default_dir": "/",
-    "use_theme": "false",
-    "logging": "INFO",
+    "use_theme": false,
+    "logging": "DEBUG",
     "history_length": 20
 }

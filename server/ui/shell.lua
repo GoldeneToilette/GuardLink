@@ -25,10 +25,10 @@ local function printResult(tbl)
         return
     end
     if type(tbl.str) == "string" then
-        print(tbl.str)
+        if tbl.str ~= "" then print(tbl.str) end
     else    
         for i,v in ipairs(tbl.str) do
-            print(v)
+            if tbl.str ~= "" then print(v) end
         end
     end
 end
@@ -39,7 +39,7 @@ local function repl()
         local result = console.engine:run(input)
         printResult(result)
         term.setTextColor(console.symbolColor)
-        write((console.engine.cwd:sub(2) or "") .. console.symbol)
+        write((console.engine.cwd:gsub("^/", "") or "") .. console.symbol)
         term.setTextColor(console.textColor)
     end
 end
@@ -59,14 +59,14 @@ local function add()
     program:execute(function()
         console.width, console.height = term.getSize()
         console.symbol = console.engine.cfg.prompt or ">"
-        if console.engine.cfg.use_theme == true then
+        if console.engine.cfg.use_theme then
             console.symbolColor = ctx.theme.colors["highlight"]
             console.textColor = ctx.theme.colors["tertiary"]
             console.backgroundColor = ctx.theme.colors["primary"]
         end
         term.setBackgroundColor(console.backgroundColor)
         term.setTextColor(console.symbolColor)
-        write((console.engine.cwd:sub(2) or "") .. console.symbol)
+        write((console.engine.cwd:gsub("^/", "") or "") .. console.symbol)
         term.setTextColor(console.textColor)
         repl()
     end)
