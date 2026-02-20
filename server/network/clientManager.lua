@@ -13,7 +13,7 @@ function clientManager.new(session, settings, logger)
     self.clients = {}
     self.session = session or nil
 
-    log = logger:create("clients", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("clients", {timestamp = true, level = "INFO", clear = true})
 
     self.max_idle = (settings.clients.max_idle or 60) * 1000
     self.heartbeat_interval = (settings.clients.heartbeat_interval or 60)

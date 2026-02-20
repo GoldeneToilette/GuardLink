@@ -8,9 +8,14 @@ _G.requireC = function(path)
         local contents = file.readAll()
         file.close()
         if not contents then error("FAILED TO READ FILE: " .. path) end
+
         local decomp = deflate:DecompressDeflate(contents)
         if not decomp then error("Failed to decompress file: " .. path) end
-        local module = load(decomp, "@"..path, "t", _G)()
+        local env = {}
+        for k,v in pairs(_G) do env[k] = v end
+        env.require = require
+        local module = load(decomp, "@"..path, "t", env)()
+        
         package.loaded[path] = module
         return module
     end
@@ -34,10 +39,11 @@ function kernel:addCommand(prefix, suffix, func)
     self.cmds[prefix .. "." .. suffix] = func
 end
 
+kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.configs[args] or nil end)
+
 function kernel:execute(cmd, args)
     return self.cmds[cmd](args)
 end
-
 
 function kernel:registerService(path)
     local module = requireC(path)
@@ -100,7 +106,7 @@ function kernel:initServices()
         if v.api then
             for prefix,contents in pairs(v.api) do
                 for suffix,func in pairs(contents) do
-                    self:addCommand(prefix, suffix, function(args) func(instance, args) end)
+                    self:addCommand(prefix, suffix, function(args) return func(instance, args) end)
                 end
             end
         end

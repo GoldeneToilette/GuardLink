@@ -28,6 +28,10 @@ local errors = {
         client = "ACCOUNT_NAME_TOO_SHORT",
         log = "Failed to create account: name too short! " 
     },
+    INVALID_TIME_FORMAT = {
+        client = "INTERNAL_SERVER_ERROR",
+        log = "Invalid time format!"
+    },
     -- ACCOUNT RELATED -------------------------------------------------------------
 
     -- WALLET RELATED --------------------------------------------------------------

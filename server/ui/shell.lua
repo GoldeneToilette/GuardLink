@@ -1,10 +1,47 @@
 local ctx
 local frame 
 
-local commands = {}
-for _, file in ipairs(fs.list("/GuardLink/server/commands")) do
-    local cmd = require("/GuardLink/server/commands/" .. file:sub(1, #file-4))
-    commands[cmd.name] = cmd
+local console = {
+    lines = {},
+    cursorX = 1,
+    cursorY = 1,
+    width = 0,
+    height = 0,
+    symbolColor = colors.lightGray,
+    textColor = colors.white,
+    backgroundColor = colors.black,
+    engine = requireC("/GuardLink/server/shell/engine.lua")  
+}
+console.engine:setup()
+
+local function printResult(tbl)
+    if tbl.type == "success" then
+        term.setTextColor(colors.green)
+    elseif tbl.type == "fail" or tbl.type == "error" then
+        term.setTextColor(colors.red)        
+    elseif tbl.type == "info" then
+        term.setTextColor(console.textColor)
+    elseif tbl.type == "empty" then
+        return
+    end
+    if type(tbl.str) == "string" then
+        print(tbl.str)
+    else    
+        for i,v in ipairs(tbl.str) do
+            print(v)
+        end
+    end
+end
+
+local function repl()
+    while true do
+        local input = read()
+        local result = console.engine:run(input)
+        printResult(result)
+        term.setTextColor(console.symbolColor)
+        write((console.engine.cwd:sub(2) or "") .. console.symbol)
+        term.setTextColor(console.textColor)
+    end
 end
 
 local function add()
@@ -20,39 +57,18 @@ local function add()
     :setPosition(1, 1)
 
     program:execute(function()
-        local function parse(input)
-            local args = {}
-            for word in input:gmatch("%S+") do
-                table.insert(args, word)
-            end
-            return table.remove(args, 1), args
+        console.width, console.height = term.getSize()
+        console.symbol = console.engine.cfg.prompt or ">"
+        if console.engine.cfg.use_theme == true then
+            console.symbolColor = ctx.theme.colors["highlight"]
+            console.textColor = ctx.theme.colors["tertiary"]
+            console.backgroundColor = ctx.theme.colors["primary"]
         end
-        term.setBackgroundColor(colors.black)
-        term.setTextColor(_G.theme.colors.highlight)
-        write("> ")
-        term.setTextColor(colors.white)
-        while true do
-            local input = read()
-            if input and input ~= "" then
-                local name, args = parse(input)
-                local cmd = commands[name]
-                if cmd then
-                    local ok, err = pcall(cmd.run, args)
-                    if not ok then
-                        term.setTextColor(colors.red)
-                        print("Error: "..tostring(err))
-                        term.setTextColor(colors.white)
-                    end
-                else
-                    term.setTextColor(colors.red)
-                    print("Unknown command: " .. name .. ", type 'help'!")
-                    term.setTextColor(colors.white)
-                end
-            end
-            term.setTextColor(_G.theme.colors.highlight)
-            write("> ")
-            term.setTextColor(colors.white)
-        end
+        term.setBackgroundColor(console.backgroundColor)
+        term.setTextColor(console.symbolColor)
+        write((console.engine.cwd:sub(2) or "") .. console.symbol)
+        term.setTextColor(console.textColor)
+        repl()
     end)
 end
 

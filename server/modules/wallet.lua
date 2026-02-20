@@ -11,7 +11,7 @@ function walletManager.new(vfs, accounts, logger)
     self.vfs = vfs
     self.accountManager = accounts
 
-    log = logger:create("wallet", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("wallet", {timestamp = true, level = "INFO", clear = true})
     if not vfs:existsDir("wallets") then
         log:fatal("Failed to load walletManager: malformed partitions?") 
         error("Failed to load walletManager: malformed partitions?") 

@@ -18,14 +18,14 @@ function Logger.new(vfs)
     return self
 end
 
-function Logger:create(name, settings)
+function Logger:createInstance(name, settings)
     settings = settings or {}
     local instance = {
         name = name,
         dir = settings.dir and (self.baseDir .. "/" .. settings.dir) or self.baseDir,
         fileName = settings.fileName or "latest",
         timestamp = settings.timestamp ~= false,
-        level = settings.level or "INFO",
+        level = (settings.level or "INFO"):upper(),
         vfs = self.vfs,
         clear = settings.clear or false -- if it should be cleared when created
     }
@@ -44,7 +44,7 @@ end
 Logger.Instance = {}
 
 function Logger.Instance:_write(level, message)
-    if not LEVELS[level] or LEVELS[level] < (LEVELS[self.level] or LEVELS.INFO) then return end
+    if not LEVELS[level] or LEVELS[level] < LEVELS[self.level] then return end
     local line
     if self.timestamp then
         local timestamp = os.date("%Y-%m-%d %H:%M:%S")
@@ -87,7 +87,7 @@ local service = {
     shutdown = nil,
     api = {
         ["log"] = {
-            create = function(self, args) return self:create(args.name, args.settings) end
+            create = function(self, args) return self:createInstance(args.name, args.settings) end
         }
     }
 }

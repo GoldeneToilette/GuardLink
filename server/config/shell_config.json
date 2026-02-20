@@ -1,0 +1,7 @@
+{
+    "prompt": "> ",
+    "default_dir": "/",
+    "use_theme": "false",
+    "logging": "INFO",
+    "history_length": 20
+}

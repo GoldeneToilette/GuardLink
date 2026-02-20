@@ -21,7 +21,8 @@ External Libraries:
 - [pixelbox](https://github.com/9551-Dev/pixelbox_lite)
 - [AES Encrypt library](https://forums.computercraft.cc/index.php?topic=487.0)
 - [LibDeflate](https://github.com/safeteeWow/LibDeflate?tab=readme-ov-file)
-Note: All libraries except for RSA Key generator are unmodified
+
+Note: All libraries except for RSA Key generator are unmodified and contain their original licenses on the repository.
 
 Installation:
 - 

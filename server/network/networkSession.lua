@@ -14,7 +14,7 @@ function NetworkSession.new(queue, settings, logger)
     local self = setmetatable({}, NetworkSession)
     self.requestQueue = queue
 
-    log = logger:create("session", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("session", {timestamp = true, level = "INFO", clear = true})
 
     self.discovery = settings.discoveryChannel or 65535
     self.channels = {}
@@ -36,8 +36,8 @@ function NetworkSession:shutdown(reason, code)
 end
 
 function NetworkSession:initModem()
-    self.modem = peripheral.find("modem") or log:fatal("[networkSession] Failed to launch server: No modems found!")
-    if not self.modem.isWireless() then log:fatal("[networkSession] Failed to launch server: Modem is not wireless!") end
+    self.modem = peripheral.find("modem") or log:fatal("Failed to launch server: No modems found!")
+    if not self.modem.isWireless() then log:fatal("Failed to launch server: Modem is not wireless!") end
 end
 
 function NetworkSession:initKeys(keyPath)
@@ -45,7 +45,7 @@ function NetworkSession:initKeys(keyPath)
     local publicPath  = (keyPath or defaultKeyPath) .. "public.key"
     if not fileUtils.read(privatePath) then
         local start = os.clock()
-        log:info("[networkSession] Couldnt find keypair, generating... ")
+        log:info("Couldnt find keypair, generating... ")
         local privateKey, publicKey = rsa.generateKeyPair()
         self.privateKey, self.publicKey = privateKey, publicKey
         fileUtils.newFile(privatePath)
@@ -53,8 +53,8 @@ function NetworkSession:initKeys(keyPath)
         fileUtils.write(privatePath, textutils.serialize(privateKey))
         fileUtils.write(publicPath, textutils.serialize(publicKey))
 
-        log:info("[networkSession] Finished generating keypair: Took " .. math.ceil(os.clock() - start) .. " seconds.")
-        log:info("[networkSession] Keys saved to " .. privatePath .. " and " .. publicPath)
+        log:info("Finished generating keypair: Took " .. math.ceil(os.clock() - start) .. " seconds.")
+        log:info("Keys saved to " .. privatePath .. " and " .. publicPath)
     else
         self.privateKey = textutils.unserialize(fileUtils.read(privatePath))
         self.publicKey  = textutils.unserialize(fileUtils.read(publicPath))
@@ -109,17 +109,17 @@ end
 function NetworkSession:start()
     utils.tryCatch(
         function()
-            log:info("[networkSession] Launching Server with discovery channel: " .. self.discovery)
+            log:info("Launching Server with discovery channel: " .. self.discovery)
 
             self:open(self.discovery) 
             local code = self:listen() -- listener loop runs here until it exits with a code
-            log:info("[networkSession] Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
-            if code ~= 0 then log:error("[networkSession] Exit code: " .. code) end
+            log:info("Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
+            if code ~= 0 then log:error("Exit code: " .. code) end
             self:closeAll()
         end,
         function(err, stackTrace)
-            log:fatal("[networkSession] Server crashed :(")
-            log:error("[networkSession] Error:" .. err)
+            log:fatal("Server crashed :(")
+            log:error("Error:" .. err)
             os.shutdown()            
         end        
     )

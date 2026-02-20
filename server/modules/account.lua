@@ -10,7 +10,7 @@ local log
 function accountManager.new(vfs, logger)
     local self = setmetatable({}, accountManager)
     self.vfs = vfs
-    log = logger:create("accounts", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("accounts", {timestamp = true, level = "INFO", clear = true})
     if not vfs:existsDir("accounts") then
         log:fatal("Failed to load accountManager: malformed partitions?") 
         error("Failed to load accountManager: malformed partitions?")        
@@ -82,7 +82,9 @@ function accountManager:createAccount(name, password)
 end
 
 function accountManager:deleteAccount(name)
+    if not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
     self.vfs:deleteFile("accounts/" .. name .. ".json")
+    return 0
 end
 
 function accountManager:getAccountData(name)
@@ -153,11 +155,11 @@ end
 
 function accountManager:banAccount(name, duration, reason)
     local account = self:getAccountData(name)
-    if not account then return false end
+    if not account then return errors.ACCOUNT_NOT_FOUND end
 
     local seconds = 0
     for k, v in pairs(duration) do
-        if v < 1 then return false end
+        if v < 1 then return errors.INVALID_TIME_FORMAT end
         if k == "seconds" then
             seconds = seconds + v
         elseif k == "minutes" then
@@ -179,12 +181,12 @@ function accountManager:banAccount(name, duration, reason)
     }
 
     self:setAccountValue(name, "ban", account.ban)
-    return true
+    return 0
 end
 
 function accountManager:pardon(name)
     local account = self:getAccountData(name)
-    if not account then return false end
+    if not account then return errors.ACCOUNT_NOT_FOUND end
     account.ban = {
         active = false,
         startTime = nil,
@@ -192,7 +194,7 @@ function accountManager:pardon(name)
         reason = ""
     }
     self:setAccountValue(name, "ban", account.ban)
-    return true
+    return 0
 end
 
 function accountManager:isBanned(name)

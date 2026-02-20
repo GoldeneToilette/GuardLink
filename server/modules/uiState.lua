@@ -11,6 +11,7 @@ local log
 function uiState.new(framepath, manifest, settings, logger)
     local self = setmetatable({}, uiState)
     theme = requireC("/GuardLink/server/lib/themes.lua")
+    self.theme = theme
     theme.init()
     theme.setTheme(settings.theme)
 
@@ -22,9 +23,9 @@ function uiState.new(framepath, manifest, settings, logger)
     self.frames = {}
     self.activeFrame = nil
 
-    log = logger:create("uiState", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("uiState", {timestamp = true, level = "INFO", clear = true})
 
-    self.titleBar = self.uiHelper.newLabel(self.mainframe, "GL " .. (manifest.version or "???"), 1, 1, 51, 1, colors.blue, colors.white, 1)
+    self.titleBar = self.uiHelper.newLabel(self.mainframe, "", 1, 1, 51, 1, colors.blue, colors.white, 1)
     self.dropdown = self.mainframe:addDropdown()
     :setForeground(colors.white)
     :setBackground(colors.blue)
@@ -52,7 +53,7 @@ function uiState.new(framepath, manifest, settings, logger)
         end
     end)
 
-    local result = self:setFrame("someUI")
+    local result = self:setFrame("shell")
     if result ~= 0 then self.uiHelper.newPopup(self.mainframe, 25, 5, "Error", "error", "UI not found! :(", true) end
     return self
 end
@@ -91,9 +92,10 @@ local service = {
     shutdown = nil,
     api = {
         ["ui"] = {
-            frame_set = function(self, args) return self:setFrame(args.name) end,
-            set_theme = function(self, args) return theme.setTheme(args.theme) end,
-            get_themes = function(self) return theme.getThemes() end
+            frame_set = function(self, args) return self:setFrame(args) end,
+            set_theme = function(self, args) return theme.setTheme(args) end,
+            get_themes = function(self) return theme.getThemes() end,
+            get_color = function(self, args) return theme.colors[args] end,
         }
     }
 }
