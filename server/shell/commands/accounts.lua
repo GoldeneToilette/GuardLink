@@ -8,7 +8,7 @@ cmds["view"] = {
         local name = tostring(args[2])
         local values = kernel:execute("accounts.get_sanitized", {name=name})
         if not values then
-            return {str="Account not found: " .. name, type="fail"}
+            return {str="Error: 'Account not found: " .. name .. "'", type="fail"}
         end
         local output = {
             "Name: " .. values.name,
@@ -30,12 +30,12 @@ cmds["ban"] = {
     desc = "Ban an account: account ban <name> <duration> <time unit> <reason>",
     func = function(args, ctx)
         local kernel = ctx.kernel
-        local name, value, unit, reason = args[2], tonumber(args[3]), args[4], args[5]
+        local name, value, unit, reason = args[2], tonumber(args[3]) or 1, args[4] or "permanent", args[5] or "unknown"
         local duration = {}
         duration[unit] = value
         local success = kernel:execute("accounts.ban", {name=name, duration=duration, reason=reason})
         if success ~= 0 then
-            return {str="Failed to ban " .. name .. ", '" .. success[2] .. "'", type="fail"}
+            return {str="Error: '" .. success.log .. "'", type="fail"}
         end
         return {str=name .. " has been banned for: " .. reason, type="success"}
     end
@@ -48,7 +48,7 @@ cmds["unban"] = {
         local name = args[2]
         local success = kernel:execute("accounts.pardon", {name=name})
         if success ~= 0 then
-            return {str="Account not found: " .. name, type="fail"}
+            return {str="Error: " .. success.log, type="fail"}
         end
         return {str=name .. " has been unbanned", type="success"}
     end
@@ -59,10 +59,10 @@ cmds["delete"] = {
     desc = "Permanently delete an account",
     func = function(args, ctx)
         local kernel = ctx.kernel
-        local name = args[2]
+        local name = args[2] or ""
         local success = kernel:execute("accounts.delete", {name=name})
         if success ~= 0 then
-            return {str="Account not found: " .. name, type="fail"}
+            return {str="Error: '" .. success.log .. "'", type="fail"}
         end
         return {str=name .. " has been deleted", type="success"}
     end
@@ -75,7 +75,7 @@ cmds["create"] = {
         local name, pass = args[2], args[3]
         local success = kernel:execute("accounts.create", {name=name, password=pass})
         if success ~= 0 then
-            return {str= ("Failed to create account " .. name .. ", '" .. success[2] .. "'"), type="fail"}
+            return {str= ("Error: '" .. success.log .. "'"), type="fail"}
         end
         return {str="Successfully created account " .. name, type="success"}
     end
@@ -85,8 +85,8 @@ cmds["help"] = {
     func = function(args, ctx)
         local output = {"Account commands -------------------------"}
         for k,v in pairs(cmds) do
-            if v.desc then
-                table.insert(output, k .. ": " .. v.desc)
+            if type(v) == "table" and v.desc then
+                table.insert(output, k .. ": " .. v.desc)             
             end
         end
         table.insert(output, "Account commands -------------------------")

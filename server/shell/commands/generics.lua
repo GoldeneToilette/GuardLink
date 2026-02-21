@@ -174,4 +174,18 @@ cmds["unmount"] = {
     end    
 }
 cmds["umount"] = cmds["unmount"]
+
+cmds["lsblk"] = {
+    desc = "Displays information about partitions",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local str = {}
+        for k,v in pairs(kernel:execute("vfs.get_config")) do
+            local size = math.floor(((kernel:execute("vfs.get_size", k) / 1024) * 100 + 0.5) / 100)
+            local cap = math.floor(((kernel:execute("vfs.get_capacity", k) / 1024) * 100 + 0.5) / 100)
+            table.insert(str, "[" .. k .. "] = " .. (size or "nil") .. "KB of " .. (cap or "nil") .. "KB")
+        end
+        return {str = str, type = "success"}
+    end
+}
 return cmds

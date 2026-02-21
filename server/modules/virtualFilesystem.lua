@@ -5,7 +5,7 @@ VFS.__index = VFS
 
 local errors = {
     "Failed to write to file: Path could not be found!",
-    "Failed to write to file: file size too big!",
+    "Failed to write to file: Not enough space!",
     "Cannot delete partition folder: "
 }
 
@@ -73,6 +73,16 @@ function VFS:getCapacity(partitionName, disk)
     end
 end
 
+function VFS:getTotalCapacity(name)
+    local capacity = 0
+    if self.config[name] then
+        for _, v in ipairs(self.config[name]) do
+            capacity = capacity + v.bytes
+        end
+        return capacity
+    end
+    return nil
+end
 function VFS:writeFile(path, data)
     local _, partitionName, _ = self:parsePath(path)
     local disk = self:existsFile(path)
@@ -164,6 +174,18 @@ function VFS:listDir(path)
     return #results > 0 and results or nil
 end
 
+function VFS:getUsedBytes(name)
+    local parts, partitionName, partition = self:parsePath(name)
+    if not partition then return false end
+    local total = 0
+    for _, disk in ipairs(partition) do
+        local diskInfo = self.diskManager:getDisk(disk.disk)
+        local fullPath = diskInfo.path .. "/" .. name
+        total = total + self:getCapacity(name, diskInfo.label) - fs.getFreeSpace(fullPath)
+    end
+    return total
+end
+
 local service = {
     name = "vfs",
     deps = {"disk_manager"},
@@ -186,6 +208,9 @@ local service = {
             exists_file = function(self, args) return self:existsFile(args) ~= false end,
             exists_dir = function(self, args) return self:existsDir(args) end,
             is_partition = function(self, args) return self:isPartition(args) end,
+            get_config = function(self, args) return self.config end,
+            get_capacity = function(self, args) return self:getTotalCapacity(args) end,
+            get_size = function(self, args) return self:getUsedBytes(args) end,
         }
     }
 }

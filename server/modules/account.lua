@@ -58,11 +58,11 @@ end
 function accountManager:createAccount(name, password)
     local valid = self:isValidAccountName(name)
     if valid ~= 0 then
-        log:error(valid.log)
+        log:info(valid.log)
         return valid
     end
     if not password or password == "" then
-        log:error(errors.ACCOUNT_PASSWORD_EMPTY.log)
+        log:info(errors.ACCOUNT_PASSWORD_EMPTY.log)
         return errors.ACCOUNT_PASSWORD_EMPTY
     end
 
@@ -82,7 +82,7 @@ function accountManager:createAccount(name, password)
 end
 
 function accountManager:deleteAccount(name)
-    if not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
+    if not name or not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
     self.vfs:deleteFile("accounts/" .. name .. ".json")
     return 0
 end
@@ -159,7 +159,7 @@ function accountManager:banAccount(name, duration, reason)
 
     local seconds = 0
     for k, v in pairs(duration) do
-        if v < 1 then return errors.INVALID_TIME_FORMAT end
+        if not v or v < 1 then return errors.INVALID_TIME_FORMAT end
         if k == "seconds" then
             seconds = seconds + v
         elseif k == "minutes" then
@@ -185,7 +185,7 @@ function accountManager:banAccount(name, duration, reason)
 end
 
 function accountManager:pardon(name)
-    local account = self:getAccountData(name)
+    local account = self:getAccountData(name or "")
     if not account then return errors.ACCOUNT_NOT_FOUND end
     account.ban = {
         active = false,

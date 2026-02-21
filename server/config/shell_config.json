@@ -2,6 +2,6 @@
     "prompt": "> ",
     "default_dir": "/",
     "use_theme": false,
-    "logging": "DEBUG",
+    "logging": "INFO",
     "history_length": 20
 }

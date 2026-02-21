@@ -33,9 +33,20 @@ local function printResult(tbl)
     end
 end
 
+local function autoComplete(s)
+    if s == "" then return {} end 
+    local matches = {}
+    for k, _ in pairs(console.engine.cmds) do
+        if k:sub(1, #s) == s then
+            table.insert(matches, k:sub(#s + 1))
+        end
+    end
+    return matches
+end
+
 local function repl()
     while true do
-        local input = read()
+        local input = read(nil, console.engine.history, autoComplete)
         local result = console.engine:run(input)
         printResult(result)
         term.setTextColor(console.symbolColor)
