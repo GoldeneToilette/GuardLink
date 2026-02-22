@@ -162,12 +162,16 @@ end
 function VFS:listDir(path)
     local parts, partitionName, partition = self:parsePath(path)
     local results = {}
+    local seen = {}
     for _, disk in ipairs(partition) do
         local diskInfo = self.diskManager:getDisk(disk.disk)
         local fullPath = diskInfo.path .. "/" .. path
         if fs.exists(fullPath) then 
             for _, name in ipairs(fs.list(fullPath)) do
-                table.insert(results, name)
+                if not seen[name] then
+                    table.insert(results, name)
+                    seen[name] = true
+                end
             end
         end
     end

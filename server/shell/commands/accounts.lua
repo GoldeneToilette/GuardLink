@@ -25,6 +25,7 @@ cmds["view"] = {
         return {str=output, type="info"}
     end
 }
+cmds["info"] = cmds.view
 
 cmds["ban"] = {
     desc = "Ban an account: account ban <name> <duration> <time unit> <reason>",
@@ -54,6 +55,7 @@ cmds["unban"] = {
     end
 }
 cmds["pardon"] = cmds["unban"]
+cmds["pardon"].desc = nil
 
 cmds["delete"] = {
     desc = "Permanently delete an account",
@@ -83,13 +85,13 @@ cmds["create"] = {
 
 cmds["help"] = {
     func = function(args, ctx)
-        local output = {"Account commands -------------------------"}
+        local output = {"Accounts commands -------------------------"}
         for k,v in pairs(cmds) do
             if type(v) == "table" and v.desc then
                 table.insert(output, k .. ": " .. v.desc)             
             end
         end
-        table.insert(output, "Account commands -------------------------")
+        table.insert(output, "Accounts commands -------------------------")
         return {str=output, type="info"}
     end
 }

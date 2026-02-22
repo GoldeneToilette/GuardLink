@@ -36,7 +36,6 @@ function uiState.new(framepath, manifest, settings, logger)
     self.exitButton:onClick(function(_, event, button, x, y)
         os.shutdown()
     end)
-
     for _, v in ipairs(fs.list(self.path)) do
         local name = v:gsub("%.lua$", "")
         local m = requireC(self.path .. name .. ".lua")

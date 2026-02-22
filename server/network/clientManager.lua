@@ -76,7 +76,7 @@ function clientManager:disconnectAll(reason)
     end
     self.clients = {}
     log:info("Disconnected " .. i .. " clients!")
-    return 0
+    return i
 end
 
 function clientManager:count()
@@ -200,18 +200,19 @@ local service = {
             client_update_channel = {function(self) self:updateChannels() end, self.heartbeat_interval}      
         }
     end,
-    shutdown = {
-        function(self) self:disconnectAll("SERVER_SHUTDOWN") end
-    },
+    shutdown = function(self) self:disconnectAll("SERVER_SHUTDOWN") end,
     api = {
         ["clients"] = {
             update_channels = function(self) return self:updateChannels() end,
             throttle = function(self, args) return self:setThrottle(args.id, args.throttle) end,
             list = function(self) return self:listClients() end,
-            disconnect = function(self, args) return self:disconnectClient(args.id) end,
-            disconnect_all = function(self, args) return self:disconnectAll(args.reason) end,
+            disconnect = function(self, args) return self:disconnectClient(args.id, args.reason) end,
+            disconnect_all = function(self, args) return self:disconnectAll(args) end,
             count = function(self) return self:count() end,
-            stale = function(self) return self:getStaleClients() end
+            stale = function(self) return self:getStaleClients() end,
+            get = function(self, args) return self:getClient(args) end,
+            exists = function(self, args) return self.clients[args] ~= nil end,
+            heartbeats = function(self) self:heartbeats() return 0 end,
         }
     }
 }

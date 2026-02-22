@@ -81,7 +81,7 @@ function uihelper.newPopup(parent, sizeX, sizeY, title, type, message, canClose,
     elseif type == "action" then
         label:setForeground(colors.black)
         for _,v in ipairs(buttons) do
-            uihelper.newButton(frame, v.name, v.posX, v.posY, v.sizeX, v.sizeY, v.bg, v.fg, v.callback)
+            uihelper.newButton(frame, v.name, v.posX, v.posY, v.sizeX, v.sizeY, v.bg, v.fg, function() v.callback() end)
         end
     end
     if canClose then

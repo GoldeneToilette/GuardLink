@@ -115,7 +115,7 @@ local service = {
     shutdown = nil,
     api = {
         ["queue"] = {
-            throttle = function(self, args) return self:setThrottle(args.throttle) end
+            throttle = function(self, args) return self:setThrottle(args) end
         }
     }
 }
