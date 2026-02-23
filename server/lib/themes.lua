@@ -1,65 +1,68 @@
-local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
-local themes = {}
 local active = nil
-local defaultPath = "/GuardLink/server/config/themes.json"
+
+local kernel = require("kernel.kernel")
 
 local c = {
     primary = colors.orange,
     secondary = colors.magenta,
-    tertiary = colors.lightBlue,
-    highlight = colors.yellow,
-    subtle = colors.lime,
-    accent = colors.pink,
-    info = colors.cyan,
-    alert = colors.purple,
-    emphasis = colors.blue,
-    muted = colors.brown
+    background = colors.lightBlue,
+    surface = colors.yellow,
+    textprimary = colors.lime,
+    textsecondary = colors.pink,
+    border = colors.cyan,
+    success = colors.purple,
+    error = colors.blue,
+    highlight = colors.brown
 }
 
-local function init(path) 
-    if not fs.exists(path or defaultPath) then
-        fileUtils.write(path or defaultPath, "")
-    end
-    themes = textutils.unserializeJSON(fileUtils.read(path or defaultPath))
-
+local function init() 
     -- system colors, they are the same in all themes
-    term.setPaletteColour(colors.red, 0xf42929) -- red
-    term.setPaletteColour(colors.white, 0xffffff) -- white
-    term.setPaletteColour(colors.black, 0x000000) -- black
-    term.setPaletteColour(colors.green, 0x2ec120) -- green
-    term.setPaletteColour(colors.lightGray, 0x999999) -- light gray
-    term.setPaletteColour(colors.gray, 0x4C4C4C) -- gray
+    term.setPaletteColor(colors.red, 0xf42929) -- red
+    term.setPaletteColor(colors.white, 0xffffff) -- white
+    term.setPaletteColor(colors.black, 0x000000) -- black
+    term.setPaletteColor(colors.green, 0x2ec120) -- green
+    term.setPaletteColor(colors.lightGray, 0x999999) -- light gray
+    term.setPaletteColor(colors.gray, 0x4C4C4C) -- gray
 
-    -- rest of the colors, they are customizable. if none of the themes is set, they will appear all white
-    term.setPaletteColour(colors.orange, 0xffffff) -- primary
-    term.setPaletteColour(colors.magenta, 0xffffff) -- secondary
-    term.setPaletteColour(colors.lightBlue, 0xffffff) -- tertiary
-    term.setPaletteColour(colors.yellow, 0xffffff) -- highlight
-    term.setPaletteColour(colors.lime, 0xffffff) -- subtle
-    term.setPaletteColour(colors.pink, 0xffffff) -- accent
-    term.setPaletteColour(colors.cyan, 0xffffff) -- info
-    term.setPaletteColour(colors.purple, 0xffffff) -- alert
-    term.setPaletteColour(colors.blue, 0xffffff) -- emphasis
-    term.setPaletteColour(colors.brown, 0xffffff) -- muted
+    -- rest of the colors, they are customizable. if none of the themes are set, they will appear all white
+    term.setPaletteColor(colors.orange, 0xffffff)
+    term.setPaletteColor(colors.magenta, 0xffffff)
+    term.setPaletteColor(colors.lightBlue, 0xffffff)
+    term.setPaletteColor(colors.yellow, 0xffffff)
+    term.setPaletteColor(colors.lime, 0xffffff)
+    term.setPaletteColor(colors.pink, 0xffffff)
+    term.setPaletteColor(colors.cyan, 0xffffff)
+    term.setPaletteColor(colors.purple, 0xffffff)
+    term.setPaletteColor(colors.blue, 0xffffff)
+    term.setPaletteColor(colors.brown, 0xffffff)
     return 0
 end
 
-local function setTheme(theme)
+local function setTheme(theme, ter)
+    local themes = kernel:execute("kernel.get_config", "themes")
     if not themes[theme] then return "UNKNOWN_THEME" end
     for i, color in ipairs(themes[theme]) do
-        term.setPaletteColour(c[color[1]], tonumber(color[2], 16))
+        term.native().setPaletteColor(c[color[1]], tonumber(color[2], 16))
+        if ter then ter.setPaletteColor(c[color[1]], tonumber(color[2], 16)) end
     end
-    term.clear()
     active = theme
     return 0
 end
 
 local function getThemes()
-    return themes
+    return kernel:execute("kernel.get_config", "themes")
 end
 
 local function getTheme()
     return active
+end
+
+local function setColor(t, hex, ter)
+    if c[t] then
+        hex = hex:gsub("^#", "0x") 
+        term.native().setPaletteColor(c[t], tonumber(hex, 16))
+        if ter then ter.setPaletteColor(c[t], tonumber(hex, 16)) end
+    end
 end
 
 return {
@@ -67,5 +70,6 @@ return {
     setTheme = setTheme,
     getThemes = getThemes,
     colors = c,
-    getTheme = getTheme
+    getTheme = getTheme,
+    setColor = setColor
 }

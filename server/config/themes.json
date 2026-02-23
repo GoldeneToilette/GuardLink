@@ -1,66 +1,100 @@
 {
   "default": [
-    ["primary", "0x3366CC"],
-    ["secondary", "0x99B2F2"],
-    ["tertiary", "0xF0F0F0"],
-    ["highlight", "0xF2B233"],
-    ["subtle", "0xD0D0D0"],
-    ["accent", "0x2A4D99"]
+    ["background", "0xF3F6FB"],
+    ["surface", "0xFFFFFF"],
+    ["border", "0xD6DFEA"],
+    ["primary", "0x2563EB"],
+    ["secondary", "0x1E40AF"],
+    ["textprimary", "0x1E293B"],
+    ["textsecondary", "0x64748B"],
+    ["success", "0x0EA5A4"],
+    ["error", "0xDC2626"],
+    ["highlight", "0xF97316"]
   ],
   "cyberpunk": [
-    ["primary", "0x1D1D2C"],
-    ["secondary", "0xA64DFF"],
-    ["tertiary", "0x4A90E2"],
-    ["highlight", "0xFF4081"],
-    ["subtle", "0x3C7BB1"],
-    ["accent", "0x0F0F18"]
-  ],
-  "darkmode": [
-    ["primary", "0x121212"],
-    ["secondary", "0xB0BEC5"],
-    ["tertiary", "0x333333"],
-    ["highlight", "0xBB86FC"],
-    ["subtle", "0x222222"],
-    ["accent", "0x0D0D0D"]
-  ],
-  "sunset": [
-    ["primary", "0x3D1C5D"],
-    ["secondary", "0xFF6F61"],
-    ["tertiary", "0xFFD54F"],
-    ["highlight", "0xFF8A80"],
-    ["subtle", "0xFFC107"],
-    ["accent", "0x2F1746"]
+    ["background", "0x1E2038"],
+    ["surface", "0x2C3155"],
+    ["border", "0x10142B"],
+    ["primary", "0xFF3C8F"],
+    ["secondary", "0x3CF0FF"],
+    ["textprimary", "0xE0E0FF"],
+    ["textsecondary", "0xA0A0D0"],
+    ["success", "0x00FFA0"],
+    ["error", "0xFF4C4C"],
+    ["highlight", "0xFFD700"]
   ],
   "monochrome": [
-    ["primary", "0x121212"],
-    ["secondary", "0x424242"],
-    ["tertiary", "0xBDBDBD"],
-    ["highlight", "0xFFFFFF"],
-    ["subtle", "0x9E9E9E"],
-    ["accent", "0x0D0D0D"]
-  ],
-  "royal": [
-    ["primary", "0x1976D2"],
-    ["secondary", "0xFBC02D"],
-    ["tertiary", "0xFFFFFF"],
-    ["highlight", "0x7BB5FF"],
-    ["subtle", "0xE0E0E0"],
-    ["accent", "0x125F91"]
+    ["background", "0x1C1F24"],
+    ["surface", "0x262A31"],
+    ["border", "0x14171C"],
+    ["primary", "0x4B5563"],
+    ["secondary", "0x6B7280"],
+    ["textprimary", "0xE5E7EB"],
+    ["textsecondary", "0x9CA3AF"],
+    ["success", "0x10B981"],
+    ["error", "0xEF4444"],
+    ["highlight", "0xF59E0B"]
   ],
   "autumn": [
-    ["primary", "0x6E4B3A"],
-    ["secondary", "0xC75B35"],
-    ["tertiary", "0xA89F91"],
-    ["highlight", "0xFFB74D"],
-    ["subtle", "0x8D7A65"],
-    ["accent", "0x4B3929"]
+    ["background", "0xF6F1E8"],
+    ["surface", "0xFFFFFF"],
+    ["border", "0xE5D8C7"],
+    ["primary", "0x8B5E3C"],
+    ["secondary", "0xA16207"],
+    ["textprimary", "0x3F2D20"],
+    ["textsecondary", "0x7C5A3C"],
+    ["success", "0x3F7D20"],
+    ["error", "0xB42318"],
+    ["highlight", "0xD97706"]
   ],
   "emerald": [
-    ["primary", "0x2E7D32"],
-    ["secondary", "0x388E3C"],
-    ["tertiary", "0xC5E1A5"],
-    ["highlight", "0xFFD700"],
-    ["subtle", "0xA5D6A7"],
-    ["accent", "0x1D5A26"]
+    ["background", "0x0F1F1A"],
+    ["surface", "0x16332A"],
+    ["border", "0x0A1411"],
+    ["primary", "0x059669"],
+    ["secondary", "0x047857"],
+    ["textprimary", "0xE6FFFA"],
+    ["textsecondary", "0x9FD6C2"],
+    ["success", "0x10B981"],
+    ["error", "0xDC2626"],
+    ["highlight", "0xF59E0B"]
+  ],
+    "ink": [
+    ["background", "0xFDFCF9"],
+    ["surface", "0xFFFFFF"],
+    ["border", "0xE0E0E0"],
+    ["primary", "0x1F2937"],
+    ["secondary", "0x4B5563"],
+    ["textprimary", "0x111827"],
+    ["textsecondary", "0x6B7280"],
+    ["success", "0x059669"],
+    ["error", "0xB91C1C"],
+    ["highlight", "0xD97706"]
+  ],
+
+  "arctic": [
+    ["background", "0xEAF5FA"],
+    ["surface", "0xF8FDFF"],
+    ["border", "0xC7DCE6"],
+    ["primary", "0x0EA5E9"],
+    ["secondary", "0x0284C7"],
+    ["textprimary", "0x1E293B"],
+    ["textsecondary", "0x64748B"],
+    ["success", "0x22C55E"],
+    ["error", "0xEF4444"],
+    ["highlight", "0xF97316"]
+  ],
+
+  "pastel": [
+    ["background", "0xFFF7FA"],
+    ["surface", "0xFFFFFF"],
+    ["border", "0xEDE9F2"],
+    ["primary", "0xA78BFA"],
+    ["secondary", "0xF472B6"],
+    ["textprimary", "0x1F2937"],
+    ["textsecondary", "0x6B7280"],
+    ["success", "0x34D399"],
+    ["error", "0xF87171"],
+    ["highlight", "0xFDBA74"]
   ]
 }

@@ -11,7 +11,7 @@ cmds["cd"] = {
             for part in string.gmatch(cwd, "[^/]+") do
                 table.insert(parts, part)
             end
-            table.remove(parts) -- remove last
+            table.remove(parts)
             target = "/" .. table.concat(parts, "/")
             if target == "" then target = "/" end
         elseif target == "." then
@@ -76,7 +76,7 @@ cmds["theme"] = {
         if args[1] == "get" then
             return {str=kernel:execute("ui.get_theme"), type="success"}
         elseif args[1] == "set" then
-            local success = kernel:execute("ui.set_theme", args[2] or "")
+            local success = kernel:execute("ui.set_theme", {theme=args[2] or ""})
             if success ~= 0 then
                 return {str="Theme not found", type="fail"}
             else
@@ -89,11 +89,36 @@ cmds["theme"] = {
                 table.insert(tbl, k)
             end
             return {str=table.concat(tbl, " "), type="success"}
+        elseif args[1] == "print" then
+            return {str="\16700AAA\16711AAA\16722AAA\16733AAA\16744AAA\16755AAA\16766AAA\16777AAA\16788AAA\16799AAA", type="success"}
         else
             return {str="Invalid command. Usage: theme <get>, theme <set> <name>", type="fail"}
         end
     end
 }
+
+cmds["setcolor"] = {
+    desc = "Change the colors. Usage: setcolor <type> <hexcode>",
+    func = function(args, ctx)
+        local colorType = args[1]
+        local hex = args[2]
+        if not colorType or not hex then
+            return {str="Usage: setcolor <type> <hexcode>", type="error"}
+        end
+        ctx.kernel:execute("ui.set_color", {type=colorType, hex=hex, current=term.current()})
+        return {str="", type="success"}
+    end
+}
+cmds["listcolor"] = {
+    desc = "Lists all color codes",
+    func = function(args, ctx)
+        return {str=ctx.kernel:execute("ui.list_colors"), type="success"}
+    end
+}
+cmds["sc"] = cmds["setcolor"]
+cmds["sc"].desc = nil
+cmds["lc"] = cmds["listcolor"]
+cmds["lc"].desc = nil
 
 cmds["pwd"] = {
     desc = "Show the current working directory",
@@ -122,11 +147,14 @@ cmds["help"] = {
         local kernel, desc = ctx.kernel, ctx.descriptions
         local output = {}
         table.insert(output, "GuardLink " .. kernel:execute("kernel.get_version"))
-        table.insert(output, "------------------------------------")
-        for k,v in pairs(desc) do
-            table.insert(output, string.format("[%s] %s", k, v))
+        local keys = {}
+        for k in pairs(desc) do
+            table.insert(keys, k)
         end
-        table.insert(output, "------------------------------------")
+        table.sort(keys)
+        for _, k in ipairs(keys) do
+            table.insert(output, string.format("[%s] %s", k, desc[k]))
+        end
         return {str=output, type="info"}
     end
 }
@@ -271,7 +299,7 @@ cmds["mkdir"] = {
 }
 
 cmds["rm"] = {
-    desc = "Remove file or directory",
+    desc = "Remove a file or directory",
     func = function(args, ctx)
         local kernel, cwd, mount = ctx.kernel, ctx.cwd, ctx.mount
         if not args[1] then return {str="No path provided", type="fail"} end
@@ -326,7 +354,7 @@ cmds["cp"] = {
 }
 
 cmds["mv"] = {
-    desc = "Move or rename file",
+    desc = "Move or rename a file",
     func = function(args, ctx)
         if not args[1] or not args[2] then
             return {str="Usage: mv <src> <dst>", type="fail"}

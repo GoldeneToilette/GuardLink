@@ -1,34 +1,72 @@
 local ctx
 local frame 
 
-local console = {
-    lines = {},
-    cursorX = 1,
-    cursorY = 1,
-    width = 0,
-    height = 0,
-    symbolColor = colors.lightGray,
-    textColor = colors.white,
-    backgroundColor = colors.black,
-    engine = requireC("/GuardLink/server/shell/engine.lua")  
+local c = {
+    symbol = colors.lightGray,
+    text = colors.white,
+    background = colors.black,
+    success = colors.green,
+    fail = colors.red,
 }
-console.engine:setup()
+local codeMap = {
+    ["0"] = "background",
+    ["1"] = "surface",
+    ["2"] = "border",
+    ["3"] = "primary",
+    ["4"] = "secondary",
+    ["5"] = "textprimary",
+    ["6"] = "textsecondary",
+    ["7"] = "success",
+    ["8"] = "error",
+    ["9"] = "highlight"    
+}
+
+local prompt
+
+local engine = requireC("/GuardLink/server/shell/engine.lua")
+engine:setup()
+
+local function printColor(str, default)
+    local fg = default
+    local bg = c.background
+    local pos = 1
+    while pos <= #str do
+        local s, e, b, f = str:find("\167([0-9d])([0-9d])", pos)
+        if s then
+            if s > pos then
+                term.setBackgroundColor(bg)
+                term.setTextColor(fg)
+                io.write(str:sub(pos, s - 1))
+            end
+            bg = (b == "d") and c.background or (ctx.theme.colors[codeMap[b]] or c.background)
+            fg = (f == "d") and default or (ctx.theme.colors[codeMap[f]] or default)
+            pos = e + 1
+        else
+            term.setBackgroundColor(bg)
+            term.setTextColor(fg)
+            io.write(str:sub(pos))
+            break
+        end
+    end
+    print()
+end
 
 local function printResult(tbl)
+    local def = c.text
     if tbl.type == "success" then
-        term.setTextColor(colors.green)
+        def = c.success
     elseif tbl.type == "fail" or tbl.type == "error" then
-        term.setTextColor(colors.red)        
+        def = c.fail  
     elseif tbl.type == "info" then
-        term.setTextColor(console.textColor)
+        def = c.text
     elseif tbl.type == "empty" then
         return
     end
     if type(tbl.str) == "string" then
-        if tbl.str ~= "" then print(tbl.str) end
+        if tbl.str ~= "" then printColor(tbl.str, def) end
     else    
         for i,v in ipairs(tbl.str) do
-            if tbl.str ~= "" then print(v) end
+            if tbl.str ~= "" then printColor(v, def) end
         end
     end
 end
@@ -36,7 +74,7 @@ end
 local function autoComplete(s)
     if s == "" then return {} end 
     local matches = {}
-    for k, _ in pairs(console.engine.cmds) do
+    for k, _ in pairs(engine.cmds) do
         if k:sub(1, #s) == s then
             table.insert(matches, k:sub(#s + 1))
         end
@@ -46,12 +84,13 @@ end
 
 local function repl()
     while true do
-        local input = read(nil, console.engine.history, autoComplete)
-        local result = console.engine:run(input)
+        local input = read(engine.hideInput ~= false and " " or nil, engine.history, autoComplete)
+        local result = engine:run(input)
         printResult(result)
-        term.setTextColor(console.symbolColor)
-        write((console.engine.cwd:gsub("^/", "") or "") .. console.symbol)
-        term.setTextColor(console.textColor)
+        term.setTextColor(c.symbol)
+        term.setBackgroundColor(c.background)
+        write((engine.cwd:gsub("^/", "") or "") .. prompt)
+        term.setTextColor(c.text)
     end
 end
 
@@ -68,17 +107,22 @@ local function add()
     :setPosition(1, 1)
 
     program:execute(function()
-        console.width, console.height = term.getSize()
-        console.symbol = console.engine.cfg.prompt or ">"
-        if console.engine.cfg.use_theme then
-            console.symbolColor = ctx.theme.colors["highlight"]
-            console.textColor = ctx.theme.colors["tertiary"]
-            console.backgroundColor = ctx.theme.colors["primary"]
+        local cfg = engine.cfg
+        local theme = ctx.theme.colors
+        prompt = cfg.prompt or ">"
+        if cfg.use_theme then
+            c.symbol = theme["highlight"]
+            c.text = theme["textprimary"]
+            c.background = theme["background"]
+            c.success = theme["success"]
+            c.fail = theme["error"]
+            ctx.theme.setTheme(ctx.theme.getTheme())
         end
-        term.setBackgroundColor(console.backgroundColor)
-        term.setTextColor(console.symbolColor)
-        write((console.engine.cwd:gsub("^/", "") or "") .. console.symbol)
-        term.setTextColor(console.textColor)
+        term.setBackgroundColor(c.background)
+        term.clear()        
+        term.setTextColor(c.symbol)
+        write((engine.cwd:gsub("^/", "") or "") .. prompt)
+        term.setTextColor(c.text)        
         repl()
     end)
 end

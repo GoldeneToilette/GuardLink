@@ -1,5 +1,4 @@
 local errors   = requireC("/GuardLink/server/lib/errors.lua")
-local theme = requireC("/GuardLink/server/lib/themes.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local uiState = {}
@@ -8,14 +7,15 @@ uiState.__index = uiState
 
 local log
 
-function uiState.new(framepath, manifest, settings, logger)
+function uiState.new(framepath, manifest, settings, logger, themes)
     local self = setmetatable({}, uiState)
-    theme = requireC("/GuardLink/server/lib/themes.lua")
-    self.theme = theme
-    theme.init()
-    theme.setTheme(settings.theme)
+
+    self.theme = requireC("/GuardLink/server/lib/themes.lua")
+    self.theme.init(themes)
+    self.theme.setTheme(settings.theme)
 
     self.basalt = requireC("/GuardLink/server/lib/basalt.lua")
+
     self.uiHelper = requireC("/GuardLink/server/lib/uiHelper.lua")
     self.path = framepath or "/GuardLink/server/ui/" 
     self.x, self.y = term.getSize()
@@ -25,14 +25,14 @@ function uiState.new(framepath, manifest, settings, logger)
 
     log = logger:createInstance("uiState", {timestamp = true, level = "INFO", clear = true})
 
-    self.titleBar = self.uiHelper.newLabel(self.mainframe, "", 1, 1, 51, 1, colors.blue, colors.white, 1)
+    self.titleBar = self.uiHelper.newLabel(self.mainframe, "", 1, 1, 51, 1, self.theme.colors.border, self.theme.colors.textprimary, 1)
     self.dropdown = self.mainframe:addDropdown()
-    :setForeground(colors.white)
-    :setBackground(colors.blue)
+    :setForeground(self.theme.colors.textprimary)
+    :setBackground(self.theme.colors.border)
     :setPosition(1, 1)
-    :setSelectionColor(colors.blue, colors.orange)
+    :setSelectionColor(self.theme.colors.border, self.theme.colors.textprimary)
     
-    self.exitButton = self.uiHelper.newButton(self.mainframe, "X", 51, 1, 1, 1, colors.blue, colors.red)
+    self.exitButton = self.uiHelper.newButton(self.mainframe, "X", 51, 1, 1, 1, self.theme.colors.border, self.theme.colors.error)
     self.exitButton:onClick(function(_, event, button, x, y)
         os.shutdown()
     end)
@@ -82,7 +82,7 @@ local service = {
     name = "ui_manager",
     deps = {},
     init = function(ctx)
-        return uiState.new(nil, ctx.configs["manifest"], ctx.configs["settings"], ctx.services["logger"])
+        return uiState.new(nil, ctx.configs["manifest"], ctx.configs["settings"], ctx.services["logger"], ctx.configs["themes"])
     end,
     runtime = function(self)
         self:run()
@@ -92,10 +92,18 @@ local service = {
     api = {
         ["ui"] = {
             frame_set = function(self, args) return self:setFrame(args) end,
-            set_theme = function(self, args) return theme.setTheme(args) end,
-            get_themes = function(self) return theme.getThemes() end,
-            get_color = function(self, args) return theme.colors[args] end,
-            get_theme = function(self, args) return theme.getTheme() end,
+            set_theme = function(self, args) return self.theme.setTheme(args.theme, args.current or nil) end,
+            get_themes = function(self) return self.theme.getThemes() end,
+            get_color = function(self, args) return self.theme.colors[args] end,
+            get_theme = function(self) return self.theme.getTheme() end,
+            set_color = function(self, args) self.theme.setColor(args.type, args.hex, args.current) end,
+            list_colors = function(self)
+                local tbl = {}
+                for k,v in pairs(self.theme.colors) do
+                    table.insert(tbl, k)
+                end
+                return tbl
+            end
         }
     }
 }

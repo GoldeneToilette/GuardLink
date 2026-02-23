@@ -4,7 +4,8 @@ local engine = {
     history = {},
     cfg = {},
     mount = {false, ""},
-    descriptions = {}
+    descriptions = {},
+    hideInput = false
 }
 local kernel = require("kernel.kernel")
 engine.kernel = kernel
