@@ -250,8 +250,8 @@ end
 local service = {
     name = "disk_manager",
     deps = {},
-    init = function(ctx)
-        return diskManager.new(nil, nil)
+    init = function(ctx, futil)
+        return diskManager.new(nil, nil, futil)
     end,
     runtime = nil,
     tasks = nil,

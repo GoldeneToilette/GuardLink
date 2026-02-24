@@ -8,6 +8,10 @@ local dep = {
     fileUtils = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/fileUtils.lua"
 }
 
+local env = {}
+for k,v in pairs(_G) do env[k] = v end
+env.requireC = function(path) return {} end 
+
 local runbasalt = true
 
 local response = http.get(
@@ -23,10 +27,10 @@ local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/" .
 
 local lib = {}
 for k,v in pairs(dep) do
-  lib[k] = load(http.get(v).readAll(), k, "t", _G)()
+  lib[k] = load(http.get(v).readAll(), k, "t", env)()
 end
 
-local diskManager = lib.disk.new(nil, nil, lib.fileUtils) 
+local diskManager = lib.disk.init(nil, lib.fileUtils) 
 
 -- MAINFRAME IS CREATED HERE -------------------------------------------------------------------------------------------
 local mainframe = lib.basalt.createFrame():setVisible(true)
@@ -381,12 +385,12 @@ panels[3] = {
 
         ui.background = lib.uiHelper.newPane(frame, 3, 7, 2, 1, colors.orange)
         ui.surface = lib.uiHelper.newPane(frame, 5, 7, 2, 1, colors.magenta)
-        ui.border = lib.uiHelper.newPane(frame, 8, 7, 2, 1, colors.lightBlue)
-        ui.primary = lib.uiHelper.newPane(frame, 11, 7, 2, 1, colors.yellow)
-        ui.secondary = lib.uiHelper.newPane(frame, 14, 7, 2, 1, colors.lime)
-        ui.textprimary = lib.uiHelper.newPane(frame, 17, 7, 2, 1, colors.cyan)
-        ui.textsecondary = lib.uiHelper.newPane(frame, 20, 7, 2, 1, colors.purple)
-        ui.highlight = lib.uiHelper.newPane(frame, 23, 7, 2, 1, colors.brown)
+        ui.border = lib.uiHelper.newPane(frame, 7, 7, 2, 1, colors.lightBlue)
+        ui.primary = lib.uiHelper.newPane(frame, 9, 7, 2, 1, colors.yellow)
+        ui.secondary = lib.uiHelper.newPane(frame, 11, 7, 2, 1, colors.lime)
+        ui.textprimary = lib.uiHelper.newPane(frame, 13, 7, 2, 1, colors.cyan)
+        ui.textsecondary = lib.uiHelper.newPane(frame, 15, 7, 2, 1, colors.purple)
+        ui.highlight = lib.uiHelper.newPane(frame, 17, 7, 2, 1, colors.brown)
 
         local fi = ""
         for k,v in pairs(themes_table) do
