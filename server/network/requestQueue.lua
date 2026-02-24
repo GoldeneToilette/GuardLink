@@ -59,17 +59,17 @@ function requestQueue:processQueue()
                 local client = self.clientManager:getClient(clientID)
                 if not client then
                     if request.isPlaintext then
-                        log:debug("[requestQueue] Received plaintext message: " .. request.message)
+                        log:debug("Received plaintext message: " .. request.message)
                         local result = self.dispatcher:dispatch(textutils.unserialize(request.message), nil, request.id)
                         if result ~= 0 then log:debug(result[2]) end
                     else
                     local ok, data = pcall(function() return rsa.rsaDecrypt(request.message, self.session.privateKey) end)
                     if ok then
-                            log:debug("[requestQueue] Received RSA-encrypted message: " .. data)
+                            log:debug("Received RSA-encrypted message: " .. data)
                             local result = self.dispatcher:dispatch(textutils.unserialize(data), nil, request.id)
                             if result ~= 0 then log:debug(result[2]) end
                     else
-                            log:debug("[requestQueue] RSA decryption failed for unknown client! ")
+                            log:debug("RSA decryption failed for unknown client! ")
                     end
                     end
                     table.insert(processed, i)
@@ -79,9 +79,9 @@ function requestQueue:processQueue()
                         local ok, plaintext = pcall(function()
                             return cipher:decrypt(request.message)
                         end)
-                        log:debug("[requestQueue] Received AES-encrypted message: " .. plaintext)
+                        log:debug("Received AES-encrypted message: " .. plaintext)
                         if not ok or not plaintext then
-                            log:debug("[requestQueue] AES decryption failed for " .. clientID)
+                            log:debug("AES decryption failed for " .. clientID)
                             table.insert(processed, i)
                             goto skip
                         end

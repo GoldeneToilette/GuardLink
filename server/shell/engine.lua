@@ -14,7 +14,7 @@ local log
 function engine:loadCommands()
     for _, file in ipairs(fs.list("/GuardLink/server/shell/commands")) do
         local cmd = requireC("/GuardLink/server/shell/commands/" .. file)
-        if file ~= "generics.lua" then
+        if file ~= "generic.lua" then
             self.cmds[cmd.name] = cmd.run
             for k,v in pairs(cmd) do
                 if type(v) == "table" and v.desc then
@@ -71,7 +71,7 @@ function engine:run(str)
         end
         local msg = "Used command: " .. str .. "\nOutput: "
         if type(output.str) == "string" then
-            log:debug(msg .. output.str)
+            log:debug(msg .. (#output.str <= 8000 and output.str or (output.str:sub(1,8000) .. "...")))
         else
             msg = msg .. table.concat(output.str, "\n")
             log:debug(msg)

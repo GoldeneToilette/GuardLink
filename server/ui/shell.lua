@@ -31,15 +31,15 @@ local function printColor(str, default)
     local bg = c.background
     local pos = 1
     while pos <= #str do
-        local s, e, b, f = str:find("\167([0-9d])([0-9d])", pos)
+        local s, e, b, f = str:find("\167([0-9r])([0-9r])", pos)
         if s then
             if s > pos then
                 term.setBackgroundColor(bg)
                 term.setTextColor(fg)
                 io.write(str:sub(pos, s - 1))
             end
-            bg = (b == "d") and c.background or (ctx.theme.colors[codeMap[b]] or c.background)
-            fg = (f == "d") and default or (ctx.theme.colors[codeMap[f]] or default)
+            bg = (b == "r") and c.background or (ctx.theme.colors[codeMap[b]] or c.background)
+            fg = (f == "r") and default or (ctx.theme.colors[codeMap[f]] or default)
             pos = e + 1
         else
             term.setBackgroundColor(bg)
@@ -48,6 +48,7 @@ local function printColor(str, default)
             break
         end
     end
+    term.setBackgroundColor(c.background)
     print()
 end
 

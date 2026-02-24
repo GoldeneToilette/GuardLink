@@ -23,7 +23,7 @@
     ["error", "0xFF4C4C"],
     ["highlight", "0xFFD700"]
   ],
-  "monochrome": [
+  "darkmode": [
     ["background", "0x1C1F24"],
     ["surface", "0x262A31"],
     ["border", "0x14171C"],

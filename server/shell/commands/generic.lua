@@ -40,23 +40,22 @@ cmds["ls"] = {
     desc = "List directory contents. Operates on mount if active.",
     func = function(args, ctx)
         local kernel, cwd, mount = ctx.kernel, ctx.cwd, ctx.mount
-
         local target = args[1]
         if not args[1] then target = ctx.cwd end
         if target:sub(1,1) ~= "/" then
-            target = (cwd .. "/" .. target):gsub("/+", "/"):gsub("/$", "") -- relative
+            target = (cwd .. "/" .. target):gsub("/+", "/"):gsub("/$", "")
         else
-            target = target:gsub("/+", "/") -- absolute
+            target = target:gsub("/+", "/")
         end
         local contents = {}
         if mount[1] then
             contents = kernel:execute("vfs.list", target)
         else
             if not fs.exists(target) then
-                return {str="No such file or directory: "..target, type="fail"}
+                return {str="No such file or directory: " .. target, type="fail"}
             end
             if not fs.isDir(target) then
-                return {str="Not a directory: "..target, type="fail"}
+                return {str="Not a directory: " .. target, type="fail"}
             end
             contents = fs.list(target)
         end
@@ -64,7 +63,16 @@ cmds["ls"] = {
             return {str="Directory is empty", type="info"}
         end
         table.sort(contents)
-        return {str=contents, type="info"}
+        local output = {}
+        for _, name in ipairs(contents) do
+            local path = target .. "/" .. name
+            if fs.isDir(path) then
+                table.insert(output, "\16706" .. name)
+            else
+                table.insert(output, "\16705" .. name)
+            end
+        end
+        return {str=output, type="info"}
     end
 }
 
@@ -72,9 +80,9 @@ cmds["theme"] = {
     desc = "Usage: theme <get/list>, theme <set> <name>",
     func = function(args, ctx)
         local kernel = ctx.kernel
-        if not args[1] then return {str="Invalid command. Usage: theme <get/list>, theme <set> <name>", type="fail"} end
+        if not args[1] then return {str=kernel:execute("ui.get_theme"), type="info"} end
         if args[1] == "get" then
-            return {str=kernel:execute("ui.get_theme"), type="success"}
+            return {str=kernel:execute("ui.get_theme"), type="info"}
         elseif args[1] == "set" then
             local success = kernel:execute("ui.set_theme", {theme=args[2] or ""})
             if success ~= 0 then
@@ -88,9 +96,9 @@ cmds["theme"] = {
             for k,v in pairs(l) do
                 table.insert(tbl, k)
             end
-            return {str=table.concat(tbl, " "), type="success"}
+            return {str=table.concat(tbl, " "), type="info"}
         elseif args[1] == "print" then
-            return {str="\16700AAA\16711AAA\16722AAA\16733AAA\16744AAA\16755AAA\16766AAA\16777AAA\16788AAA\16799AAA", type="success"}
+            return {str="\16700AAA\16711AAA\16722AAA\16733AAA\16744AAA\16755AAA\16766AAA\16777AAA\16788AAA\16799AAA\167rr ", type="info"}
         else
             return {str="Invalid command. Usage: theme <get>, theme <set> <name>", type="fail"}
         end
@@ -112,7 +120,7 @@ cmds["setcolor"] = {
 cmds["listcolor"] = {
     desc = "Lists all color codes",
     func = function(args, ctx)
-        return {str=ctx.kernel:execute("ui.list_colors"), type="success"}
+        return {str=ctx.kernel:execute("ui.list_colors"), type="info"}
     end
 }
 cmds["sc"] = cmds["setcolor"]
@@ -138,6 +146,7 @@ cmds["clear"] = {
     desc = "Clear the terminal output",
     func = function(args, ctx)
         term.clear()
+        term.setCursorPos(1,1)
         return {str="", type="success"}
     end
 }
@@ -153,7 +162,7 @@ cmds["help"] = {
         end
         table.sort(keys)
         for _, k in ipairs(keys) do
-            table.insert(output, string.format("[%s] %s", k, desc[k]))
+            table.insert(output, string.format("\16705[%s] \16706%s", k, desc[k]))
         end
         return {str=output, type="info"}
     end
@@ -174,17 +183,17 @@ cmds["credits"] = {
     desc = "Lists everything that contributed to this project",
     func = function(args, ctx)
         local str = {}
-        table.insert(str, "Contributors:")
-        table.insert(str, "- glittershitter")
-        table.insert(str, "Libraries:")
-        table.insert(str, "- [RSA Key generator]")
-        table.insert(str, "- [SHA256-Algorithm]")
-        table.insert(str, "- [Basalt (UI Library)]")
-        table.insert(str, "- [Simple XML-Parser for lua]")
-        table.insert(str, "- [pixelbox]")
-        table.insert(str, "- [AES Encrypt library]")
-        table.insert(str, "- [LibDeflate]")
-        table.insert(str, "For more information visit the Github repository")
+        table.insert(str, "\16705Contributors:")
+        table.insert(str, "\16706- glittershitter")
+        table.insert(str, "\16705Libraries:")
+        table.insert(str, "\16706- [RSA Key generator]")
+        table.insert(str, "\16706- [SHA256-Algorithm]")
+        table.insert(str, "\16706- [Basalt (UI Library)]")
+        table.insert(str, "\16706- [Simple XML-Parser for lua]")
+        table.insert(str, "\16706- [pixelbox]")
+        table.insert(str, "\16706- [AES Encrypt library]")
+        table.insert(str, "\16706- [LibDeflate]")
+        table.insert(str, "\16705For more information visit the Github repository")
         return {str=str, type="info"}
     end
 }
@@ -225,9 +234,9 @@ cmds["lsblk"] = {
         for k,v in pairs(kernel:execute("vfs.get_config")) do
             local size = math.floor(((kernel:execute("vfs.get_size", k) / 1024) * 100 + 0.5) / 100)
             local cap = math.floor(((kernel:execute("vfs.get_capacity", k) / 1024) * 100 + 0.5) / 100)
-            table.insert(str, "[" .. k .. "] = " .. (size or "nil") .. "KB of " .. (cap or "nil") .. "KB")
+            table.insert(str, "\16705[" .. k .. "] \16706= \16705" .. (size or "nil") .. "KB/of" .. (cap or "nil") .. "KB")
         end
-        return {str = str, type = "success"}
+        return {str = str, type = "info"}
     end
 }
 
@@ -240,20 +249,33 @@ cmds["cat"] = {
         if target:sub(1,1) ~= "/" then
             target = (cwd .. "/" .. target):gsub("/+","/"):gsub("/$","")
         end
+        local data
         if mount[1] then
             if not kernel:execute("vfs.exists_file", target) then
                 return {str="File not found: "..target, type="fail"}
             end
-            return {str=kernel:execute("vfs.read", target), type="info"}
+            data = kernel:execute("vfs.read", target)
         else
             if not fs.exists(target) or fs.isDir(target) then
                 return {str="File not found: "..target, type="fail"}
             end
             local f = fs.open(target, "r")
-            local data = f.readAll()
+            data = f.readAll()
             f.close()
-            return {str=data, type="info"}
         end
+        if not data or data == "" then
+            return {str="", type="info"}
+        end
+        local w = select(1, term.getSize())
+        local output = {}
+        for line in data:gmatch("([^\n]*)\n?") do
+            while #line > w do
+                table.insert(output, line:sub(1, w))
+                line = line:sub(w + 1)
+            end
+            table.insert(output, line)
+        end
+        return {str=output, type="info"}
     end
 }
 
@@ -404,18 +426,31 @@ cmds["tree"] = {
 cmds["date"] = {
     desc = "Show current date and time",
     func = function()
-        return {
-            str = os.date("%Y-%m-%d %H:%M:%S", os.epoch("utc")/1000),
-            type="info"
-        }
+        return {str = os.date("\16705%Y-%m-%d %H:%M:%S", os.epoch("utc")/1000), type="info"}
     end
 }
 
 cmds["echo"] = {
     desc = "Print text",
     func = function(args)
-        return {str=table.concat(args, " "), type="info"}
+        return {str=table.concat(args, " ") .. "\167rr", type="info"}
     end
+}
+
+cmds["services"] = {
+    desc = "List all registered services",
+    func = function(args, ctx)
+        local tbl = {}
+        for k,v in pairs(ctx.kernel.ctx.services) do
+            table.insert(tbl, k)
+        end
+        return {str=table.concat(tbl, " "), type="info"}
+    end
+}
+
+cmds["version"] = {
+    desc = "Print server version",
+    func = function(args, ctx) return {str="GuardLink " .. ctx.kernel:execute("kernel.get_version"), type="info"} end
 }
 
 return cmds

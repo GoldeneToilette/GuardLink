@@ -40,7 +40,7 @@ function accountManager:isValidAccountName(name)
     if not name then return errors.ACCOUNT_NAME_EMPTY end
     name = name:match("^%s*(.-)%s*$")
     if name == "" then return errors.ACCOUNT_NAME_EMPTY end
-    if name:find("[/\\:*?\"<>|]") then return errors.ACCOUNT_INVALID_CHAR end
+    if name:find("[/\\:*?\"<>|§]") then return errors.ACCOUNT_INVALID_CHAR end
     if #name > 20 then return errors.ACCOUNT_NAME_TOO_LONG end
     if #name < 3 then return errors.ACCOUNT_NAME_TOO_SHORT end
     if self.vfs:existsFile("accounts/" .. name .. ".json") then return errors.ACCOUNT_EXISTS end

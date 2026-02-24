@@ -1,47 +1,43 @@
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local message = requireC("/GuardLink/server/network.message.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local handlers = {}
 
-function handlers.login(msg, _, id, ctx, session)
+function handlers.login(msg, client, id, ctx, fn)
+    local clientManager = ctx.services["client_manager"]
+    local session = ctx.services["network_session"]
+    local accounts = ctx.services["accounts"]
     local username = msg.payload.username
     local password = msg.payload.password
-    local aesKey = msg.payload.aesKey
-    local auth = ctx.accounts.authenticateUser(username, password)
-    if not aesKey or aesKey == "" or #aesKey ~= 16 then return errors.MALFORMED_MESSAGE end
+    local auth = accounts.authenticateUser(username, password)
     if auth == 0 then
-        local client = session.clientManager.registerClient(username, aesKey)
+        local client = clientManager.registerClient(username, utils.randomString(16, "generic"))
         if not client.throttle then return client end -- meaning it returned an error instead of a client table
         local msg = message.create("account", {
         action = "login", 
         status = "success", 
         token = client.token,
         channel = client.channel
-        }, client.aesKey)
-        msg.id = id
-        session:send(session.discovery, textutils.serialize({plaintext = false, message = msg}))
+        }, client.aesKey, false, id)
+        session:send(session.discovery, msg)
     else
         local msg = message.create("account", {
             action = "login",
             status = "failure",
-            error = auth[1]
-        })
-        msg.id = id
-        session:send(session.discovery, textutils.serialize({plaintext = true, message = msg}))
+            error = auth.client
+        }, nil, false, id)
+        session:send(session.discovery, msg)
     end
     return 0
 end
 
-function handlers.info(msg, client, id, ctx, session)
-
-end
-
-local function func(msg, client, id, ctx, session)
+local function func(msg, client, id, ctx, fn)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
     if client and msg.payload.token ~= client.token then
         return errors.TOKEN_MISMATCH
     end
-    return handlers[msg.payload.action](msg, client, id, ctx, session)
+    return handlers[msg.payload.action](msg, client, id, ctx, fn)
 end
 
 return func

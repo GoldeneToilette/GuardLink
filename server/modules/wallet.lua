@@ -37,7 +37,7 @@ function walletManager:isValidWalletName(name)
     if not name or name:match("^%s*$") then
         return errors.WALLET_NAME_EMPTY
     end
-    if name:find("[/\\:*?\"<>|]") then
+    if name:find("[/\\:*?\"<>|§]") then
         return errors.WALLET_INVALID_CHAR
     end
     if #name > 20 then return errors.WALLET_NAME_TOO_LONG end

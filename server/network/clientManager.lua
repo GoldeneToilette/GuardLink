@@ -56,7 +56,7 @@ function clientManager:disconnectClient(id, reason)
     local client = self.clients[id]
     if client then
         local msg = message.create("network", {action = "disconnect", reason = reason or "unknown_reason"}, client.aesKey, false)
-        self.session:send(client.channel, textutils.serialize({plaintext = false, message = msg}))
+        self.session:send(client.channel, msg)
         self.session:close(client.channel)
         self.clients[id] = nil
         return 0
@@ -70,7 +70,7 @@ function clientManager:disconnectAll(reason)
     local i = 0
     for _, client in pairs(self.clients) do
         local msg = message.create("network", payload, client.aesKey, false)
-        self.session:send(client.channel, textutils.serialize({plaintext = false, message = msg}))
+        self.session:send(client.channel, msg)
         self.session:close(client.channel)
         i = i + 1
     end
@@ -174,7 +174,7 @@ function clientManager:updateChannels()
         local newchannel = self:computeChannel(v.token)
 
         local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
-        self.session:send(v.channel, textutils.serialize({plaintext = false, message = msg}))
+        self.session:send(v.channel, msg)
 
         self.session:close(v.channel)
         v.channel = newchannel

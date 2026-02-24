@@ -1,9 +1,9 @@
-local rsa = require "lib.rsa-keygen"
+local rsa = requireC("/GuardLink/server/lib/rsa.keygen.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 
 local message = {}
 -- Types: response, request, notification
-function message.create(action, payload, key, rsaFlag)
+function message.create(action, payload, key, rsaFlag, id)
     if not action then return nil end
     local msg = {
         message = {
@@ -11,7 +11,7 @@ function message.create(action, payload, key, rsaFlag)
             payload = payload
         },
         timestamp = os.epoch("utc"),
-        id = utils.randomString(16, "generic"),
+        id = id or utils.randomString(16, "generic"),
         isPlaintext = false
     }
     if key then 

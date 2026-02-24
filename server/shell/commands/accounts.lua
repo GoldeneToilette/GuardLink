@@ -11,12 +11,12 @@ cmds["view"] = {
             return {str="Error: 'Account not found: " .. name .. "'", type="fail"}
         end
         local output = {
-            "Name: " .. values.name,
-            "UUID: " .. values.uuid,
-            "Created: " .. values.creationDate .. " " .. values.creationTime,
-            "Banned: " .. tostring(values.ban.active),
-            "Role: " .. values.role,
-            "Wallets: " .. table.concat(values.wallets, ", ")
+            "\16705Name: \16706" .. values.name,
+            "\16705UUID: \16706" .. values.uuid,
+            "\16705Created: \16706" .. values.creationDate .. " " .. values.creationTime,
+            "\16705Banned: \16706" .. tostring(values.ban.active),
+            "\16705Role: \16706" .. values.role,
+            "\16705Wallets: \16706" .. table.concat(values.wallets, ", ")
         }
         if values.ban.active then
             table.insert(output, "Duration: " .. values.ban.duration)
@@ -86,9 +86,10 @@ cmds["create"] = {
 
 cmds["help"] = {
     func = function(args, ctx)
+        local output = {}
         for k,v in pairs(cmds) do
             if type(v) == "table" and v.desc then
-                table.insert(output, k .. ": " .. v.desc)             
+                table.insert(output, "\16705"..k .. ": \16706" .. v.desc)             
             end
         end
         return {str=output, type="info"}
