@@ -356,12 +356,14 @@ panels[3] = {
                 for _, pair in ipairs(t) do
                     colorsMap[pair[1]] = pair[2]
                 end
-                term.setPaletteColor(colors.orange, tonumber(colorsMap.primary))
-                term.setPaletteColor(colors.magenta, tonumber(colorsMap.secondary))
-                term.setPaletteColor(colors.lightBlue, tonumber(colorsMap.tertiary))
-                term.setPaletteColor(colors.yellow, tonumber(colorsMap.highlight))
-                term.setPaletteColor(colors.lime, tonumber(colorsMap.subtle))
-                term.setPaletteColor(colors.cyan, tonumber(colorsMap.accent))
+                term.setPaletteColor(colors.orange, tonumber(colorsMap.background))
+                term.setPaletteColor(colors.magenta, tonumber(colorsMap.surface))
+                term.setPaletteColor(colors.lightBlue, tonumber(colorsMap.border))
+                term.setPaletteColor(colors.yellow, tonumber(colorsMap.primary))
+                term.setPaletteColor(colors.lime, tonumber(colorsMap.secondary))
+                term.setPaletteColor(colors.cyan, tonumber(colorsMap.textprimary))
+                term.setPaletteColor(colors.purple, tonumber(colorsMap.textsecondary))
+                term.setPaletteColor(colors.brown, tonumber(colorsMap.highlight))
             end
         end
 
@@ -377,12 +379,14 @@ panels[3] = {
         :setBackground(colors.gray)
         :setPosition(10, 5)
 
-        ui.primary = lib.uiHelper.newPane(frame, 3, 7, 3, 1, colors.orange)
-        ui.secondary = lib.uiHelper.newPane(frame, 6, 7, 3, 1, colors.magenta)
-        ui.tertiary = lib.uiHelper.newPane(frame, 9, 7, 3, 1, colors.lightBlue)
-        ui.highlight = lib.uiHelper.newPane(frame, 12, 7, 3, 1, colors.yellow)
-        ui.subtle = lib.uiHelper.newPane(frame, 15, 7, 3, 1, colors.lime)
-        ui.accent = lib.uiHelper.newPane(frame, 18, 7, 3, 1, colors.cyan)
+        ui.background = lib.uiHelper.newPane(frame, 3, 7, 2, 1, colors.orange)
+        ui.surface = lib.uiHelper.newPane(frame, 5, 7, 2, 1, colors.magenta)
+        ui.border = lib.uiHelper.newPane(frame, 8, 7, 2, 1, colors.lightBlue)
+        ui.primary = lib.uiHelper.newPane(frame, 11, 7, 2, 1, colors.yellow)
+        ui.secondary = lib.uiHelper.newPane(frame, 14, 7, 2, 1, colors.lime)
+        ui.textprimary = lib.uiHelper.newPane(frame, 17, 7, 2, 1, colors.cyan)
+        ui.textsecondary = lib.uiHelper.newPane(frame, 20, 7, 2, 1, colors.purple)
+        ui.highlight = lib.uiHelper.newPane(frame, 23, 7, 2, 1, colors.brown)
 
         local fi = ""
         for k,v in pairs(themes_table) do
@@ -640,5 +644,7 @@ term.setPaletteColor(colors.lightBlue, 0xFFFFFF)
 term.setPaletteColor(colors.yellow, 0xFFFFFF)
 term.setPaletteColor(colors.lime, 0xFFFFFF)
 term.setPaletteColor(colors.cyan, 0xFFFFFF)
+term.setPaletteColor(colors.purple, 0xffffff)
+term.setPaletteColor(colors.brown, 0xffffff)
 
 runInstaller()
