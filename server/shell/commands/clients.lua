@@ -165,19 +165,22 @@ cmds["stats"] = {
         local newestAgo = mostRecent > 0 and math.floor((now - mostRecent) / 1000) or 0
         local oldestAgo = oldestActivity < math.huge and math.floor((now - oldestActivity) / 1000) or 0
         local output = {
-            "Clients Statistics -------------------------",
-            "Active Clients: " .. total,
-            "Stale Clients: " .. #stale,
-            "Sleepy Clients: " .. sleepy,
-            "Throttled Clients: " .. throttled,
-            "Average Throttle (s): " .. avgThrottle,
-            "Most Recent Activity (s ago): " .. newestAgo,
-            "Oldest Activity (s ago): " .. oldestAgo,
-            "--------------------------------------------"
+            "\16705Clients Statistics -------------------------",
+            "\16706Active Clients: \167rr" .. total,
+            "\16706Stale Clients: \167rr" .. #stale,
+            "\16706Sleepy Clients: \167rr" .. sleepy,
+            "\16706Throttled Clients: \167rr" .. throttled,
+            "\16706Average Throttle (s): \167rr" .. avgThrottle,
+            "\16706Most Recent Activity (s ago): \167rr" .. newestAgo,
+            "\16706Oldest Activity (s ago): \167rr" .. oldestAgo,
+            "\16705--------------------------------------------"
         }
         return {str = output, type = "info"}
     end
 }
+cmds["statistics"] = cmds["stats"]
+cmds["statistics"].desc = nil
+
 
 cmds["throttlerequests"] = {
     desc = "Throttle the global request queue. Usage: clients throttlerequests <SECONDS>",

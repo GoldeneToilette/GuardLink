@@ -234,7 +234,7 @@ cmds["lsblk"] = {
         for k,v in pairs(kernel:execute("vfs.get_config")) do
             local size = math.floor(((kernel:execute("vfs.get_size", k) / 1024) * 100 + 0.5) / 100)
             local cap = math.floor(((kernel:execute("vfs.get_capacity", k) / 1024) * 100 + 0.5) / 100)
-            table.insert(str, "\16705[" .. k .. "] \16706= \16705" .. (size or "nil") .. "KB/of" .. (cap or "nil") .. "KB")
+            table.insert(str, "\16705[" .. k .. "] \16706= \16705" .. (size or "nil") .. "KB/" .. (cap or "nil") .. "KB")
         end
         return {str = str, type = "info"}
     end

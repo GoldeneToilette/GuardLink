@@ -8,7 +8,6 @@ local LEVELS = {
     FATAL = 4
 }
 
-
 function Logger.new(vfs)
     local self = setmetatable({}, Logger)
     self.baseDir = "logs"
@@ -27,7 +26,7 @@ function Logger:createInstance(name, settings)
         timestamp = settings.timestamp ~= false,
         level = (settings.level or "INFO"):upper(),
         vfs = self.vfs,
-        clear = settings.clear or false -- if it should be cleared when created
+        clear = settings.clear or false -- if it should be cleared when created, ONLY HAPPENS ONCE
     }
     instance.path = instance.dir .. "/" .. instance.fileName .. ".log"
     self.vfs:makeDir(instance.dir)
