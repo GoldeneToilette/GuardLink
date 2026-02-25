@@ -620,8 +620,20 @@ local function finishInstall()
     lib.fileUtils.newFile(lib.settings.server.rulesPath)
     lib.fileUtils.write(lib.settings.server.rulesPath, textutils.serialize(lib.settings))
     term.setTextColor(colors.green)
+
+
+    lib.fileUtils.newFile("/startup.lua")
+    lib.fileUtils.write("/startup.lua",
+    [[
+        local ok, fail = pcall(require, "GuardLink.server.startup")
+        if not ok then
+            print("Failed to launch GuardLink. Error:")
+            print(fail)
+        end
+    ]])
     print("Done! Reboot required")
 end
+
 
 local function runInstaller()
     parallel.waitForAny(lib.basalt.autoUpdate, function() while runbasalt do os.sleep(0) end end)

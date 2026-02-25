@@ -179,6 +179,13 @@ cmds["terminate"] = cmds["exit"]
 cmds["shutdown"].desc = nil
 cmds["terminate"].desc = nil
 
+cmds["reboot"] = {
+    desc = "Reboot the computer",
+    func = function(args, ctx)
+        os.reboot()
+    end
+}
+
 cmds["credits"] = {
     desc = "Lists everything that contributed to this project",
     func = function(args, ctx)

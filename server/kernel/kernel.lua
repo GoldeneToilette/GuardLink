@@ -1,3 +1,4 @@
+package.path = package.path .. ";" .. "GuardLink/server/?.lua"
 local configPath = "/GuardLink/server/config/"
 local deflate = require("lib.LibDeflate")
 
