@@ -90,7 +90,7 @@ local service = {
     tasks = nil,
     shutdown = function(self) 
         self.basalt.stopUpdate() 
-
+        self.theme.resetColors()
     end,
     api = {
         ["ui"] = {

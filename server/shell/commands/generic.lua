@@ -153,18 +153,53 @@ cmds["clear"] = {
 
 cmds["help"] = {
     func = function(args, ctx)
-        local kernel, desc = ctx.kernel, ctx.descriptions
+        local kernel = ctx.kernel
+        local groups = {
+            filesystem = {
+                desc = "Filesystem operations",
+                cmds = {"cd","ls","pwd","tree","touch","mkdir","rm","cp","mv","cat","lsblk","mount","unmount","umount"}
+            },
+            system = {
+                desc = "System commands",
+                cmds = {"version","shutdown","reboot","clear","craftos","history","date"}
+            },
+            ui = {
+                desc = "UI and theme commands",
+                cmds = {"theme","setcolor","sc","listcolor","lc"}
+            },
+            info = {
+                desc = "Information and miscellaneous",
+                cmds = {"credits","services","echo"}
+            }
+        }
+        local descs = {}
+        for k,v in pairs(cmds) do
+            if v.desc then descs[k] = v.desc end
+        end
         local output = {}
         table.insert(output, "GuardLink " .. kernel:execute("kernel.get_version"))
-        local keys = {}
-        for k in pairs(desc) do
-            table.insert(keys, k)
+        if not args[1] then
+            for g, groupData in pairs(groups) do
+                table.insert(output, string.format("\16705[%s] \16706%s", g, groupData.desc))
+            end
+            table.insert(output, "\16705[accounts] \16706Usage: <accounts help>")
+            table.insert(output, "\16705[clients] \16706Usage: <clients help>")
+            table.insert(output, "\16705[tasks] \16706Usage: <tasks help>")
+            return {str=output, type="info"}
+        else
+            local group = args[1]
+            if not groups[group] then
+                return {str="No such help group: " .. group, type="fail"}
+            end
+            table.insert(output, "-------------------------")
+            for _, cmd in ipairs(groups[group].cmds) do
+                if descs[cmd] then
+                    table.insert(output, string.format("\16705[%s] \16706%s", cmd, descs[cmd]))
+                end
+            end
+            table.insert(output, "-------------------------")
+            return {str=output, type="info"}
         end
-        table.sort(keys)
-        for _, k in ipairs(keys) do
-            table.insert(output, string.format("\16705[%s] \16706%s", k, desc[k]))
-        end
-        return {str=output, type="info"}
     end
 }
 
@@ -463,7 +498,7 @@ cmds["version"] = {
 cmds["craftos"] = {
     desc = "Returns back to craftos",
     func = function(args, ctx) 
-        ctx.kernel:yield() 
+        ctx.kernel:execute("kernel.stop")
         return {str="", type="info"}
     end
 }

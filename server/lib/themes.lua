@@ -65,11 +65,31 @@ local function setColor(t, hex, ter)
     end
 end
 
+local function resetColors()
+    term.setPaletteColor(colors.white, 0xF0F0F0)
+    term.setPaletteColor(colors.orange, 0xF2B233)
+    term.setPaletteColor(colors.magenta, 0xE57FD8)
+    term.setPaletteColor(colors.lightBlue, 0x99B2F2)
+    term.setPaletteColor(colors.yellow, 0xDEDE6C)
+    term.setPaletteColor(colors.lime, 0x7FCC19)
+    term.setPaletteColor(colors.pink, 0xF2B2CC)
+    term.setPaletteColor(colors.gray, 0x4C4C4C)
+    term.setPaletteColor(colors.lightGray, 0x999999)
+    term.setPaletteColor(colors.cyan, 0x4C99B2)
+    term.setPaletteColor(colors.purple, 0xB266E5)
+    term.setPaletteColor(colors.blue, 0x3366CC)
+    term.setPaletteColor(colors.brown, 0x7F664C)
+    term.setPaletteColor(colors.green, 0x57A64E)
+    term.setPaletteColor(colors.red, 0xCC4C4C)
+    term.setPaletteColor(colors.black, 0x111111)
+end
+
 return {
     init = init,
     setTheme = setTheme,
     getThemes = getThemes,
     colors = c,
     getTheme = getTheme,
-    setColor = setColor
+    setColor = setColor,
+    resetColors = resetColors
 }

@@ -25,6 +25,19 @@ cmds["info"] = {
     end
 }
 
+cmds["help"] = {
+    func = function(args, ctx)
+        local output = {"Task commands -------------------------"}
+        for k,v in pairs(cmds) do
+            if type(v) == "table" and v.desc then
+                table.insert(output, k .. ": \16706" .. v.desc)             
+            end
+        end
+        table.insert(output, "Task commands -------------------------")
+        return {str=output, type="info"}
+    end
+}
+
 function cmds.run(args, ctx)
     if not args[1] or args[1] == "" then return {str=ctx.kernel:execute("kernel.print_tasks"),type="info"} end
     if not cmds[args[1]] then return {str="Unknown command: clients " .. args[1], type="fail"} end

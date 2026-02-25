@@ -86,12 +86,13 @@ cmds["create"] = {
 
 cmds["help"] = {
     func = function(args, ctx)
-        local output = {}
+        local output = {"Account commands -------------------------"}
         for k,v in pairs(cmds) do
             if type(v) == "table" and v.desc then
                 table.insert(output, "\16705"..k .. ": \16706" .. v.desc)             
             end
         end
+        table.insert(output, "Account commands -------------------------")
         return {str=output, type="info"}
     end
 }
