@@ -460,4 +460,12 @@ cmds["version"] = {
     func = function(args, ctx) return {str="GuardLink " .. ctx.kernel:execute("kernel.get_version"), type="info"} end
 }
 
+cmds["craftos"] = {
+    desc = "Returns back to craftos",
+    func = function(args, ctx) 
+        ctx.kernel:yield() 
+        return {str="", type="info"}
+    end
+}
+
 return cmds

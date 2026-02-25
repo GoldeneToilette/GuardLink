@@ -6,7 +6,7 @@ function shutdown.register(fn)
     table.insert(callbacks, fn)
 end
 
-local function executeCallbacks()
+function shutdown.executeCallbacks()
     for i = 1, #callbacks do
         local ok, err = pcall(callbacks[i])
         if not ok then
@@ -19,12 +19,12 @@ local original_shutdown = os.shutdown
 local original_reboot = os.reboot
 
 os.shutdown = function(...)
-    executeCallbacks()
+    shutdown.executeCallbacks()
     return original_shutdown(...)
 end
 
 os.reboot = function(...)
-    executeCallbacks()
+    shutdown.executeCallbacks()
     return original_reboot(...)
 end
 

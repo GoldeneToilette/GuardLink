@@ -88,7 +88,10 @@ local service = {
         self:run()
     end,
     tasks = nil,
-    shutdown = nil,
+    shutdown = function(self) 
+        self.basalt.stopUpdate() 
+
+    end,
     api = {
         ["ui"] = {
             frame_set = function(self, args) return self:setFrame(args) end,

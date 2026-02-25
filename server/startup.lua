@@ -1,3 +1,4 @@
+package.path = package.path .. ";" .. "GuardLink/server/?.lua"
 local kernel = require("kernel.kernel")
 
 local services = {

@@ -1,8 +1,6 @@
-package.path = package.path .. ";" .. "GuardLink/server/?.lua"
 local configPath = "/GuardLink/server/config/"
 local deflate = require("lib.LibDeflate")
 
-local temp = {}
 local log
 
 _G.requireC = function(path)
@@ -26,12 +24,15 @@ _G.requireC = function(path)
     return false
 end
 
-local taskManager = requireC("/GuardLink/server/kernel/taskManager.lua")
 local shutdown = requireC("/GuardLink/server/kernel/shutdown.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
+local taskmaster = requireC("/GuardLink/server/lib/TaskMaster.lua")()
 
 local kernel = {}
 kernel.modules = {}
+
+kernel.processes = {}
+kernel.tasks = {}
 
 kernel.ctx = {
     services = {},
@@ -45,6 +46,27 @@ end
 
 kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.configs[args] or nil end)
 kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
+kernel:addCommand("kernel", "stop", function() taskmaster:stop() end)
+kernel:addCommand("kernel", "pause_task", function(args) 
+    if kernel.tasks[args or " "] then 
+        kernel.tasks[args].active = false
+        log:debug("Pausing task: ", args)
+    end
+end)
+kernel:addCommand("kernel", "resume_task", function(args)
+    if kernel.tasks[args] then
+        kernel.tasks[args].active = true
+        log:debug("Resuming task: ", args)
+    end
+end)
+kernel:addCommand("kernel", "print_tasks", function()
+    local str = {}
+    for k,v in pairs(kernel.tasks) do
+        table.insert(str, k)
+    end
+    return table.concat(str, " ")
+end)
+kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
 
 function kernel:execute(cmd, args)
     return self.cmds[cmd](args)
@@ -93,7 +115,6 @@ function kernel:initConfigs()
     end
 end
 
-kernel.processes = {}
 function kernel:initServices()
      -- creates placeholders
     for _, v in ipairs(self.modules) do
@@ -104,12 +125,19 @@ function kernel:initServices()
         self.ctx.services[v.name] = instance
 
         if v.runtime then
-            table.insert(self.processes, function() v.runtime(instance) end)
+            taskmaster:addTask(function() v.runtime(instance) end)
         end
         if v.tasks then
-            local tasks = v.tasks(instance)
-            for name,task in pairs(tasks) do
-                taskManager.add(task[1], task[2])
+            local t = v.tasks(instance)
+            for name,task in pairs(t) do
+                self.tasks[name] = {interval = task[2], active=true, lastRun = 0}
+                taskmaster:addTimer(task[2], function()
+                    if self.tasks[name].active then
+                        local ok, err = pcall(task[1], instance)
+                        if not ok then log:error("Task "..name.." failed: "..tostring(err)) end
+                        self.tasks[name].lastRun = os.epoch("utc")
+                    end
+                end)
             end
         end
         if v.shutdown then
@@ -127,16 +155,18 @@ function kernel:initServices()
 end
 
 function kernel:run()
-    table.insert(self.processes, taskManager.run)
     log = self.ctx.services["logger"]:createInstance("kernel", {
         timestamp = true,
         level = self.ctx.configs["settings"].debug and "DEBUG" or "INFO",
         clear = true
     })
-    log:debug("Starting processes")
+    log:debug("Starting processes and tasks...")
     utils.tryCatch(
     function()
-    parallel.waitForAll(table.unpack(self.processes))
+        taskmaster:run()
+        shutdown.executeCallbacks()
+        term.clear()
+        log:info("Kernel stopped cleanly")
     end, 
     function(err, stackTrace)
         log:debug("Process error: " .. err .. "\nStacktrace: " .. stackTrace)

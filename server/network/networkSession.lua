@@ -128,7 +128,7 @@ function NetworkSession:start()
             self:closeAll()
         end,
         function(err, stackTrace)
-            log:fatal("Server crashed :(")
+            log:fatal("Network session crashed :(")
             log:error("Error:" .. err)
             os.shutdown()            
         end        
