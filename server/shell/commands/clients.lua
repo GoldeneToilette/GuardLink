@@ -23,7 +23,7 @@ cmds["info"] = {
             table.insert(str, "Sleepy: " .. client.sleepy)
             return {str=str, type="success"}
         else
-            return {str="Error: Client not found"} 
+            return {str="Error: Client not found", type="fail"} 
         end        
     end
 }
@@ -78,7 +78,7 @@ cmds["wake"] = {
             return {str="Client not found", type="fail"}
         end
         ctx.kernel:execute("clients.get", args[2]).sleepy = false
-        return {str="Client " .. args[1] .. " woken up successfully", type="success"}
+        return {str="Client " .. args[2] .. " woken up successfully", type="success"}
     end
 }
 
@@ -214,7 +214,7 @@ cmds["help"] = {
 
 function cmds.run(args, ctx)
     if not args[1] or args[1] == "" then return {str="Unknown command: accounts ", type="fail"} end
-    if not cmds[args[1]] then return {str=("Unknown command: account " .. args[1]), type="fail"} end
+    if not cmds[args[1]] then return {str=("Unknown command: clients " .. args[1]), type="fail"} end
     return cmds[args[1]].func(args, ctx)
 end
 

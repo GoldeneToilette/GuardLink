@@ -16,7 +16,7 @@ cmds["view"] = {
             "\16705Created: \16706" .. values.creationDate .. " " .. values.creationTime,
             "\16705Banned: \16706" .. tostring(values.ban.active),
             "\16705Role: \16706" .. values.role,
-            "\16705Wallets: \16706" .. table.concat(values.wallets, ", ")
+            "\16705Wallets: \16706" .. table.concat(values.wallets or {}, ", ")
         }
         if values.ban.active then
             table.insert(output, "Duration: " .. values.ban.duration)

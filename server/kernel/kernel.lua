@@ -1,6 +1,7 @@
 local configPath = "/GuardLink/server/config/"
 local deflate = require("lib.LibDeflate")
 
+local temp = {}
 local log
 
 _G.requireC = function(path)
@@ -45,15 +46,19 @@ kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.confi
 kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
 
 function kernel:execute(cmd, args)
-    if self.cmds[cmd] then
-        log:debug("Executing command: " .. cmd)
-        return self.cmds[cmd](args)
-    end
-    log:debug("Unknown command called: " .. cmd)
+    return self.cmds[cmd](args)
 end
 
 function kernel:registerService(path)
-    local module = requireC(path)
+    local module 
+    utils.tryCatch(
+        function()
+            module = requireC(path)
+        end, 
+        function(err, stackTrace)
+            log:fatal("Failed to load service: " .. err .. "\nStacktrace: " .. stackTrace)
+            os.shutdown()
+    end)
     if not module then error("Tried to load unknown service: " .. path) end
     if not module.name then error("Error: Missing service name!") end
     table.insert(self.modules, module)
@@ -122,9 +127,9 @@ end
 
 function kernel:run()
     table.insert(self.processes, taskManager.run)
-    log = self.services["logger"]:createInstance("kernel", {
+    log = self.ctx.services["logger"]:createInstance("kernel", {
         timestamp = true,
-        level = self.config["settings"].debug and "DEBUG" or "INFO",
+        level = self.ctx.configs["settings"].debug and "DEBUG" or "INFO",
         clear = true
     })
     log:debug("Starting processes")

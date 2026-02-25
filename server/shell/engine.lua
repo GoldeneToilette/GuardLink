@@ -29,7 +29,6 @@ function engine:loadCommands()
                 end
             end
         end
-        
     end
 end
 
@@ -39,7 +38,6 @@ function engine:setup()
     if self.cfg.default_dir then self.cwd = self.cfg.default_dir end
     if self.cfg.history_length then self.history_length = self.cfg.history_length
     else self.history_length = 20 end
-
     log = kernel:execute("log.create", {
         name = "shell",
         settings = {

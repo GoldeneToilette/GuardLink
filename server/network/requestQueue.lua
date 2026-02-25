@@ -34,7 +34,9 @@ end
 
 function requestQueue:addRequest(message)
     if #self.queue + 1 > self.queueSize then return errors.QUEUE_FULL end
+    if not message or message == "" then return errors.MALFORMED_MESSAGE end
     local msg = textutils.unserialize(message)
+    if not msg then return errors.MALFORMED_MESSAGE end
     if msg.clientID and not self.clientManager:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
     local tbl = {
         id = msg.id,
@@ -47,60 +49,67 @@ function requestQueue:addRequest(message)
     return 0
 end
 
+function requestQueue:handleUnknownClient(request)
+    if request.isPlaintext then
+        log:debug("Received plaintext message: " .. request.message)
+        local result = self.dispatcher:dispatch(textutils.unserialize(request.message), nil, request.id)
+        if result ~= 0 then log:debug(result.log) return false end -- If request is malformed, it just logs it, no response
+    else
+        local ok, data = pcall(function() return rsa.rsaDecrypt(request.message, self.session.privateKey) end)
+        if ok then
+            log:debug("Received RSA-encrypted message: " .. data)
+            local result = self.dispatcher:dispatch(textutils.unserialize(data), nil, request.id)
+            if result ~= 0 then log:debug(result.log) return false end
+        else
+            log:debug("RSA decryption failed for unknown client! ")
+        end   
+    end
+    return true    
+end
+
+function requestQueue:handleKnownClient(request, client, time)
+    if time - client.lastActivityTime > ((client.throttle or 0)) then
+        local cipher = client.aesKey
+        local ok, plaintext = pcall(function()
+            return cipher:decrypt(request.message)
+        end)
+        if not ok or not plaintext then
+            log:debug("AES decryption failed for " .. client.id)
+            return true
+        end
+        log:debug("Received AES-encrypted message: " .. plaintext)
+        local data = textutils.unserialize(plaintext)
+        local result = self.dispatcher:dispatch(data, client, request.id)
+        client.lastActivityTime = time
+        if result ~= 0 then log:debug(result.log) end
+        return true
+    end
+    return false
+end
+
 function requestQueue:processQueue()
     while true do
         if not self.paused then 
             local time = os.epoch("utc")
             local processed = {}
-            if time - self.lastProcessed < ((self.throttle or 0)) then goto nothing_to_do end
-            self.lastProcessed = time
-
-            for i, request in ipairs(self.queue) do -- REQUEST LOOP ------------------------------------
-                local clientID = request.client
-                local client = self.clientManager:getClient(clientID)
-                if not client then
-                    if request.isPlaintext then
-                        log:debug("Received plaintext message: " .. request.message)
-                        local result = self.dispatcher:dispatch(textutils.unserialize(request.message), nil, request.id)
-                        if result ~= 0 then log:debug(result[2]) end
-                    else
-                    local ok, data = pcall(function() return rsa.rsaDecrypt(request.message, self.session.privateKey) end)
-                    if ok then
-                            log:debug("Received RSA-encrypted message: " .. data)
-                            local result = self.dispatcher:dispatch(textutils.unserialize(data), nil, request.id)
-                            if result ~= 0 then log:debug(result[2]) end
-                    else
-                            log:debug("RSA decryption failed for unknown client! ")
+            if time - self.lastProcessed > ((self.throttle or 0)) then 
+                self.lastProcessed = time
+                for i, request in ipairs(self.queue) do
+                    local clientID = request.client
+                    local client = self.clientManager:getClient(clientID)
+                    local success
+                    if not client then
+                        success = self:handleUnknownClient(request)
+                    else 
+                        success = self:handleKnownClient(request, client, time)
                     end
-                    end
-                    table.insert(processed, i)
-                else 
-                    if time - client.lastActivityTime > ((client.throttle or 0) * 1000) then
-                        local cipher = client.aesKey
-                        local ok, plaintext = pcall(function()
-                            return cipher:decrypt(request.message)
-                        end)
-                        log:debug("Received AES-encrypted message: " .. plaintext)
-                        if not ok or not plaintext then
-                            log:debug("AES decryption failed for " .. clientID)
-                            table.insert(processed, i)
-                            goto skip
-                        end
-                        local data = textutils.unserialize(plaintext)
-                        local result = self.dispatcher:dispatch(data, client, request.id)
-                        if result ~= 0 then log:debug(result[2]) end
-                        client.lastActivityTime = time
-                        table.insert(processed, i)
-                    end
+                    if success then table.insert(processed, i) end
                 end
-                ::skip::
-            end -- REQUEST LOOP ------------------------------------------------------------------------
-
-            for p = #processed, 1, -1 do
-                table.remove(self.queue, processed[p])
-            end     
+                for p = #processed, 1, -1 do
+                    table.remove(self.queue, processed[p])
+                end  
+            end   
         end
-        ::nothing_to_do::
         os.sleep(0.01)
     end
 end
