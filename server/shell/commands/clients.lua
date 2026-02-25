@@ -14,13 +14,16 @@ cmds["info"] = {
         local client = ctx.kernel:execute("clients.get", args[2] or "")
         if client then 
             local str = {}
-            table.insert(str, "ID: " .. client.id)
-            table.insert(str, "Connected At: " .. client.connectedAt)
-            table.insert(str, "Last Activity: " .. os.date("%Y-%m-%d %H:%M:%S", client.lastActivityTime / 1000))
-            table.insert(str, "Throttle: " .. client.throttle)
-            table.insert(str, "Logged into: " .. client.account)
-            table.insert(str, "Channel: " .. client.channel)
-            table.insert(str, "Sleepy: " .. client.sleepy)
+            table.insert(str, "\16706ID: \167rr" .. client.id)
+            table.insert(str, "\16706Connected At: \167rr" .. client.connectedAt)
+            table.insert(str, "\16706Last Activity: \167rr" .. os.date("%Y-%m-%d %H:%M:%S", client.lastActivityTime / 1000))
+            table.insert(str, "\16706Throttle: \167rr" .. client.throttle)
+            table.insert(str, "\16706Logged into: \167rr" .. client.account)
+            table.insert(str, "\16706Channel: \167rr" .. client.channel)
+            table.insert(str, "\16706Sleepy: \167rr" .. client.sleepy)
+            table.insert(str, "\16706Average packet size: \167rr" .. client.avgPacketSize / 1024)
+            table.insert(str, "\16706Packets sent: \167rr" .. client.packetsSent)
+            table.insert(str, "\16706Total packet size: \167rr" .. client.totalPacketSize / 1024)
             return {str=str, type="success"}
         else
             return {str="Error: Client not found", type="fail"} 

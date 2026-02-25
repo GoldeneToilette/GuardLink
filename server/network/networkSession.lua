@@ -98,7 +98,7 @@ function NetworkSession:closeAll()
 end
 
 function NetworkSession:send(channel, message)
-    self.modem.transmit(channel, 0, message)
+    self.modem.transmit(channel, math.random(0, 65535), message)
     log:debug("Sending message on channel " .. channel)
 end
 

@@ -120,7 +120,10 @@ function clientManager:registerClient(account, aesKey)
         account = account,
         channel = channel,
         aesKey = aes.Cipher:new(nil, aesKey),
-        sleepy = false
+        sleepy = false,
+        avgPacketSize = 0,
+        packetsSent = 0,
+        totalPacketSize = 0
     }
     log:debug("Registering client with ID " .. clientID)
     return self.clients[clientID]

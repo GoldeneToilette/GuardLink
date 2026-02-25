@@ -20,9 +20,11 @@ function requestQueue.new(ctx, settings)
     self.queueSize = settings.queue.queueSize or 40
     self.paused = false
     self.processedCount = 0
-
-    self.throttle = 0
     self.lastProcessed = 0
+    self.throttle = 0
+    self.avgPacketSize = 0
+    self.packetsSent = 0
+    self.totalPacketSize = 0
 
     return self
 end
@@ -34,7 +36,10 @@ end
 
 function requestQueue:addRequest(message)
     if #self.queue + 1 > self.queueSize then return errors.QUEUE_FULL end
+    self.packetsSent = self.packetsSent + 1
     if not message or message == "" then return errors.MALFORMED_MESSAGE end
+    self.totalPacketSize = self.totalPacketSize + #message
+    self.avgPacketSize = self.totalPacketSize / self.packetsSent
     local msg = textutils.unserialize(message)
     if not msg then return errors.MALFORMED_MESSAGE end
     if msg.clientID and not self.clientManager:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
@@ -69,6 +74,9 @@ end
 
 function requestQueue:handleKnownClient(request, client, time)
     if time - client.lastActivityTime > ((client.throttle or 0)) then
+        client.packetsSent = client.packetsSent + 1
+        client.totalPacketSize = client.totalPacketSize + #request
+        client.avgPacketSize = client.totalPacketSize / client.packetsSent
         local cipher = client.aesKey
         local ok, plaintext = pcall(function()
             return cipher:decrypt(request.message)
