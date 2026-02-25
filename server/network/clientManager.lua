@@ -13,7 +13,7 @@ function clientManager.new(session, settings, logger)
     self.clients = {}
     self.session = session or nil
 
-    log = logger:createInstance("clients", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("clients", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
 
     self.max_idle = (settings.clients.max_idle or 60) * 1000
     self.heartbeat_interval = (settings.clients.heartbeat_interval or 60)
@@ -59,6 +59,7 @@ function clientManager:disconnectClient(id, reason)
         self.session:send(client.channel, msg)
         self.session:close(client.channel)
         self.clients[id] = nil
+        log:debug("Disconnecting client: " .. id .. ", for reason: " .. reason)
         return 0
     else
         return errors.UNKNOWN_CLIENT
@@ -75,7 +76,7 @@ function clientManager:disconnectAll(reason)
         i = i + 1
     end
     self.clients = {}
-    log:info("Disconnected " .. i .. " clients!")
+    log:info("Disconnected all (" .. i .. ") clients!")
     return i
 end
 
@@ -121,6 +122,7 @@ function clientManager:registerClient(account, aesKey)
         aesKey = aes.Cipher:new(nil, aesKey),
         sleepy = false
     }
+    log:debug("Registering client with ID " .. clientID)
     return self.clients[clientID]
 end
 
@@ -136,6 +138,7 @@ function clientManager:setThrottle(id, throttle)
     local client = self:getClient(id)
     if not client then return errors.UNKNOWN_CLIENT end
     client.throttle = math.min((throttle or 0) * 1000, self.throttleLimit)
+    log:debug("Throttle set to " .. throttle .. " seconds for client " .. id)
     return 0
 end
 
@@ -153,6 +156,7 @@ end
 function clientManager:heartbeats()
     local time = os.epoch("utc")
     local clients = self:getStaleClients()
+    log:debug("Sending out heartbeats:")
     for _, v in pairs(clients) do
         if v.sleepy then
             if time - v.lastActivityTime > self.max_idle then
@@ -160,25 +164,28 @@ function clientManager:heartbeats()
             else
                 v.sleepy = false
             end
+            log:debug("Client " .. v.id .. " has not responded to heartbeat, timing out...")
         else
             v.sleepy = true
             local msg = message.create("network", { action = "heartbeat" }, v.aesKey, false)
             self.session:send(v.channel, msg)
+            log:debug("Awaiting heartbeat response from client " .. v.id)
         end
     end
 end
 
 function clientManager:updateChannels()
     local f = false
+    log:debug("Rotating channels:")
     for _, v in pairs(self.clients) do
         local newchannel = self:computeChannel(v.token)
 
         local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
         self.session:send(v.channel, msg)
-
         self.session:close(v.channel)
+        log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)         
         v.channel = newchannel
-        f = true
+        f = true       
     end
 
     for _, v in pairs(self.clients) do

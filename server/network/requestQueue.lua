@@ -29,6 +29,7 @@ end
 
 function requestQueue:setThrottle(seconds)
     self.throttle = (seconds or 0) * 1000
+    log:debug("Throttle set to " .. seconds .. " seconds")
 end
 
 function requestQueue:addRequest(message)

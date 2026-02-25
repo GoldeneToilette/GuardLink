@@ -204,7 +204,7 @@ cmds["help"] = {
         local output = {"Clients commands -------------------------"}
         for k,v in pairs(cmds) do
             if type(v) == "table" and v.desc then
-                table.insert(output, k .. ": " .. v.desc)             
+                table.insert(output, k .. ": \16706" .. v.desc)             
             end
         end
         table.insert(output, "Clients commands -------------------------")

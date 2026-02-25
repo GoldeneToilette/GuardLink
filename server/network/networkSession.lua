@@ -14,7 +14,7 @@ function NetworkSession.new(queue, settings, logger)
     local self = setmetatable({}, NetworkSession)
     self.requestQueue = queue
 
-    log = logger:createInstance("session", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("session", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
 
     self.discovery = settings.discoveryChannel or 65535
     self.channels = {}
@@ -38,6 +38,7 @@ end
 function NetworkSession:initModem()
     self.modem = peripheral.find("modem") or log:fatal("Failed to launch server: No modems found!")
     if not self.modem.isWireless() then log:fatal("Failed to launch server: Modem is not wireless!") end
+    log:debug("Modem found: " .. peripheral.getName(self.modem))
 end
 
 function NetworkSession:initKeys(keyPath)
@@ -58,6 +59,8 @@ function NetworkSession:initKeys(keyPath)
     else
         self.privateKey = textutils.unserialize(fileUtils.read(privatePath))
         self.publicKey  = textutils.unserialize(fileUtils.read(publicPath))
+        log:debug("RSA Public key loaded: " .. publicPath)
+        log:debug("RSA Private key loaded: " .. privatePath)
     end
 end
 
@@ -74,6 +77,7 @@ function NetworkSession:open(channel)
     if self:channelCount() + 1 >= 128 then return errors.CHANNEL_CAPACITY_REACHED end
     self.modem.open(channel)
     self.channels[channel] = true
+    log:debug("Opening channel " .. channel .. ", total: " .. self:channelCount())
     return 0
 end
 
@@ -81,6 +85,7 @@ function NetworkSession:close(channel)
     if not self.modem.isOpen(channel) then return errors.CHANNEL_ALREADY_CLOSED end
     self.modem.close(channel)
     self.channels[channel] = nil
+    log:debug("Closing channel " .. channel .. ", remaining: " .. self:channelCount())    
     return 0
 end
 
@@ -89,13 +94,16 @@ function NetworkSession:closeAll()
         self.modem.close(k)
     end
     self.channels = {}
+    log:debug("Closed all channels")
 end
 
 function NetworkSession:send(channel, message)
     self.modem.transmit(channel, 0, message)
+    log:debug("Sending message on channel " .. channel)
 end
 
 function NetworkSession:listen()
+    log:debug("Starting event listener loop")
     while not self.shutdown do
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
         if self.channels[channel]  then
@@ -109,11 +117,13 @@ end
 function NetworkSession:start()
     utils.tryCatch(
         function()
+            local startTime = os.clock()
             log:info("Launching Server with discovery channel: " .. self.discovery)
 
             self:open(self.discovery) 
             local code = self:listen() -- listener loop runs here until it exits with a code
             log:info("Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
+            log:info("Server was online for " .. string.format("%.2f", os.clock() - startTime) .. " seconds")
             if code ~= 0 then log:error("Exit code: " .. code) end
             self:closeAll()
         end,

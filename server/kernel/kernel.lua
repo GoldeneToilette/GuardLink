@@ -1,6 +1,8 @@
 local configPath = "/GuardLink/server/config/"
 local deflate = require("lib.LibDeflate")
 
+local log
+
 _G.requireC = function(path)
     if package.loaded[path] then return package.loaded[path] end
     if fs.exists(path) then
@@ -43,7 +45,11 @@ kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.confi
 kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
 
 function kernel:execute(cmd, args)
-    return self.cmds[cmd](args)
+    if self.cmds[cmd] then
+        log:debug("Executing command: " .. cmd)
+        return self.cmds[cmd](args)
+    end
+    log:debug("Unknown command called: " .. cmd)
 end
 
 function kernel:registerService(path)
@@ -116,11 +122,18 @@ end
 
 function kernel:run()
     table.insert(self.processes, taskManager.run)
+    log = self.services["logger"]:createInstance("kernel", {
+        timestamp = true,
+        level = self.config["settings"].debug and "DEBUG" or "INFO",
+        clear = true
+    })
+    log:debug("Starting processes")
     utils.tryCatch(
     function()
     parallel.waitForAll(table.unpack(self.processes))
     end, 
     function(err, stackTrace)
+        log:debug("Process error: " .. err .. "\nStacktrace: " .. stackTrace)
         os.shutdown()
     end)
 end
