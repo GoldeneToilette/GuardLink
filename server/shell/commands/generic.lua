@@ -235,6 +235,7 @@ cmds["credits"] = {
         table.insert(str, "\16706- [pixelbox]")
         table.insert(str, "\16706- [AES Encrypt library]")
         table.insert(str, "\16706- [LibDeflate]")
+        table.insert(str, "\16706- [TaskMaster]")
         table.insert(str, "\16705For more information visit the Github repository")
         return {str=str, type="info"}
     end
