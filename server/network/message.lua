@@ -17,8 +17,9 @@ function message.create(action, payload, key, rsaFlag, id)
     if key then 
         if rsaFlag then
             msg.message = rsa.rsaEncrypt(textutils.serialize(msg.message), key)
+        else
+            msg.message = key:encrypt(textutils.serialize(msg.message))
         end
-        msg.message = key:encrypt(textutils.serialize(msg.message))
     else
         msg.isPlaintext = true
     end
