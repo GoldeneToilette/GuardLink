@@ -1370,20 +1370,16 @@ function api.broadcast(timeout, callback)
     api.modem.transmit(api.discovery, api.discovery, message)
 end
 
--- Logs into a server with credentials, automatically encrypts with the nations public key if known.
-function api.auth(nation, name, password, callback)
-    if not api.nations[nation] then error("Unknown nation: " .. nation) end
-    if not name or not password then error("Missing fields: name or password") end
+local function sendCredentials(nation, name, password, action, id)
     local keyStr = randomString(16, "generic")
-	api._pendingKeyStr = keyStr
-    local id = randomString(16, "generic")
+    api._pendingKeyStr = keyStr
     local iv1 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
     local iv2 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
     local message = {
         message = {
             header = "account",
             payload = {
-                action = "login",
+                action = action,
                 username = {cipher = Cipher:new(nil, keyStr, iv1):encrypt(name), iv = iv1},
                 password = {cipher = Cipher:new(nil, keyStr, iv2):encrypt(password), iv = iv2},
                 key = {cipher = rsaEncrypt(keyStr, api.nations[nation])}
@@ -1393,6 +1389,14 @@ function api.auth(nation, name, password, callback)
         id = id,
         isPlaintext = true
     }
+    return message, keyStr
+end
+
+function api.auth(nation, name, password, callback)
+    if not api.nations[nation] then error("Unknown nation: " .. nation) end
+    if not name or not password then error("Missing fields: name or password") end
+    local id = randomString(16, "generic")
+    local message, keyStr = sendCredentials(nation, name, password, "login", id)
     registerCallback(id, function(response)
         if response.payload.status == "success" then
             api.sessionToken = response.payload.token
@@ -1400,10 +1404,23 @@ function api.auth(nation, name, password, callback)
             api.clientID = response.payload.clientID
             api.keyStr = keyStr
             api.modem.open(api.channel)
-			api._pendingKeyStr = nil
+            api._pendingKeyStr = nil
         end
         if callback then callback(response) end
-    end, 1, 10)
+    end, 1, 30)
+    api.modem.transmit(api.discovery, api.discovery, textutils.serialize(message))
+end
+
+function api.createAccount(nation, name, password, callback)
+    if not api.nations[nation] then error("Unknown nation: " .. nation) end
+    if not name or not password then error("Missing fields: name or password") end
+    if not callback then error("This function expects a callback!") end
+    local id = randomString(16, "generic")
+    local message, keyStr = sendCredentials(nation, name, password, "register", id)
+    registerCallback(id, function(response)
+        api._pendingKeyStr = nil
+        callback(response)
+    end, 1, 30)
     api.modem.transmit(api.discovery, api.discovery, textutils.serialize(message))
 end
 

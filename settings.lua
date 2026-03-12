@@ -29,6 +29,7 @@ data.server.queue = {
     queueSize = 40,
     throttle = 0
 }
+data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "default"
 data.server.debug = false
 data.server.minDiskCount = 20
