@@ -84,6 +84,48 @@ cmds["create"] = {
     end
 }
 
+cmds["invite"] = {
+    desc = "Manage invite codes: account invite <create|delete|list> [code] [uses]",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local sub = args[2]
+        if not sub then return {str="Usage: account invite <create|delete|list> [code] [uses]", type="fail"} end
+
+        if sub == "create" then
+            local code, uses = args[3], tonumber(args[4])
+            local success = kernel:execute("accounts.create_invite", {code=code, uses=uses})
+            if success ~= 0 then
+                return {str="Error: '" .. success.log .. "'", type="fail"}
+            end
+            return {str="Invite code created: " .. (code or "random") .. " with " .. (uses or 1) .. " use(s)", type="success"}
+
+        elseif sub == "delete" then
+            local code = args[3]
+            if not code then return {str="Error: no code provided", type="fail"} end
+            local success = kernel:execute("accounts.delete_invite", {code=code})
+            if success ~= 0 then
+                return {str="Error: '" .. success.log .. "'", type="fail"}
+            end
+            return {str="Invite code deleted: " .. code, type="success"}
+
+        elseif sub == "list" then
+            local codes = kernel:execute("accounts.get_invite_codes")
+            if not codes then
+                return {str="No invite codes found", type="info"}
+            end
+            local output = {"Invite codes -------------------------"}
+            for code, data in pairs(codes) do
+                table.insert(output, "\16705" .. code .. ": \16706" .. data.uses .. " use(s) remaining")
+            end
+            table.insert(output, "--------------------------------------")
+            return {str=output, type="info"}
+
+        else
+            return {str="Unknown subcommand: " .. sub .. " (create|delete|list)", type="fail"}
+        end
+    end
+}
+
 cmds["help"] = {
     func = function(args, ctx)
         local output = {"Account commands -------------------------"}

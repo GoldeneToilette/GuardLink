@@ -2,21 +2,249 @@ return {
 ["author"] = "glittershitter", 
 ["cct"] = "1.113.1", 
 ["version"] = "v0.1.1", 
-["date"] = "2026-03-12T20:21:07", 
-["checksum"] = "8388eea19b553186330fec3eab74cd36ac26f498f8dfa018da770cab8ecc4ff3", 
+["date"] = "2026-03-12T22:47:31", 
+["checksum"] = "549e453f29ac34207c1bc065aef8dd9753534538ef4328c07f567e9e648c280d", 
 ["target"] = "server", 
 ["files"] = {
-["server/modules/disk.lua"] = { index = 2, compression = true, length = 1589 },
-["server/network/clientManager.lua"] = { index = 13, compression = true, length = 1751 },
-["server/modules/account.lua"] = { index = 3, compression = true, length = 1670 },
+["server/lib/pixelbox_lite.lua"] = { index = 27, compression = true, length = 2397 },
+["server/shell/engine.lua"] = { index = 33, compression = true, length = 739 },
 ["server/lib/sha256.lua"] = { index = 16, compression = true, length = 1857 },
-["server/shell/commands/generic.lua"] = { index = 29, compression = true, length = 2979 },
+["server/modules/logger.lua"] = { index = 4, compression = true, length = 681 },
+["server/lib/basalt.lua"] = { index = 19, compression = true, length = 52992 },
 ["server/lib/TaskMaster.lua"] = { index = 17, compression = true, length = 2512 },
+["server/lib/LibDeflate.lua"] = { index = 21, compression = false, str = [==[local a;do local b="1.0.2-release"local c="LibDeflate"local d=3;local e="LibDeflate "..b.." Copyright (C) 2018-2021 Haoqian He.".." Licensed under the zlib License"if LibStub then local f,g=LibStub:GetLibrary(c,true)if f and g and g>=d then return f else a=LibStub:NewLibrary(c,d)end else a={}end;a._VERSION=b;a._MAJOR=c;a._MINOR=d;a._COPYRIGHT=e end;local assert=assert;local error=error;local pairs=pairs;local h=string.byte;local i=string.char;local j=string.find;local k=string.gsub;local l=string.sub;local m=table.concat;local n=table.sort;local tostring=tostring;local type=type;local o={}local p={}local q={}local r={}local s={}local t={}local u={}local v={}local w={}local x={3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258}local y={0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0}local z={[0]=1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577}local A={[0]=0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13}local B={16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15}local C;local D;local E;local F;local G;local H;local I;local J;for K=0,255 do p[K]=i(K)end;do local L=1;for K=0,32 do o[K]=L;L=L*2 end end;for K=1,9 do q[K]={}for M=0,o[K+1]-1 do local N=0;local O=M;for P=1,K do N=N-N%2+((N%2==1 or O%2==1)and 1 or 0)O=(O-O%2)/2;N=N*2 end;q[K][M]=(N-N%2)/2 end end;do local Q=18;local R=16;local S=265;local T=1;for U=3,258 do if U<=10 then r[U]=U+254;t[U]=0 elseif U==258 then r[U]=285;t[U]=0 else if U>Q then Q=Q+R;R=R*2;S=S+4;T=T+1 end;local V=U-Q-1+R/2;r[U]=(V-V%(R/8))/(R/8)+S;t[U]=T;s[U]=V%(R/8)end end end;do u[1]=0;u[2]=1;w[1]=0;w[2]=0;local Q=3;local R=4;local W=2;local T=0;for X=3,256 do if X>R then Q=Q*2;R=R*2;W=W+2;T=T+1 end;u[X]=X<=Q and W or W+1;w[X]=T<0 and 0 or T;if R>=8 then v[X]=(X-R/2-1)%(R/4)end end end;function a:Adler32(Y)if type(Y)~="string"then error(("Usage: LibDeflate:Adler32(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;local Z=#Y;local K=1;local Q=1;local R=0;while K<=Z-15 do local _,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae=h(Y,K,K+15)R=(R+16*Q+16*_+15*a0+14*a1+13*a2+12*a3+11*a4+10*a5+9*a6+8*a7+7*a8+6*a9+5*aa+4*ab+3*ac+2*ad+ae)%65521;Q=(Q+_+a0+a1+a2+a3+a4+a5+a6+a7+a8+a9+aa+ab+ac+ad+ae)%65521;K=K+16 end;while K<=Z do local af=h(Y,K,K)Q=(Q+af)%65521;R=(R+Q)%65521;K=K+1 end;return(R*65536+Q)%4294967296 end;local function ag(ah,ai)return ah%4294967296==ai%4294967296 end;function a:CreateDictionary(Y,Z,aj)if type(Y)~="string"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if type(Z)~="number"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'strlen' - number expected got '%s'."):format(type(Z)),2)end;if type(aj)~="number"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'adler32' - number expected got '%s'."):format(type(aj)),2)end;if Z~=#Y then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'strlen' does not match the actual length of 'str'.".." 'strlen': %u, '#str': %u .".." Please check if 'str' is modified unintentionally."):format(Z,#Y))end;if Z==0 then error("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - Empty string is not allowed.",2)end;if Z>32768 then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - string longer than 32768 bytes is not allowed.".." Got %d bytes."):format(Z),2)end;local ak=self:Adler32(Y)if not ag(aj,ak)then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'adler32' does not match the actual adler32 of 'str'.".." 'adler32': %u, 'Adler32(str)': %u .".." Please check if 'str' is modified unintentionally."):format(aj,ak))end;local al={}al.adler32=aj;al.hash_tables={}al.string_table={}al.strlen=Z;local am=al.string_table;local an=al.hash_tables;am[1]=h(Y,1,1)am[2]=h(Y,2,2)if Z>=3 then local K=1;local ao=am[1]*256+am[2]while K<=Z-2-3 do local _,a0,a1,a2=h(Y,K+2,K+5)am[K+2]=_;am[K+3]=a0;am[K+4]=a1;am[K+5]=a2;ao=(ao*256+_)%16777216;local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a0)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a1)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a2)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1 end;while K<=Z-2 do local af=h(Y,K+2)am[K+2]=af;ao=(ao*256+af)%16777216;local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1 end end;return al end;local function ap(al)if type(al)~="table"then return false,("'dictionary' - table expected got '%s'."):format(type(al))end;if type(al.adler32)~="number"or type(al.string_table)~="table"or type(al.strlen)~="number"or al.strlen<=0 or al.strlen>32768 or al.strlen~=#al.string_table or type(al.hash_tables)~="table"then return false,("'dictionary' - corrupted dictionary."):format(type(al))end;return true,""end;local aq={[0]={false,nil,0,0,0},[1]={false,nil,4,8,4},[2]={false,nil,5,18,8},[3]={false,nil,6,32,32},[4]={true,4,4,16,16},[5]={true,8,16,32,32},[6]={true,8,16,128,128},[7]={true,8,32,128,256},[8]={true,32,128,258,1024},[9]={true,32,258,258,4096}}local function ar(Y,as,al,at,au)if type(Y)~="string"then return false,("'str' - string expected got '%s'."):format(type(Y))end;if as then local av,aw=ap(al)if not av then return false,aw end end;if at then local ax=type(au)if ax~="nil"and ax~="table"then return false,("'configs' - nil or table expected got '%s'."):format(type(au))end;if ax=="table"then for ay,az in pairs(au)do if ay~="level"and ay~="strategy"then return false,("'configs' - unsupported table key in the configs: '%s'."):format(ay)elseif ay=="level"and not aq[az]then return false,("'configs' - unsupported 'level': %s."):format(tostring(az))elseif ay=="strategy"and az~="fixed"and az~="huffman_only"and az~="dynamic"then return false,("'configs' - unsupported 'strategy': '%s'."):format(tostring(az))end end end end;return true,""end;local aA=0;local aB=1;local aC=2;local aD=3;local function aE()local aF=0;local aG=0;local aH=0;local aI=0;local aJ={}local aK={}local function aL(O,T)aG=aG+O*o[aH]aH=aH+T;aI=aI+T;if aH>=32 then aF=aF+1;aJ[aF]=p[aG%256]..p[(aG-aG%256)/256%256]..p[(aG-aG%65536)/65536%256]..p[(aG-aG%16777216)/16777216%256]local aM=o[32-aH+T]aG=(O-O%aM)/aM;aH=aH-32 end end;local function aN(Y)for P=1,aH,8 do aF=aF+1;aJ[aF]=i(aG%256)aG=(aG-aG%256)/256 end;aH=0;aF=aF+1;aJ[aF]=Y;aI=aI+#Y*8 end;local function aO(aP)if aP==aD then return aI end;if aP==aB or aP==aC then local aQ=(8-aH%8)%8;if aH>0 then aG=aG-o[aH]+o[aH+aQ]for P=1,aH,8 do aF=aF+1;aJ[aF]=p[aG%256]aG=(aG-aG%256)/256 end;aG=0;aH=0 end;if aP==aC then aI=aI+aQ;return aI end end;local aR=m(aJ)aJ={}aF=0;aK[#aK+1]=aR;if aP==aA then return aI else return aI,m(aK)end end;return aL,aN,aO end;local function aS(aT,aU,aV)aV=aV+1;aT[aV]=aU;local O=aU[1]local aW=aV;local aX=(aW-aW%2)/2;while aX>=1 and aT[aX][1]>O do local V=aT[aX]aT[aX]=aU;aT[aW]=V;aW=aX;aX=(aX-aX%2)/2 end end;local function aY(aT,aV)local aZ=aT[1]local aU=aT[aV]local O=aU[1]aT[1]=aU;aT[aV]=aZ;aV=aV-1;local aW=1;local a_=aW*2;local b0=a_+1;while a_<=aV do local b1=aT[a_]if b0<=aV and aT[b0][1]<b1[1]then local b2=aT[b0]if b2[1]<O then aT[b0]=aU;aT[aW]=b2;aW=b0;a_=aW*2;b0=a_+1 else break end else if b1[1]<O then aT[a_]=aU;aT[aW]=b1;aW=a_;a_=aW*2;b0=a_+1 else break end end end;return aZ end;local function b3(b4,b5,b6,b7)local b8=0;local b9={}local ba={}for T=1,b7 do b8=(b8+(b4[T-1]or 0))*2;b9[T]=b8 end;for bb=0,b6 do local T=b5[bb]if T then b8=b9[T]b9[T]=b8+1;if T<=9 then ba[bb]=q[T][b8]else local N=0;for P=1,T do N=N-N%2+((N%2==1 or b8%2==1)and 1 or 0)b8=(b8-b8%2)/2;N=N*2 end;ba[bb]=(N-N%2)/2 end end end;return ba end;local function bc(Q,R)return Q[1]<R[1]or Q[1]==R[1]and Q[2]<R[2]end;local function bd(be,b7,b6)local aV;local bf=-1;local bg={}local aT={}local b5={}local bh={}local b4={}local bi=0;for bb,bj in pairs(be)do bi=bi+1;bg[bi]={bj,bb}end;if bi==0 then return{},{},-1 elseif bi==1 then local bb=bg[1][2]b5[bb]=1;bh[bb]=0;return b5,bh,bb else n(bg,bc)aV=bi;for K=1,aV do aT[K]=bg[K]end;while aV>1 do local bk=aY(aT,aV)aV=aV-1;local bl=aY(aT,aV)aV=aV-1;local bm={bk[1]+bl[1],-1,bk,bl}aS(aT,bm,aV)aV=aV+1 end;local bn=0;local bo={aT[1],0,0,0}local bp=1;local bq=1;aT[1][1]=0;while bq<=bp do local aU=bo[bq]local T=aU[1]local bb=aU[2]local b1=aU[3]local b2=aU[4]if b1 then bp=bp+1;bo[bp]=b1;b1[1]=T+1 end;if b2 then bp=bp+1;bo[bp]=b2;b2[1]=T+1 end;bq=bq+1;if T>b7 then bn=bn+1;T=b7 end;if bb>=0 then b5[bb]=T;bf=bb>bf and bb or bf;b4[T]=(b4[T]or 0)+1 end end;if bn>0 then repeat local T=b7-1;while(b4[T]or 0)==0 do T=T-1 end;b4[T]=b4[T]-1;b4[T+1]=(b4[T+1]or 0)+2;b4[b7]=b4[b7]-1;bn=bn-2 until bn<=0;bq=1;for T=b7,1,-1 do local br=b4[T]or 0;while br>0 do local bb=bg[bq][2]b5[bb]=T;br=br-1;bq=bq+1 end end end;bh=b3(b4,b5,b6,b7)return b5,bh,bf end end;local function bs(bt,bu,bv,bw)local bx=0;local by={}local bz={}local bA=0;local bB={}local bC=nil;local bj=0;bw=bw<0 and 0 or bw;local bD=bu+bw+1;for W=0,bD+1 do local U=W<=bu and(bt[W]or 0)or(W<=bD and(bv[W-bu-1]or 0)or nil)if U==bC then bj=bj+1;if U~=0 and bj==6 then bx=bx+1;by[bx]=16;bA=bA+1;bB[bA]=3;bz[16]=(bz[16]or 0)+1;bj=0 elseif U==0 and bj==138 then bx=bx+1;by[bx]=18;bA=bA+1;bB[bA]=127;bz[18]=(bz[18]or 0)+1;bj=0 end else if bj==1 then bx=bx+1;by[bx]=bC;bz[bC]=(bz[bC]or 0)+1 elseif bj==2 then bx=bx+1;by[bx]=bC;bx=bx+1;by[bx]=bC;bz[bC]=(bz[bC]or 0)+2 elseif bj>=3 then bx=bx+1;local bE=bC~=0 and 16 or(bj<=10 and 17 or 18)by[bx]=bE;bz[bE]=(bz[bE]or 0)+1;bA=bA+1;bB[bA]=bj<=10 and bj-3 or bj-11 end;bC=U;if U and U~=0 then bx=bx+1;by[bx]=U;bz[U]=(bz[U]or 0)+1;bj=0 else bj=1 end end end;return by,bB,bz end;local function bF(Y,V,bG,bH,bI)local K=bG-bI;while K<=bH-15-bI do V[K],V[K+1],V[K+2],V[K+3],V[K+4],V[K+5],V[K+6],V[K+7],V[K+8],V[K+9],V[K+10],V[K+11],V[K+12],V[K+13],V[K+14],V[K+15]=h(Y,K+bI,K+15+bI)K=K+16 end;while K<=bH-bI do V[K]=h(Y,K+bI,K+bI)K=K+1 end;return V end;local function bJ(bK,am,an,bL,bM,bI,al)local bN=aq[bK]local bO,bP,bQ,bR,bS=bN[1],bN[2],bN[3],bN[4],bN[5]local bT=not bO and bQ or 2147483646;local bU=bS-bS%4/4;local ao;local bV;local bW;local bX=0;if al then bV=al.hash_tables;bW=al.string_table;bX=al.strlen;assert(bL==1)if bM>=bL and bX>=2 then ao=bW[bX-1]*65536+bW[bX]*256+am[1]local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=-1 end;if bM>=bL+1 and bX>=1 then ao=bW[bX]*65536+am[1]*256+am[2]local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=0 end end;local bY=bX+3;ao=(am[bL-bI]or 0)*256+(am[bL+1-bI]or 0)local bZ={}local b_=0;local c0={}local c1={}local c2=0;local c3={}local c4={}local c5=0;local c6={}local c7=0;local c8=false;local c9;local ca;local cb=0;local cc=0;local bq=bL;local cd=bM+(bO and 1 or 0)while bq<=cd do local ce=bq-bI;local cf=bI-3;c9=cb;ca=cc;cb=0;ao=(ao*256+(am[ce+2]or 0))%16777216;local cg;local ch;local ci=an[ao]local cj;if not ci then cj=0;ci={}an[ao]=ci;if bV then ch=bV[ao]cg=ch and#ch or 0 else cg=0 end else cj=#ci;ch=ci;cg=cj end;if bq<=bM then ci[cj+1]=bq end;if cg>0 and bq+2<=bM and(not bO or c9<bQ)then local ck=bO and c9>=bP and bU or bS;local cl=bM-bq;cl=cl>=257 and 257 or cl;cl=cl+ce;local cm=ce+3;while cg>=1 and ck>0 do local bC=ch[cg]if bq-bC>32768 then break end;if bC<bq then local cn=cm;if bC>=-257 then local co=bC-cf;while cn<=cl and am[co]==am[cn]do cn=cn+1;co=co+1 end else local co=bY+bC;while cn<=cl and bW[co]==am[cn]do cn=cn+1;co=co+1 end end;local M=cn-ce;if M>cb then cb=M;cc=bq-bC end;if cb>=bR then break end end;cg=cg-1;ck=ck-1;if cg==0 and bC>0 and bV then ch=bV[ao]cg=ch and#ch or 0 end end end;if not bO then c9,ca=cb,cc end;if(not bO or c8)and(c9>3 or c9==3 and ca<4096)and cb<=c9 then local W=r[c9]local cp=t[c9]local cq,cr,cs;if ca<=256 then cq=u[ca]cs=v[ca]cr=w[ca]else cq=16;cr=7;local Q=384;local R=512;while true do if ca<=Q then cs=(ca-R/2-1)%(R/4)break elseif ca<=R then cs=(ca-R/2-1)%(R/4)cq=cq+1;break else cq=cq+2;cr=cr+1;Q=Q*2;R=R*2 end end end;b_=b_+1;bZ[b_]=W;c0[W]=(c0[W]or 0)+1;c2=c2+1;c1[c2]=cq;c3[cq]=(c3[cq]or 0)+1;if cp>0 then local ct=s[c9]c5=c5+1;c4[c5]=ct end;if cr>0 then c7=c7+1;c6[c7]=cs end;for K=bq+1,bq+c9-(bO and 2 or 1)do ao=(ao*256+(am[K-bI+2]or 0))%16777216;if c9<=bT then ci=an[ao]if not ci then ci={}an[ao]=ci end;ci[#ci+1]=K end end;bq=bq+c9-(bO and 1 or 0)c8=false elseif not bO or c8 then local W=am[bO and ce-1 or ce]b_=b_+1;bZ[b_]=W;c0[W]=(c0[W]or 0)+1;bq=bq+1 else c8=true;bq=bq+1 end end;b_=b_+1;bZ[b_]=256;c0[256]=(c0[256]or 0)+1;return bZ,c4,c0,c1,c6,c3 end;local function cu(c0,c3)local cv,cw,bu=bd(c0,15,285)local cx,cy,bw=bd(c3,15,29)local cz,bB,cA=bs(cv,bu,cx,bw)local cB,cC=bd(cA,7,18)local cD=0;for K=1,19 do local bb=B[K]local cE=cB[bb]or 0;if cE~=0 then cD=K end end;cD=cD-4;local cF=bu+1-257;local cG=bw+1-1;if cG<0 then cG=0 end;return cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy end;local function cH(bZ,c1,cD,cB,cz,cv,cx)local cI=17;cI=cI+(cD+4)*3;for K=1,#cz do local W=cz[K]cI=cI+cB[W]if W>=16 then cI=cI+(W==16 and 2 or(W==17 and 3 or 7))end end;local cJ=0;for K=1,#bZ do local W=bZ[K]local cK=cv[W]cI=cI+cK;if W>256 then cJ=cJ+1;if W>264 and W<285 then local cL=y[W-256]cI=cI+cL end;local cq=c1[cJ]local cM=cx[cq]cI=cI+cM;if cq>3 then local cr=(cq-cq%2)/2-1;cI=cI+cr end end end;return cI end;local function cN(aL,cO,bZ,c4,c1,c6,cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy)aL(cO and 1 or 0,1)aL(2,2)aL(cF,5)aL(cG,5)aL(cD,4)for K=1,cD+4 do local bb=B[K]local cE=cB[bb]or 0;aL(cE,3)end;local cP=1;for K=1,#cz do local W=cz[K]aL(cC[W],cB[W])if W>=16 then local cQ=bB[cP]aL(cQ,W==16 and 2 or(W==17 and 3 or 7))cP=cP+1 end end;local cJ=0;local cR=0;local cS=0;for K=1,#bZ do local cT=bZ[K]local b8=cw[cT]local cK=cv[cT]aL(b8,cK)if cT>256 then cJ=cJ+1;if cT>264 and cT<285 then cR=cR+1;local cU=c4[cR]local cL=y[cT-256]aL(cU,cL)end;local cV=c1[cJ]local cW=cy[cV]local cM=cx[cV]aL(cW,cM)if cV>3 then cS=cS+1;local cs=c6[cS]local cr=(cV-cV%2)/2-1;aL(cs,cr)end end end end;local function cX(bZ,c1)local cI=3;local cJ=0;for K=1,#bZ do local W=bZ[K]local cK=E[W]cI=cI+cK;if W>256 then cJ=cJ+1;if W>264 and W<285 then local cL=y[W-256]cI=cI+cL end;local cq=c1[cJ]cI=cI+5;if cq>3 then local cr=(cq-cq%2)/2-1;cI=cI+cr end end end;return cI end;local function cY(aL,cO,bZ,c4,c1,c6)aL(cO and 1 or 0,1)aL(1,2)local cJ=0;local cR=0;local cS=0;for K=1,#bZ do local cZ=bZ[K]local b8=C[cZ]local cK=E[cZ]aL(b8,cK)if cZ>256 then cJ=cJ+1;if cZ>264 and cZ<285 then cR=cR+1;local cU=c4[cR]local cL=y[cZ-256]aL(cU,cL)end;local cq=c1[cJ]local cW=G[cq]aL(cW,5)if cq>3 then cS=cS+1;local cs=c6[cS]local cr=(cq-cq%2)/2-1;aL(cs,cr)end end end end;local function c_(bL,bM,aI)assert(bM-bL+1<=65535)local cI=3;aI=aI+3;local aQ=(8-aI%8)%8;cI=cI+aQ;cI=cI+32;cI=cI+(bM-bL+1)*8;return cI end;local function d0(aL,aN,cO,Y,bL,bM,aI)assert(bM-bL+1<=65535)aL(cO and 1 or 0,1)aL(0,2)aI=aI+3;local aQ=(8-aI%8)%8;if aQ>0 then aL(o[aQ]-1,aQ)end;local d1=bM-bL+1;aL(d1,16)local d2=255-d1%256+(255-(d1-d1%256)/256)*256;aL(d2,16)aN(Y:sub(bL,bM))end;local function d3(au,aL,aN,aO,Y,al)local am={}local an={}local cO=nil;local bL;local bM;local d4;local aI=aO(aD)local Z=#Y;local bI;local bK;local d5;if au then if au.level then bK=au.level end;if au.strategy then d5=au.strategy end end;if not bK then if Z<2048 then bK=7 elseif Z>65536 then bK=3 else bK=5 end end;while not cO do if not bL then bL=1;bM=64*1024-1;bI=0 else bL=bM+1;bM=bM+32*1024;bI=bL-32*1024-1 end;if bM>=Z then bM=Z;cO=true else cO=false end;local bZ,c4,c0,c1,c6,c3;local cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy;local d6;local d7;local d8;if bK~=0 then bF(Y,am,bL,bM+3,bI)if bL==1 and al then local bW=al.string_table;local d9=al.strlen;for K=0,-d9+1<-257 and-257 or-d9+1,-1 do am[K]=bW[d9+K]end end;if d5=="huffman_only"then bZ={}bF(Y,bZ,bL,bM,bL-1)c4={}c0={}bZ[bM-bL+2]=256;for K=1,bM-bL+2 do local W=bZ[K]c0[W]=(c0[W]or 0)+1 end;c1={}c6={}c3={}else bZ,c4,c0,c1,c6,c3=bJ(bK,am,an,bL,bM,bI,al)end;cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy=cu(c0,c3)d6=cH(bZ,c1,cD,cB,cz,cv,cx)d7=cX(bZ,c1)end;d8=c_(bL,bM,aI)local da=d8;da=d7 and d7<da and d7 or da;da=d6 and d6<da and d6 or da;if bK==0 or d5~="fixed"and d5~="dynamic"and d8==da then d0(aL,aN,cO,Y,bL,bM,aI)aI=aI+d8 elseif d5~="dynamic"and(d5=="fixed"or d7==da)then cY(aL,cO,bZ,c4,c1,c6)aI=aI+d7 elseif d5=="dynamic"or d6==da then cN(aL,cO,bZ,c4,c1,c6,cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy)aI=aI+d6 end;if cO then d4=aO(aD)else d4=aO(aA)end;assert(d4==aI)if not cO then local M;if al and bL==1 then M=0;while am[M]do am[M]=nil;M=M-1 end end;al=nil;M=1;for K=bM-32767,bM do am[M]=am[K-bI]M=M+1 end;for ay,V in pairs(an)do local db=#V;if db>0 and bM+1-V[1]>32768 then if db==1 then an[ay]=nil else local dc={}local dd=0;for K=2,db do M=V[K]if bM+1-M<=32768 then dd=dd+1;dc[dd]=M end end;an[ay]=dc end end end end end end;local function de(Y,al,au)local aL,aN,aO=aE()d3(au,aL,aN,aO,Y,al)local aI,df=aO(aB)local aQ=(8-aI%8)%8;return df,aQ end;local function dg(Y,al,au)local aL,aN,aO=aE()local dh=8;local di=7;local dj=di*16+dh;aL(dj,8)local dk=al and 1 or 0;local dl=2;local dm=dl*64+dk*32;local dn=31-(dj*256+dm)%31;dm=dm+dn;aL(dm,8)if dk==1 then local aj=al.adler32;local dp=aj%256;aj=(aj-dp)/256;local dq=aj%256;aj=(aj-dq)/256;local dr=aj%256;aj=(aj-dr)/256;local ds=aj%256;aL(ds,8)aL(dr,8)aL(dq,8)aL(dp,8)end;d3(au,aL,aN,aO,Y,al)aO(aC)local aj=a:Adler32(Y)local ds=aj%256;aj=(aj-ds)/256;local dr=aj%256;aj=(aj-dr)/256;local dq=aj%256;aj=(aj-dq)/256;local dp=aj%256;aL(dp,8)aL(dq,8)aL(dr,8)aL(ds,8)local aI,df=aO(aB)local aQ=(8-aI%8)%8;return df,aQ end;function a:CompressDeflate(Y,au)local dt,du=ar(Y,false,nil,true,au)if not dt then error("Usage: LibDeflate:CompressDeflate(str, configs): "..du,2)end;return de(Y,nil,au)end;function a:CompressDeflateWithDict(Y,al,au)local dt,du=ar(Y,true,al,true,au)if not dt then error("Usage: LibDeflate:CompressDeflateWithDict".."(str, dictionary, configs): "..du,2)end;return de(Y,al,au)end;function a:CompressZlib(Y,au)local dt,du=ar(Y,false,nil,true,au)if not dt then error("Usage: LibDeflate:CompressZlib(str, configs): "..du,2)end;return dg(Y,nil,au)end;function a:CompressZlibWithDict(Y,al,au)local dt,du=ar(Y,true,al,true,au)if not dt then error("Usage: LibDeflate:CompressZlibWithDict".."(str, dictionary, configs): "..du,2)end;return dg(Y,al,au)end;local function dv(dw)local dx=dw;local dy=#dw;local dz=1;local aH=0;local aG=0;local function dA(T)local aM=o[T]local W;if T<=aH then W=aG%aM;aG=(aG-W)/aM;aH=aH-T else local dB=o[aH]local dq,dr,ds,dC=h(dx,dz,dz+3)aG=aG+((dq or 0)+(dr or 0)*256+(ds or 0)*65536+(dC or 0)*16777216)*dB;dz=dz+4;aH=aH+32-T;W=aG%aM;aG=(aG-W)/aM end;return W end;local function dD(dE,aJ,aF)assert(aH%8==0)local dF=aH/8<dE and aH/8 or dE;for P=1,dF do local dG=aG%256;aF=aF+1;aJ[aF]=i(dG)aG=(aG-dG)/256 end;aH=aH-dF*8;dE=dE-dF;if(dy-dz-dE+1)*8+aH<0 then return-1 end;for K=dz,dz+dE-1 do aF=aF+1;aJ[aF]=l(dx,K,K)end;dz=dz+dE;return aF end;local function dH(dI,dJ,da)local W=0;local dK=0;local bq=0;local bj;if da>0 then if aH<15 and dx then local dB=o[aH]local dq,dr,ds,dC=h(dx,dz,dz+3)aG=aG+((dq or 0)+(dr or 0)*256+(ds or 0)*65536+(dC or 0)*16777216)*dB;dz=dz+4;aH=aH+32 end;local aM=o[da]aH=aH-da;W=aG%aM;aG=(aG-W)/aM;W=q[da][W]bj=dI[da]if W<bj then return dJ[W]end;bq=bj;dK=bj*2;W=W*2 end;for T=da+1,15 do local dL;dL=aG%2;aG=(aG-dL)/2;aH=aH-1;W=dL==1 and W+1-W%2 or W;bj=dI[T]or 0;local dM=W-dK;if dM<bj then return dJ[bq+dM]end;bq=bq+bj;dK=dK+bj;dK=dK*2;W=W*2 end;return-10 end;local function dN()return(dy-dz+1)*8+aH end;local function dO()local dP=aH%8;local aM=o[dP]aH=aH-dP;aG=(aG-aG%aM)/aM end;return dA,dD,dH,dN,dO end;local function dQ(Y,al)local dA,dD,dH,dN,dO=dv(Y)local dR={ReadBits=dA,ReadBytes=dD,Decode=dH,ReaderBitlenLeft=dN,SkipToByteBoundary=dO,buffer_size=0,buffer={},result_buffer={},dictionary=al}return dR end;local function dS(dT,b6,b7)local dI={}local da=b7;for bb=0,b6 do local T=dT[bb]or 0;da=T>0 and T<da and T or da;dI[T]=(dI[T]or 0)+1 end;if dI[0]==b6+1 then return 0,dI,{},0 end;local dU=1;for U=1,b7 do dU=dU*2;dU=dU-(dI[U]or 0)if dU<0 then return dU end end;local dV={}dV[1]=0;for U=1,b7-1 do dV[U+1]=dV[U]+(dI[U]or 0)end;local dJ={}for bb=0,b6 do local T=dT[bb]or 0;if T~=0 then local bI=dV[T]dJ[bI]=bb;dV[T]=dV[T]+1 end end;return dU,dI,dJ,da end;local function dW(dR,cv,dX,dY,cx,dZ,d_)local aJ,aF,dA,dH,dN,aK=dR.buffer,dR.buffer_size,dR.ReadBits,dR.Decode,dR.ReaderBitlenLeft,dR.result_buffer;local al=dR.dictionary;local bW;local d9;local e0=1;if al and not aJ[0]then bW=al.string_table;d9=al.strlen;e0=-d9+1;for K=0,-d9+1<-257 and-257 or-d9+1,-1 do aJ[K]=p[bW[d9+K]]end end;repeat local bb=dH(cv,dX,dY)if bb<0 or bb>285 then return-10 elseif bb<256 then aF=aF+1;aJ[aF]=p[bb]elseif bb>256 then bb=bb-256;local T=x[bb]T=bb>=8 and T+dA(y[bb])or T;bb=dH(cx,dZ,d_)if bb<0 or bb>29 then return-10 end;local X=z[bb]X=X>4 and X+dA(A[bb])or X;local e1=aF-X+1;if e1<e0 then return-11 end;if e1>=-257 then for P=1,T do aF=aF+1;aJ[aF]=aJ[e1]e1=e1+1 end else e1=d9+e1;for P=1,T do aF=aF+1;aJ[aF]=p[bW[e1]]e1=e1+1 end end end;if dN()<0 then return 2 end;if aF>=65536 then aK[#aK+1]=m(aJ,"",1,32768)for K=32769,aF do aJ[K-32768]=aJ[K]end;aF=aF-32768;aJ[aF+1]=nil end until bb==256;dR.buffer_size=aF;return 0 end;local function e2(dR)local aJ,aF,dA,dD,dN,dO,aK=dR.buffer,dR.buffer_size,dR.ReadBits,dR.ReadBytes,dR.ReaderBitlenLeft,dR.SkipToByteBoundary,dR.result_buffer;dO()local dE=dA(16)if dN()<0 then return 2 end;local e3=dA(16)if dN()<0 then return 2 end;if dE%256+e3%256~=255 then return-2 end;if(dE-dE%256)/256+(e3-e3%256)/256~=255 then return-2 end;aF=dD(dE,aJ,aF)if aF<0 then return 2 end;if aF>=65536 then aK[#aK+1]=m(aJ,"",1,32768)for K=32769,aF do aJ[K-32768]=aJ[K]end;aF=aF-32768;aJ[aF+1]=nil end;dR.buffer_size=aF;return 0 end;local function e4(dR)return dW(dR,F,D,7,J,H,5)end;local function e5(dR)local dA,dH=dR.ReadBits,dR.Decode;local e6=dA(5)+257;local e7=dA(5)+1;local e8=dA(4)+4;if e6>286 or e7>30 then return-3 end;local cB={}for K=1,e8 do cB[B[K]]=dA(3)end;local e9,ea,eb,ec=dS(cB,18,7)if e9~=0 then return-4 end;local cv={}local cx={}local bq=0;while bq<e6+e7 do local bb;local T;bb=dH(ea,eb,ec)if bb<0 then return bb elseif bb<16 then if bq<e6 then cv[bq]=bb else cx[bq-e6]=bb end;bq=bq+1 else T=0;if bb==16 then if bq==0 then return-5 end;if bq-1<e6 then T=cv[bq-1]else T=cx[bq-e6-1]end;bb=3+dA(2)elseif bb==17 then bb=3+dA(3)else bb=11+dA(7)end;if bq+bb>e6+e7 then return-6 end;while bb>0 do bb=bb-1;if bq<e6 then cv[bq]=T else cx[bq-e6]=T end;bq=bq+1 end end end;if(cv[256]or 0)==0 then return-9 end;local ed,ee,dX,dY=dS(cv,e6-1,15)if ed~=0 and(ed<0 or e6~=(ee[0]or 0)+(ee[1]or 0))then return-7 end;local ef,eg,dZ,d_=dS(cx,e7-1,15)if ef~=0 and(ef<0 or e7~=(eg[0]or 0)+(eg[1]or 0))then return-8 end;return dW(dR,ee,dX,dY,eg,dZ,d_)end;local function eh(dR)local dA=dR.ReadBits;local cO;while not cO do cO=dA(1)==1;local ei=dA(2)local ej;if ei==0 then ej=e2(dR)elseif ei==1 then ej=e4(dR)elseif ei==2 then ej=e5(dR)else return nil,-1 end;if ej~=0 then return nil,ej end end;dR.result_buffer[#dR.result_buffer+1]=m(dR.buffer,"",1,dR.buffer_size)local df=m(dR.result_buffer)return df end;local function ek(Y,al)local dR=dQ(Y,al)local df,ej=eh(dR)if not df then return nil,ej end;local el=dR.ReaderBitlenLeft()local em=(el-el%8)/8;return df,em end;local function en(Y,al)local dR=dQ(Y,al)local dA=dR.ReadBits;local dj=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;local dh=dj%16;local di=(dj-dh)/16;if dh~=8 then return nil,-12 end;if di>7 then return nil,-13 end;local dm=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;if(dj*256+dm)%31~=0 then return nil,-14 end;local dk=(dm-dm%32)/32%2;local dl=(dm-dm%64)/64%4;if dk==1 then if not al then return nil,-16 end;local ds=dA(8)local dr=dA(8)local dq=dA(8)local dp=dA(8)local ak=ds*16777216+dr*65536+dq*256+dp;if dR.ReaderBitlenLeft()<0 then return nil,2 end;if not ag(ak,al.adler32)then return nil,-17 end end;local df,ej=eh(dR)if not df then return nil,ej end;dR.SkipToByteBoundary()local eo=dA(8)local ep=dA(8)local eq=dA(8)local er=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;local es=eo*16777216+ep*65536+eq*256+er;local et=a:Adler32(df)if not ag(es,et)then return nil,-15 end;local el=dR.ReaderBitlenLeft()local em=(el-el%8)/8;return df,em end;function a:DecompressDeflate(Y)local dt,du=ar(Y)if not dt then error("Usage: LibDeflate:DecompressDeflate(str): "..du,2)end;return ek(Y)end;function a:DecompressDeflateWithDict(Y,al)local dt,du=ar(Y,true,al)if not dt then error("Usage: LibDeflate:DecompressDeflateWithDict(str, dictionary): "..du,2)end;return ek(Y,al)end;function a:DecompressZlib(Y)local dt,du=ar(Y)if not dt then error("Usage: LibDeflate:DecompressZlib(str): "..du,2)end;return en(Y)end;function a:DecompressZlibWithDict(Y,al)local dt,du=ar(Y,true,al)if not dt then error("Usage: LibDeflate:DecompressZlibWithDict(str, dictionary): "..du,2)end;return en(Y,al)end;do E={}for eu=0,143 do E[eu]=8 end;for eu=144,255 do E[eu]=9 end;for eu=256,279 do E[eu]=7 end;for eu=280,287 do E[eu]=8 end;I={}for X=0,31 do I[X]=5 end;local ej;ej,F,D=dS(E,287,9)assert(ej==0)ej,J,H=dS(I,31,5)assert(ej==0)C=b3(F,E,287,9)G=b3(J,I,31,5)end;local ev={["\000"]="%z",["("]="%(",[")"]="%)",["."]="%.",["%"]="%%",["+"]="%+",["-"]="%-",["*"]="%*",["?"]="%?",["["]="%[",["]"]="%]",["^"]="%^",["$"]="%$"}local function ew(Y)return Y:gsub("([%z%(%)%.%%%+%-%*%?%[%]%^%$])",ev)end;function a:CreateCodec(ex,ey,ez)if type(ex)~="string"or type(ey)~="string"or type(ez)~="string"then error("Usage: LibDeflate:CreateCodec(reserved_chars,".." escape_chars, map_chars):".." All arguments must be string.",2)end;if ey==""then return nil,"No escape characters supplied."end;if#ex<#ez then return nil,"The number of reserved characters must be".." at least as many as the number of mapped chars."end;if ex==""then return nil,"No characters to encode."end;local eA=ex..ey..ez;local eB={}for K=1,#eA do local dG=h(eA,K,K)if eB[dG]then return nil,"There must be no duplicate characters in the".." concatenation of reserved_chars, escape_chars and".." map_chars."end;eB[dG]=true end;local eC={}local eD={}local eE={}local eF={}if#ez>0 then local eG={}local eH={}for K=1,#ez do local eI=l(ex,K,K)local eJ=l(ez,K,K)eF[eI]=eJ;eE[#eE+1]=eI;eH[eJ]=eI;eG[#eG+1]=eJ end;eC[#eC+1]="(["..ew(m(eG)).."])"eD[#eD+1]=eH end;local eK=1;local eL=l(ey,eK,eK)local eM=0;local eG={}local eH={}for K=1,#eA do local S=l(eA,K,K)if not eF[S]then while eM>=256 or eB[eM]do eM=eM+1;if eM>255 then eC[#eC+1]=ew(eL).."(["..ew(m(eG)).."])"eD[#eD+1]=eH;eK=eK+1;eL=l(ey,eK,eK)eM=0;eG={}eH={}if not eL or eL==""then return nil,"Out of escape characters."end end end;local eN=p[eM]eF[S]=eL..eN;eE[#eE+1]=S;eH[eN]=S;eG[#eG+1]=eN;eM=eM+1 end;if K==#eA then eC[#eC+1]=ew(eL).."(["..ew(m(eG)).."])"eD[#eD+1]=eH end end;local eO={}local eP="(["..ew(m(eE)).."])"local eQ=eF;function eO:Encode(Y)if type(Y)~="string"then error(("Usage: codec:Encode(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;return k(Y,eP,eQ)end;local eR=#eC;local eS="(["..ew(ex).."])"function eO:Decode(Y)if type(Y)~="string"then error(("Usage: codec:Decode(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if j(Y,eS)then return nil end;for K=1,eR do Y=k(Y,eC[K],eD[K])end;return Y end;return eO end;local eT;local function eU()return a:CreateCodec("\000","\001","")end;function a:EncodeForWoWAddonChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForWoWAddonChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eT then eT=eU()end;return eT:Encode(Y)end;function a:DecodeForWoWAddonChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForWoWAddonChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eT then eT=eU()end;return eT:Decode(Y)end;local function eV()local eM={}for K=128,255 do eM[#eM+1]=p[K]end;local ex="sS\000\010\013\124%"..m(eM)return a:CreateCodec(ex,"\029\031","\015\020")end;local eW;function a:EncodeForWoWChatChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForWoWChatChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eW then eW=eV()end;return eW:Encode(Y)end;function a:DecodeForWoWChatChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForWoWChatChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eW then eW=eV()end;return eW:Decode(Y)end;local eX={[0]="a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9","(",")"}local eY={[97]=0,[98]=1,[99]=2,[100]=3,[101]=4,[102]=5,[103]=6,[104]=7,[105]=8,[106]=9,[107]=10,[108]=11,[109]=12,[110]=13,[111]=14,[112]=15,[113]=16,[114]=17,[115]=18,[116]=19,[117]=20,[118]=21,[119]=22,[120]=23,[121]=24,[122]=25,[65]=26,[66]=27,[67]=28,[68]=29,[69]=30,[70]=31,[71]=32,[72]=33,[73]=34,[74]=35,[75]=36,[76]=37,[77]=38,[78]=39,[79]=40,[80]=41,[81]=42,[82]=43,[83]=44,[84]=45,[85]=46,[86]=47,[87]=48,[88]=49,[89]=50,[90]=51,[48]=52,[49]=53,[50]=54,[51]=55,[52]=56,[53]=57,[54]=58,[55]=59,[56]=60,[57]=61,[40]=62,[41]=63}function a:EncodeForPrint(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForPrint(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;local Z=#Y;local eZ=Z-2;local K=1;local aJ={}local aF=0;while K<=eZ do local _,a0,a1=h(Y,K,K+2)K=K+3;local aG=_+a0*256+a1*65536;local e_=aG%64;aG=(aG-e_)/64;local f0=aG%64;aG=(aG-f0)/64;local f1=aG%64;local f2=(aG-f1)/64;aF=aF+1;aJ[aF]=eX[e_]..eX[f0]..eX[f1]..eX[f2]end;local aG=0;local aH=0;while K<=Z do local af=h(Y,K,K)aG=aG+af*o[aH]aH=aH+8;K=K+1 end;while aH>0 do local f3=aG%64;aF=aF+1;aJ[aF]=eX[f3]aG=(aG-f3)/64;aH=aH-6 end;return m(aJ)end;function a:DecodeForPrint(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForPrint(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;Y=Y:gsub("^[%c ]+","")Y=Y:gsub("[%c ]+$","")local Z=#Y;if Z==1 then return nil end;local f4=Z-3;local K=1;local aJ={}local aF=0;while K<=f4 do local _,a0,a1,a2=h(Y,K,K+3)_=eY[_]a0=eY[a0]a1=eY[a1]a2=eY[a2]if not(_ and a0 and a1 and a2)then return nil end;K=K+4;local aG=_+a0*64+a1*4096+a2*262144;local e_=aG%256;aG=(aG-e_)/256;local f0=aG%256;local f1=(aG-f0)/256;aF=aF+1;aJ[aF]=p[e_]..p[f0]..p[f1]end;local aG=0;local aH=0;while K<=Z do local af=h(Y,K,K)af=eY[af]if not af then return nil end;aG=aG+af*o[aH]aH=aH+6;K=K+1 end;while aH>=8 do local dG=aG%256;aF=aF+1;aJ[aF]=p[dG]aG=(aG-dG)/256;aH=aH-8 end;return m(aJ)end;local function f5()eW=nil;eT=nil end;a.internals={LoadStringToTable=bF,IsValidDictionary=ap,IsEqualAdler32=ag,_byte_to_6bit_char=eX,_6bit_to_byte=eY,InternalClearCache=f5}if io and os and debug and _G.arg then local io=io;local os=os;local debug=debug;local f6=_G.arg;local f7=debug.getinfo(1)if f7.source==f6[0]or f7.short_src==f6[0]then local dx;local f8;local K=1;local ej;local f9=false;local fa=false;local bK;local d5;local al;while f6[K]do local Q=f6[K]if Q=="-h"then print(a._COPYRIGHT.."\nUsage: lua LibDeflate.lua [OPTION] [INPUT] [OUTPUT]\n".."  -0    store only. no compression.\n".."  -1    fastest compression.\n".."  -9    slowest and best compression.\n".."  -d    do decompression instead of compression.\n".."  --dict <filename> specify the file that contains".." the entire preset dictionary.\n".."  -h    give this help.\n".."  --strategy <fixed/huffman_only/dynamic>".." specify a special compression strategy.\n".."  -v    print the version and copyright info.\n".."  --zlib  use zlib format instead of raw deflate.\n")os.exit(0)elseif Q=="-v"then print(a._COPYRIGHT)os.exit(0)elseif Q:find("^%-[0-9]$")then bK=tonumber(Q:sub(2,2))elseif Q=="-d"then fa=true elseif Q=="--dict"then K=K+1;local fb=f6[K]if not fb then io.stderr:write("You must speicify the dict filename")os.exit(1)end;local fc,fd=io.open(fb,"rb")if not fc then io.stderr:write(("LibDeflate: Cannot read the dictionary file '%s': %s"):format(fb,fd))os.exit(1)end;local fe=fc:read("*all")fc:close()al=a:CreateDictionary(fe,#fe,a:Adler32(fe))elseif Q=="--strategy"then K=K+1;d5=f6[K]elseif Q=="--zlib"then f9=true elseif Q:find("^%-")then io.stderr:write(("LibDeflate: Invalid argument: %s"):format(Q))os.exit(1)else if not dx then dx,ej=io.open(Q,"rb")if not dx then io.stderr:write(("LibDeflate: Cannot read the file '%s': %s"):format(Q,tostring(ej)))os.exit(1)end elseif not f8 then f8,ej=io.open(Q,"wb")if not f8 then io.stderr:write(("LibDeflate: Cannot write the file '%s': %s"):format(Q,tostring(ej)))os.exit(1)end end end;K=K+1 end;if not dx or not f8 then io.stderr:write("LibDeflate:".." You must specify both input and output files.")os.exit(1)end;local ff=dx:read("*all")local au={level=bK,strategy=d5}local fg;if not fa then if not f9 then if not al then fg=a:CompressDeflate(ff,au)else fg=a:CompressDeflateWithDict(ff,al,au)end else if not al then fg=a:CompressZlib(ff,au)else fg=a:CompressZlibWithDict(ff,al,au)end end else if not f9 then if not al then fg=a:DecompressDeflate(ff)else fg=a:DecompressDeflateWithDict(ff,al)end else if not al then fg=a:DecompressZlib(ff)else fg=a:DecompressZlibWithDict(ff,al)end end end;if not fg then io.stderr:write("LibDeflate: Decompress fails.")os.exit(1)end;f8:write(fg)if dx and dx~=io.stdin then dx:close()end;if f8 and f8~=io.stdout then f8:close()end;io.stderr:write(("Successfully writes %d bytes"):format(fg:len()))os.exit(0)end end;return a
+]==] },
+["server/shell/commands/generic.lua"] = { index = 29, compression = true, length = 2979 },
+["server/startup.lua"] = { index = 0, compression = false, str = [==[package.path=package.path..";".."GuardLink/server/?.lua"local a=require("kernel.kernel")local b={"/GuardLink/server/modules/disk.lua","/GuardLink/server/modules/virtualFilesystem.lua","/GuardLink/server/modules/logger.lua","/GuardLink/server/network/clientManager.lua","/GuardLink/server/network/dispatcher.lua","/GuardLink/server/network/networkSession.lua","/GuardLink/server/network/requestQueue.lua","/GuardLink/server/modules/account.lua","/GuardLink/server/modules/wallet.lua","/GuardLink/server/modules/uiState.lua"}a:initConfigs()for c=1,#b do a:registerService(b[c])end;a:initServices()a:run()
+]==] },
+["server/config/shell_config.json"] = { index = 14, compression = false, str = [==[{
+    "prompt": "> ",
+    "default_dir": "/",
+    "use_theme": true,
+    "logging": "DEBUG",
+    "history_length": 20
+}]==] },
+["server/lib/errors.lua"] = { index = 18, compression = true, length = 1067 },
 ["server/shell/commands/clients.lua"] = { index = 30, compression = true, length = 1816 },
-["server/lib/errors.lua"] = { index = 18, compression = true, length = 1016 },
-["server/shell/commands/accounts.lua"] = { index = 31, compression = true, length = 839 },
+["server/ui/someUI.lua"] = { index = 37, compression = true, length = 252 },
 ["server/lib/fileUtils.lua"] = { index = 20, compression = true, length = 200 },
+["server/shell/commands/accounts.lua"] = { index = 31, compression = true, length = 1115 },
+["server/ui/shell.lua"] = { index = 38, compression = true, length = 973 },
+["server/dispatchers/network.lua"] = { index = 8, compression = true, length = 365 },
+["server/lib/themes.lua"] = { index = 22, compression = true, length = 659 },
+["server/network/networkSession.lua"] = { index = 9, compression = true, length = 1475 },
+["server/modules/virtualFilesystem.lua"] = { index = 1, compression = true, length = 1240 },
+["server/lib/aes.lua"] = { index = 23, compression = true, length = 12068 },
+["server/network/dispatcher.lua"] = { index = 10, compression = true, length = 694 },
+["server/modules/disk.lua"] = { index = 2, compression = true, length = 1589 },
+["server/lib/simpleXML.lua"] = { index = 24, compression = true, length = 948 },
+["server/network/requestQueue.lua"] = { index = 11, compression = true, length = 1322 },
+["server/modules/account.lua"] = { index = 3, compression = true, length = 2068 },
+["server/setupwizard.lua"] = { index = 36, compression = true, length = 5254 },
+["server/lib/rsa-keygen.lua"] = { index = 25, compression = true, length = 2905 },
+["server/kernel/shutdown.lua"] = { index = 35, compression = true, length = 246 },
+["server/network/message.lua"] = { index = 12, compression = true, length = 333 },
+["server/kernel/kernel.lua"] = { index = 34, compression = false, str = [==[local configPath = "/GuardLink/server/config/"
+local deflate = require("lib.LibDeflate")
+
+local log
+
+_G.requireC = function(path)
+    if package.loaded[path] then return package.loaded[path] end
+    if fs.exists(path) then
+        local file = fs.open(path, "rb")
+        local contents = file.readAll()
+        file.close()
+        if not contents then error("FAILED TO READ FILE: " .. path) end
+
+        local decomp = deflate:DecompressDeflate(contents)
+        if not decomp then error("Failed to decompress file: " .. path) end
+        local env = {}
+        for k,v in pairs(_G) do env[k] = v end
+        env.require = require
+        local module = load(decomp, "@"..path, "t", env)()
+        
+        package.loaded[path] = module
+        return module
+    end
+    return false
+end
+
+local shutdown = requireC("/GuardLink/server/kernel/shutdown.lua")
+local utils = requireC("/GuardLink/server/lib/utils.lua")
+local taskmaster = requireC("/GuardLink/server/lib/TaskMaster.lua")()
+
+local kernel = {}
+kernel.modules = {}
+
+kernel.processes = {}
+kernel.tasks = {}
+
+kernel.ctx = {
+    services = {},
+    configs = {}
+}
+kernel.cmds = {}
+
+function kernel:addCommand(prefix, suffix, func)
+    self.cmds[prefix .. "." .. suffix] = func
+end
+
+kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.configs[args] or nil end)
+kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
+kernel:addCommand("kernel", "stop", function() taskmaster:stop() end)
+kernel:addCommand("kernel", "pause_task", function(args) 
+    if kernel.tasks[args or " "] then 
+        kernel.tasks[args].active = false
+        log:debug("Pausing task: ", args)
+    end
+end)
+kernel:addCommand("kernel", "resume_task", function(args)
+    if kernel.tasks[args] then
+        kernel.tasks[args].active = true
+        log:debug("Resuming task: ", args)
+    end
+end)
+kernel:addCommand("kernel", "print_tasks", function()
+    local str = {}
+    for k,v in pairs(kernel.tasks) do
+        table.insert(str, k)
+    end
+    return table.concat(str, " ")
+end)
+kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
+kernel:addCommand("kernel", "refresh_configs", function() kernel:refreshConfigs() end)
+
+function kernel:execute(cmd, args)
+    return self.cmds[cmd](args)
+end
+
+function kernel:registerService(path)
+    local module 
+    utils.tryCatch(
+        function()
+            module = requireC(path)
+        end, 
+        function(err, stackTrace)
+            log:fatal("Failed to load service: " .. err .. "\nStacktrace: " .. stackTrace)
+            os.shutdown()
+    end)
+    if not module then error("Tried to load unknown service: " .. path) end
+    if not module.name then error("Error: Missing service name!") end
+    table.insert(self.modules, module)
+end
+
+function kernel:getModule(name)
+    for i = 1, #self.modules do
+        if self.modules[i].name == name then return self.modules[i] end
+    end
+    return nil
+end
+
+function kernel:getService(name)
+    return self.ctx.services[name]
+end
+
+function kernel:initConfigs()
+    local files = fs.list(configPath)
+    for i = 1, #files do
+        local key = files[i]:match("(.+)%..+")
+        local ext = files[i]:match("%.([^%.]+)$")
+        if self.ctx.configs[key] then error("Duplicate configs  found: " .. key ) end
+        local file = fs.open(configPath .. files[i], "r")
+        local contents = file.readAll()
+        file.close()
+        if ext == "lua" or ext == "conf" then
+            self.ctx.configs[key] = textutils.unserialize(contents)
+        elseif ext == "json" then
+            self.ctx.configs[key] = textutils.unserializeJSON(contents)
+        end
+    end
+end
+
+function kernel:refreshConfigs()
+    local files = fs.list(configPath)
+    for i = 1, #files do
+        local key = files[i]:match("(.+)%..+")
+        local ext = files[i]:match("%.([^%.]+)$")
+        local file = fs.open(configPath .. files[i], "r")
+        local contents = file.readAll()
+        file.close()
+        if ext == "lua" or ext == "conf" then
+            self.ctx.configs[key] = textutils.unserialize(contents)
+        elseif ext == "json" then
+            self.ctx.configs[key] = textutils.unserializeJSON(contents)
+        end
+    end
+end
+
+function kernel:initServices()
+     -- creates placeholders
+    for _, v in ipairs(self.modules) do
+        self.ctx.services[v.name] = {}
+    end
+    for _, v in ipairs(self.modules) do
+        local instance = v.init(self.ctx)
+        self.ctx.services[v.name] = instance
+
+        if v.runtime then
+            taskmaster:addTask(function() v.runtime(instance) end)
+        end
+        if v.tasks then
+            local t = v.tasks(instance)
+            for name,task in pairs(t) do
+                self.tasks[name] = {interval = task[2], active=true, lastRun = 0}
+                taskmaster:addTimer(task[2], function()
+                    if self.tasks[name].active then
+                        local ok, err = pcall(task[1], instance)
+                        if not ok then log:error("Task "..name.." failed: "..tostring(err)) end
+                        self.tasks[name].lastRun = os.epoch("utc")
+                    end
+                end)
+            end
+        end
+        if v.shutdown then
+            shutdown.register(function() v.shutdown(instance) end)
+        end
+
+        if v.api then
+            for prefix,contents in pairs(v.api) do
+                for suffix,func in pairs(contents) do
+                    self:addCommand(prefix, suffix, function(args) return func(instance, args) end)
+                end
+            end
+        end
+    end
+end
+
+function kernel:run()
+    log = self.ctx.services["logger"]:createInstance("kernel", {
+        timestamp = true,
+        level = self.ctx.configs["settings"].debug and "DEBUG" or "INFO",
+        clear = true
+    })
+    log:debug("Starting processes and tasks...")
+    utils.tryCatch(
+    function()
+        taskmaster:run()
+        shutdown.executeCallbacks()
+        term.clear()
+        log:info("Kernel stopped cleanly")
+    end, 
+    function(err, stackTrace)
+        log:debug("Process error: " .. err .. "\nStacktrace: " .. stackTrace)
+        os.shutdown()
+    end)
+end
+
+return kernel]==] },
+["server/modules/uiState.lua"] = { index = 6, compression = true, length = 1070 },
+["server/modules/wallet.lua"] = { index = 5, compression = true, length = 1717 },
+["server/lib/uiHelper.lua"] = { index = 26, compression = true, length = 559 },
 ["server/dispatchers/account.lua"] = { index = 7, compression = true, length = 582 },
+["server/network/clientManager.lua"] = { index = 13, compression = true, length = 1751 },
+["server/shell/commands/tasks.lua"] = { index = 32, compression = true, length = 514 },
+["server/lib/utils.lua"] = { index = 28, compression = true, length = 600 },
 ["server/config/themes.json"] = { index = 15, compression = false, str = [==[{
   "default": [
     ["background", "0xF3F6FB"],
@@ -117,217 +345,6 @@ return {
     ["highlight", "0xFDBA74"]
   ]
 }]==] },
-["server/startup.lua"] = { index = 0, compression = false, str = [==[package.path=package.path..";".."GuardLink/server/?.lua"local a=require("kernel.kernel")local b={"/GuardLink/server/modules/disk.lua","/GuardLink/server/modules/virtualFilesystem.lua","/GuardLink/server/modules/logger.lua","/GuardLink/server/network/clientManager.lua","/GuardLink/server/network/dispatcher.lua","/GuardLink/server/network/networkSession.lua","/GuardLink/server/network/requestQueue.lua","/GuardLink/server/modules/account.lua","/GuardLink/server/modules/wallet.lua","/GuardLink/server/modules/uiState.lua"}a:initConfigs()for c=1,#b do a:registerService(b[c])end;a:initServices()a:run()
-]==] },
-["server/config/shell_config.json"] = { index = 14, compression = false, str = [==[{
-    "prompt": "> ",
-    "default_dir": "/",
-    "use_theme": true,
-    "logging": "DEBUG",
-    "history_length": 20
-}]==] },
-["server/dispatchers/network.lua"] = { index = 8, compression = true, length = 365 },
-["server/lib/utils.lua"] = { index = 28, compression = true, length = 600 },
-["server/modules/uiState.lua"] = { index = 6, compression = true, length = 1070 },
-["server/lib/themes.lua"] = { index = 22, compression = true, length = 659 },
-["server/lib/pixelbox_lite.lua"] = { index = 27, compression = true, length = 2397 },
-["server/network/networkSession.lua"] = { index = 9, compression = true, length = 1475 },
-["server/kernel/shutdown.lua"] = { index = 35, compression = true, length = 246 },
-["server/kernel/kernel.lua"] = { index = 34, compression = false, str = [==[local configPath = "/GuardLink/server/config/"
-local deflate = require("lib.LibDeflate")
-
-local log
-
-_G.requireC = function(path)
-    if package.loaded[path] then return package.loaded[path] end
-    if fs.exists(path) then
-        local file = fs.open(path, "rb")
-        local contents = file.readAll()
-        file.close()
-        if not contents then error("FAILED TO READ FILE: " .. path) end
-
-        local decomp = deflate:DecompressDeflate(contents)
-        if not decomp then error("Failed to decompress file: " .. path) end
-        local env = {}
-        for k,v in pairs(_G) do env[k] = v end
-        env.require = require
-        local module = load(decomp, "@"..path, "t", env)()
-        
-        package.loaded[path] = module
-        return module
-    end
-    return false
-end
-
-local shutdown = requireC("/GuardLink/server/kernel/shutdown.lua")
-local utils = requireC("/GuardLink/server/lib/utils.lua")
-local taskmaster = requireC("/GuardLink/server/lib/TaskMaster.lua")()
-
-local kernel = {}
-kernel.modules = {}
-
-kernel.processes = {}
-kernel.tasks = {}
-
-kernel.ctx = {
-    services = {},
-    configs = {}
-}
-kernel.cmds = {}
-
-function kernel:addCommand(prefix, suffix, func)
-    self.cmds[prefix .. "." .. suffix] = func
-end
-
-kernel:addCommand("kernel", "get_config", function(args) return kernel.ctx.configs[args] or nil end)
-kernel:addCommand("kernel", "get_version", function() return kernel.ctx.configs["manifest"].version or nil end)
-kernel:addCommand("kernel", "stop", function() taskmaster:stop() end)
-kernel:addCommand("kernel", "pause_task", function(args) 
-    if kernel.tasks[args or " "] then 
-        kernel.tasks[args].active = false
-        log:debug("Pausing task: ", args)
-    end
-end)
-kernel:addCommand("kernel", "resume_task", function(args)
-    if kernel.tasks[args] then
-        kernel.tasks[args].active = true
-        log:debug("Resuming task: ", args)
-    end
-end)
-kernel:addCommand("kernel", "print_tasks", function()
-    local str = {}
-    for k,v in pairs(kernel.tasks) do
-        table.insert(str, k)
-    end
-    return table.concat(str, " ")
-end)
-kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
-
-function kernel:execute(cmd, args)
-    return self.cmds[cmd](args)
-end
-
-function kernel:registerService(path)
-    local module 
-    utils.tryCatch(
-        function()
-            module = requireC(path)
-        end, 
-        function(err, stackTrace)
-            log:fatal("Failed to load service: " .. err .. "\nStacktrace: " .. stackTrace)
-            os.shutdown()
-    end)
-    if not module then error("Tried to load unknown service: " .. path) end
-    if not module.name then error("Error: Missing service name!") end
-    table.insert(self.modules, module)
-end
-
-function kernel:getModule(name)
-    for i = 1, #self.modules do
-        if self.modules[i].name == name then return self.modules[i] end
-    end
-    return nil
-end
-
-function kernel:getService(name)
-    return self.ctx.services[name]
-end
-
-function kernel:initConfigs()
-    local files = fs.list(configPath)
-    for i = 1, #files do
-        local key = files[i]:match("(.+)%..+")
-        local ext = files[i]:match("%.([^%.]+)$")
-        if self.ctx.configs[key] then error("Duplicate configs  found: " .. key ) end
-        local file = fs.open(configPath .. files[i], "r")
-        local contents = file.readAll()
-        file.close()
-        if ext == "lua" or ext == "conf" then
-            self.ctx.configs[key] = textutils.unserialize(contents)
-        elseif ext == "json" then
-            self.ctx.configs[key] = textutils.unserializeJSON(contents)
-        end
-    end
-end
-
-function kernel:initServices()
-     -- creates placeholders
-    for _, v in ipairs(self.modules) do
-        self.ctx.services[v.name] = {}
-    end
-    for _, v in ipairs(self.modules) do
-        local instance = v.init(self.ctx)
-        self.ctx.services[v.name] = instance
-
-        if v.runtime then
-            taskmaster:addTask(function() v.runtime(instance) end)
-        end
-        if v.tasks then
-            local t = v.tasks(instance)
-            for name,task in pairs(t) do
-                self.tasks[name] = {interval = task[2], active=true, lastRun = 0}
-                taskmaster:addTimer(task[2], function()
-                    if self.tasks[name].active then
-                        local ok, err = pcall(task[1], instance)
-                        if not ok then log:error("Task "..name.." failed: "..tostring(err)) end
-                        self.tasks[name].lastRun = os.epoch("utc")
-                    end
-                end)
-            end
-        end
-        if v.shutdown then
-            shutdown.register(function() v.shutdown(instance) end)
-        end
-
-        if v.api then
-            for prefix,contents in pairs(v.api) do
-                for suffix,func in pairs(contents) do
-                    self:addCommand(prefix, suffix, function(args) return func(instance, args) end)
-                end
-            end
-        end
-    end
-end
-
-function kernel:run()
-    log = self.ctx.services["logger"]:createInstance("kernel", {
-        timestamp = true,
-        level = self.ctx.configs["settings"].debug and "DEBUG" or "INFO",
-        clear = true
-    })
-    log:debug("Starting processes and tasks...")
-    utils.tryCatch(
-    function()
-        taskmaster:run()
-        shutdown.executeCallbacks()
-        term.clear()
-        log:info("Kernel stopped cleanly")
-    end, 
-    function(err, stackTrace)
-        log:debug("Process error: " .. err .. "\nStacktrace: " .. stackTrace)
-        os.shutdown()
-    end)
-end
-
-return kernel]==] },
-["server/shell/engine.lua"] = { index = 33, compression = true, length = 739 },
-["server/lib/aes.lua"] = { index = 23, compression = true, length = 12068 },
-["server/shell/commands/tasks.lua"] = { index = 32, compression = true, length = 514 },
-["server/network/dispatcher.lua"] = { index = 10, compression = true, length = 694 },
-["server/setupwizard.lua"] = { index = 36, compression = true, length = 5254 },
-["server/modules/logger.lua"] = { index = 4, compression = true, length = 681 },
-["server/modules/virtualFilesystem.lua"] = { index = 1, compression = true, length = 1240 },
-["server/lib/rsa-keygen.lua"] = { index = 25, compression = true, length = 2905 },
-["server/lib/simpleXML.lua"] = { index = 24, compression = true, length = 948 },
-["server/network/requestQueue.lua"] = { index = 11, compression = true, length = 1322 },
-["server/ui/someUI.lua"] = { index = 37, compression = true, length = 252 },
-["server/modules/wallet.lua"] = { index = 5, compression = true, length = 1717 },
-["server/lib/basalt.lua"] = { index = 19, compression = true, length = 52992 },
-["server/lib/uiHelper.lua"] = { index = 26, compression = true, length = 559 },
-["server/lib/LibDeflate.lua"] = { index = 21, compression = false, str = [==[local a;do local b="1.0.2-release"local c="LibDeflate"local d=3;local e="LibDeflate "..b.." Copyright (C) 2018-2021 Haoqian He.".." Licensed under the zlib License"if LibStub then local f,g=LibStub:GetLibrary(c,true)if f and g and g>=d then return f else a=LibStub:NewLibrary(c,d)end else a={}end;a._VERSION=b;a._MAJOR=c;a._MINOR=d;a._COPYRIGHT=e end;local assert=assert;local error=error;local pairs=pairs;local h=string.byte;local i=string.char;local j=string.find;local k=string.gsub;local l=string.sub;local m=table.concat;local n=table.sort;local tostring=tostring;local type=type;local o={}local p={}local q={}local r={}local s={}local t={}local u={}local v={}local w={}local x={3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258}local y={0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0}local z={[0]=1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577}local A={[0]=0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13}local B={16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15}local C;local D;local E;local F;local G;local H;local I;local J;for K=0,255 do p[K]=i(K)end;do local L=1;for K=0,32 do o[K]=L;L=L*2 end end;for K=1,9 do q[K]={}for M=0,o[K+1]-1 do local N=0;local O=M;for P=1,K do N=N-N%2+((N%2==1 or O%2==1)and 1 or 0)O=(O-O%2)/2;N=N*2 end;q[K][M]=(N-N%2)/2 end end;do local Q=18;local R=16;local S=265;local T=1;for U=3,258 do if U<=10 then r[U]=U+254;t[U]=0 elseif U==258 then r[U]=285;t[U]=0 else if U>Q then Q=Q+R;R=R*2;S=S+4;T=T+1 end;local V=U-Q-1+R/2;r[U]=(V-V%(R/8))/(R/8)+S;t[U]=T;s[U]=V%(R/8)end end end;do u[1]=0;u[2]=1;w[1]=0;w[2]=0;local Q=3;local R=4;local W=2;local T=0;for X=3,256 do if X>R then Q=Q*2;R=R*2;W=W+2;T=T+1 end;u[X]=X<=Q and W or W+1;w[X]=T<0 and 0 or T;if R>=8 then v[X]=(X-R/2-1)%(R/4)end end end;function a:Adler32(Y)if type(Y)~="string"then error(("Usage: LibDeflate:Adler32(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;local Z=#Y;local K=1;local Q=1;local R=0;while K<=Z-15 do local _,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,aa,ab,ac,ad,ae=h(Y,K,K+15)R=(R+16*Q+16*_+15*a0+14*a1+13*a2+12*a3+11*a4+10*a5+9*a6+8*a7+7*a8+6*a9+5*aa+4*ab+3*ac+2*ad+ae)%65521;Q=(Q+_+a0+a1+a2+a3+a4+a5+a6+a7+a8+a9+aa+ab+ac+ad+ae)%65521;K=K+16 end;while K<=Z do local af=h(Y,K,K)Q=(Q+af)%65521;R=(R+Q)%65521;K=K+1 end;return(R*65536+Q)%4294967296 end;local function ag(ah,ai)return ah%4294967296==ai%4294967296 end;function a:CreateDictionary(Y,Z,aj)if type(Y)~="string"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if type(Z)~="number"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'strlen' - number expected got '%s'."):format(type(Z)),2)end;if type(aj)~="number"then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'adler32' - number expected got '%s'."):format(type(aj)),2)end;if Z~=#Y then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'strlen' does not match the actual length of 'str'.".." 'strlen': %u, '#str': %u .".." Please check if 'str' is modified unintentionally."):format(Z,#Y))end;if Z==0 then error("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - Empty string is not allowed.",2)end;if Z>32768 then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'str' - string longer than 32768 bytes is not allowed.".." Got %d bytes."):format(Z),2)end;local ak=self:Adler32(Y)if not ag(aj,ak)then error(("Usage: LibDeflate:CreateDictionary(str, strlen, adler32):".." 'adler32' does not match the actual adler32 of 'str'.".." 'adler32': %u, 'Adler32(str)': %u .".." Please check if 'str' is modified unintentionally."):format(aj,ak))end;local al={}al.adler32=aj;al.hash_tables={}al.string_table={}al.strlen=Z;local am=al.string_table;local an=al.hash_tables;am[1]=h(Y,1,1)am[2]=h(Y,2,2)if Z>=3 then local K=1;local ao=am[1]*256+am[2]while K<=Z-2-3 do local _,a0,a1,a2=h(Y,K+2,K+5)am[K+2]=_;am[K+3]=a0;am[K+4]=a1;am[K+5]=a2;ao=(ao*256+_)%16777216;local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a0)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a1)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1;ao=(ao*256+a2)%16777216;V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1 end;while K<=Z-2 do local af=h(Y,K+2)am[K+2]=af;ao=(ao*256+af)%16777216;local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=K-Z;K=K+1 end end;return al end;local function ap(al)if type(al)~="table"then return false,("'dictionary' - table expected got '%s'."):format(type(al))end;if type(al.adler32)~="number"or type(al.string_table)~="table"or type(al.strlen)~="number"or al.strlen<=0 or al.strlen>32768 or al.strlen~=#al.string_table or type(al.hash_tables)~="table"then return false,("'dictionary' - corrupted dictionary."):format(type(al))end;return true,""end;local aq={[0]={false,nil,0,0,0},[1]={false,nil,4,8,4},[2]={false,nil,5,18,8},[3]={false,nil,6,32,32},[4]={true,4,4,16,16},[5]={true,8,16,32,32},[6]={true,8,16,128,128},[7]={true,8,32,128,256},[8]={true,32,128,258,1024},[9]={true,32,258,258,4096}}local function ar(Y,as,al,at,au)if type(Y)~="string"then return false,("'str' - string expected got '%s'."):format(type(Y))end;if as then local av,aw=ap(al)if not av then return false,aw end end;if at then local ax=type(au)if ax~="nil"and ax~="table"then return false,("'configs' - nil or table expected got '%s'."):format(type(au))end;if ax=="table"then for ay,az in pairs(au)do if ay~="level"and ay~="strategy"then return false,("'configs' - unsupported table key in the configs: '%s'."):format(ay)elseif ay=="level"and not aq[az]then return false,("'configs' - unsupported 'level': %s."):format(tostring(az))elseif ay=="strategy"and az~="fixed"and az~="huffman_only"and az~="dynamic"then return false,("'configs' - unsupported 'strategy': '%s'."):format(tostring(az))end end end end;return true,""end;local aA=0;local aB=1;local aC=2;local aD=3;local function aE()local aF=0;local aG=0;local aH=0;local aI=0;local aJ={}local aK={}local function aL(O,T)aG=aG+O*o[aH]aH=aH+T;aI=aI+T;if aH>=32 then aF=aF+1;aJ[aF]=p[aG%256]..p[(aG-aG%256)/256%256]..p[(aG-aG%65536)/65536%256]..p[(aG-aG%16777216)/16777216%256]local aM=o[32-aH+T]aG=(O-O%aM)/aM;aH=aH-32 end end;local function aN(Y)for P=1,aH,8 do aF=aF+1;aJ[aF]=i(aG%256)aG=(aG-aG%256)/256 end;aH=0;aF=aF+1;aJ[aF]=Y;aI=aI+#Y*8 end;local function aO(aP)if aP==aD then return aI end;if aP==aB or aP==aC then local aQ=(8-aH%8)%8;if aH>0 then aG=aG-o[aH]+o[aH+aQ]for P=1,aH,8 do aF=aF+1;aJ[aF]=p[aG%256]aG=(aG-aG%256)/256 end;aG=0;aH=0 end;if aP==aC then aI=aI+aQ;return aI end end;local aR=m(aJ)aJ={}aF=0;aK[#aK+1]=aR;if aP==aA then return aI else return aI,m(aK)end end;return aL,aN,aO end;local function aS(aT,aU,aV)aV=aV+1;aT[aV]=aU;local O=aU[1]local aW=aV;local aX=(aW-aW%2)/2;while aX>=1 and aT[aX][1]>O do local V=aT[aX]aT[aX]=aU;aT[aW]=V;aW=aX;aX=(aX-aX%2)/2 end end;local function aY(aT,aV)local aZ=aT[1]local aU=aT[aV]local O=aU[1]aT[1]=aU;aT[aV]=aZ;aV=aV-1;local aW=1;local a_=aW*2;local b0=a_+1;while a_<=aV do local b1=aT[a_]if b0<=aV and aT[b0][1]<b1[1]then local b2=aT[b0]if b2[1]<O then aT[b0]=aU;aT[aW]=b2;aW=b0;a_=aW*2;b0=a_+1 else break end else if b1[1]<O then aT[a_]=aU;aT[aW]=b1;aW=a_;a_=aW*2;b0=a_+1 else break end end end;return aZ end;local function b3(b4,b5,b6,b7)local b8=0;local b9={}local ba={}for T=1,b7 do b8=(b8+(b4[T-1]or 0))*2;b9[T]=b8 end;for bb=0,b6 do local T=b5[bb]if T then b8=b9[T]b9[T]=b8+1;if T<=9 then ba[bb]=q[T][b8]else local N=0;for P=1,T do N=N-N%2+((N%2==1 or b8%2==1)and 1 or 0)b8=(b8-b8%2)/2;N=N*2 end;ba[bb]=(N-N%2)/2 end end end;return ba end;local function bc(Q,R)return Q[1]<R[1]or Q[1]==R[1]and Q[2]<R[2]end;local function bd(be,b7,b6)local aV;local bf=-1;local bg={}local aT={}local b5={}local bh={}local b4={}local bi=0;for bb,bj in pairs(be)do bi=bi+1;bg[bi]={bj,bb}end;if bi==0 then return{},{},-1 elseif bi==1 then local bb=bg[1][2]b5[bb]=1;bh[bb]=0;return b5,bh,bb else n(bg,bc)aV=bi;for K=1,aV do aT[K]=bg[K]end;while aV>1 do local bk=aY(aT,aV)aV=aV-1;local bl=aY(aT,aV)aV=aV-1;local bm={bk[1]+bl[1],-1,bk,bl}aS(aT,bm,aV)aV=aV+1 end;local bn=0;local bo={aT[1],0,0,0}local bp=1;local bq=1;aT[1][1]=0;while bq<=bp do local aU=bo[bq]local T=aU[1]local bb=aU[2]local b1=aU[3]local b2=aU[4]if b1 then bp=bp+1;bo[bp]=b1;b1[1]=T+1 end;if b2 then bp=bp+1;bo[bp]=b2;b2[1]=T+1 end;bq=bq+1;if T>b7 then bn=bn+1;T=b7 end;if bb>=0 then b5[bb]=T;bf=bb>bf and bb or bf;b4[T]=(b4[T]or 0)+1 end end;if bn>0 then repeat local T=b7-1;while(b4[T]or 0)==0 do T=T-1 end;b4[T]=b4[T]-1;b4[T+1]=(b4[T+1]or 0)+2;b4[b7]=b4[b7]-1;bn=bn-2 until bn<=0;bq=1;for T=b7,1,-1 do local br=b4[T]or 0;while br>0 do local bb=bg[bq][2]b5[bb]=T;br=br-1;bq=bq+1 end end end;bh=b3(b4,b5,b6,b7)return b5,bh,bf end end;local function bs(bt,bu,bv,bw)local bx=0;local by={}local bz={}local bA=0;local bB={}local bC=nil;local bj=0;bw=bw<0 and 0 or bw;local bD=bu+bw+1;for W=0,bD+1 do local U=W<=bu and(bt[W]or 0)or(W<=bD and(bv[W-bu-1]or 0)or nil)if U==bC then bj=bj+1;if U~=0 and bj==6 then bx=bx+1;by[bx]=16;bA=bA+1;bB[bA]=3;bz[16]=(bz[16]or 0)+1;bj=0 elseif U==0 and bj==138 then bx=bx+1;by[bx]=18;bA=bA+1;bB[bA]=127;bz[18]=(bz[18]or 0)+1;bj=0 end else if bj==1 then bx=bx+1;by[bx]=bC;bz[bC]=(bz[bC]or 0)+1 elseif bj==2 then bx=bx+1;by[bx]=bC;bx=bx+1;by[bx]=bC;bz[bC]=(bz[bC]or 0)+2 elseif bj>=3 then bx=bx+1;local bE=bC~=0 and 16 or(bj<=10 and 17 or 18)by[bx]=bE;bz[bE]=(bz[bE]or 0)+1;bA=bA+1;bB[bA]=bj<=10 and bj-3 or bj-11 end;bC=U;if U and U~=0 then bx=bx+1;by[bx]=U;bz[U]=(bz[U]or 0)+1;bj=0 else bj=1 end end end;return by,bB,bz end;local function bF(Y,V,bG,bH,bI)local K=bG-bI;while K<=bH-15-bI do V[K],V[K+1],V[K+2],V[K+3],V[K+4],V[K+5],V[K+6],V[K+7],V[K+8],V[K+9],V[K+10],V[K+11],V[K+12],V[K+13],V[K+14],V[K+15]=h(Y,K+bI,K+15+bI)K=K+16 end;while K<=bH-bI do V[K]=h(Y,K+bI,K+bI)K=K+1 end;return V end;local function bJ(bK,am,an,bL,bM,bI,al)local bN=aq[bK]local bO,bP,bQ,bR,bS=bN[1],bN[2],bN[3],bN[4],bN[5]local bT=not bO and bQ or 2147483646;local bU=bS-bS%4/4;local ao;local bV;local bW;local bX=0;if al then bV=al.hash_tables;bW=al.string_table;bX=al.strlen;assert(bL==1)if bM>=bL and bX>=2 then ao=bW[bX-1]*65536+bW[bX]*256+am[1]local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=-1 end;if bM>=bL+1 and bX>=1 then ao=bW[bX]*65536+am[1]*256+am[2]local V=an[ao]if not V then V={}an[ao]=V end;V[#V+1]=0 end end;local bY=bX+3;ao=(am[bL-bI]or 0)*256+(am[bL+1-bI]or 0)local bZ={}local b_=0;local c0={}local c1={}local c2=0;local c3={}local c4={}local c5=0;local c6={}local c7=0;local c8=false;local c9;local ca;local cb=0;local cc=0;local bq=bL;local cd=bM+(bO and 1 or 0)while bq<=cd do local ce=bq-bI;local cf=bI-3;c9=cb;ca=cc;cb=0;ao=(ao*256+(am[ce+2]or 0))%16777216;local cg;local ch;local ci=an[ao]local cj;if not ci then cj=0;ci={}an[ao]=ci;if bV then ch=bV[ao]cg=ch and#ch or 0 else cg=0 end else cj=#ci;ch=ci;cg=cj end;if bq<=bM then ci[cj+1]=bq end;if cg>0 and bq+2<=bM and(not bO or c9<bQ)then local ck=bO and c9>=bP and bU or bS;local cl=bM-bq;cl=cl>=257 and 257 or cl;cl=cl+ce;local cm=ce+3;while cg>=1 and ck>0 do local bC=ch[cg]if bq-bC>32768 then break end;if bC<bq then local cn=cm;if bC>=-257 then local co=bC-cf;while cn<=cl and am[co]==am[cn]do cn=cn+1;co=co+1 end else local co=bY+bC;while cn<=cl and bW[co]==am[cn]do cn=cn+1;co=co+1 end end;local M=cn-ce;if M>cb then cb=M;cc=bq-bC end;if cb>=bR then break end end;cg=cg-1;ck=ck-1;if cg==0 and bC>0 and bV then ch=bV[ao]cg=ch and#ch or 0 end end end;if not bO then c9,ca=cb,cc end;if(not bO or c8)and(c9>3 or c9==3 and ca<4096)and cb<=c9 then local W=r[c9]local cp=t[c9]local cq,cr,cs;if ca<=256 then cq=u[ca]cs=v[ca]cr=w[ca]else cq=16;cr=7;local Q=384;local R=512;while true do if ca<=Q then cs=(ca-R/2-1)%(R/4)break elseif ca<=R then cs=(ca-R/2-1)%(R/4)cq=cq+1;break else cq=cq+2;cr=cr+1;Q=Q*2;R=R*2 end end end;b_=b_+1;bZ[b_]=W;c0[W]=(c0[W]or 0)+1;c2=c2+1;c1[c2]=cq;c3[cq]=(c3[cq]or 0)+1;if cp>0 then local ct=s[c9]c5=c5+1;c4[c5]=ct end;if cr>0 then c7=c7+1;c6[c7]=cs end;for K=bq+1,bq+c9-(bO and 2 or 1)do ao=(ao*256+(am[K-bI+2]or 0))%16777216;if c9<=bT then ci=an[ao]if not ci then ci={}an[ao]=ci end;ci[#ci+1]=K end end;bq=bq+c9-(bO and 1 or 0)c8=false elseif not bO or c8 then local W=am[bO and ce-1 or ce]b_=b_+1;bZ[b_]=W;c0[W]=(c0[W]or 0)+1;bq=bq+1 else c8=true;bq=bq+1 end end;b_=b_+1;bZ[b_]=256;c0[256]=(c0[256]or 0)+1;return bZ,c4,c0,c1,c6,c3 end;local function cu(c0,c3)local cv,cw,bu=bd(c0,15,285)local cx,cy,bw=bd(c3,15,29)local cz,bB,cA=bs(cv,bu,cx,bw)local cB,cC=bd(cA,7,18)local cD=0;for K=1,19 do local bb=B[K]local cE=cB[bb]or 0;if cE~=0 then cD=K end end;cD=cD-4;local cF=bu+1-257;local cG=bw+1-1;if cG<0 then cG=0 end;return cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy end;local function cH(bZ,c1,cD,cB,cz,cv,cx)local cI=17;cI=cI+(cD+4)*3;for K=1,#cz do local W=cz[K]cI=cI+cB[W]if W>=16 then cI=cI+(W==16 and 2 or(W==17 and 3 or 7))end end;local cJ=0;for K=1,#bZ do local W=bZ[K]local cK=cv[W]cI=cI+cK;if W>256 then cJ=cJ+1;if W>264 and W<285 then local cL=y[W-256]cI=cI+cL end;local cq=c1[cJ]local cM=cx[cq]cI=cI+cM;if cq>3 then local cr=(cq-cq%2)/2-1;cI=cI+cr end end end;return cI end;local function cN(aL,cO,bZ,c4,c1,c6,cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy)aL(cO and 1 or 0,1)aL(2,2)aL(cF,5)aL(cG,5)aL(cD,4)for K=1,cD+4 do local bb=B[K]local cE=cB[bb]or 0;aL(cE,3)end;local cP=1;for K=1,#cz do local W=cz[K]aL(cC[W],cB[W])if W>=16 then local cQ=bB[cP]aL(cQ,W==16 and 2 or(W==17 and 3 or 7))cP=cP+1 end end;local cJ=0;local cR=0;local cS=0;for K=1,#bZ do local cT=bZ[K]local b8=cw[cT]local cK=cv[cT]aL(b8,cK)if cT>256 then cJ=cJ+1;if cT>264 and cT<285 then cR=cR+1;local cU=c4[cR]local cL=y[cT-256]aL(cU,cL)end;local cV=c1[cJ]local cW=cy[cV]local cM=cx[cV]aL(cW,cM)if cV>3 then cS=cS+1;local cs=c6[cS]local cr=(cV-cV%2)/2-1;aL(cs,cr)end end end end;local function cX(bZ,c1)local cI=3;local cJ=0;for K=1,#bZ do local W=bZ[K]local cK=E[W]cI=cI+cK;if W>256 then cJ=cJ+1;if W>264 and W<285 then local cL=y[W-256]cI=cI+cL end;local cq=c1[cJ]cI=cI+5;if cq>3 then local cr=(cq-cq%2)/2-1;cI=cI+cr end end end;return cI end;local function cY(aL,cO,bZ,c4,c1,c6)aL(cO and 1 or 0,1)aL(1,2)local cJ=0;local cR=0;local cS=0;for K=1,#bZ do local cZ=bZ[K]local b8=C[cZ]local cK=E[cZ]aL(b8,cK)if cZ>256 then cJ=cJ+1;if cZ>264 and cZ<285 then cR=cR+1;local cU=c4[cR]local cL=y[cZ-256]aL(cU,cL)end;local cq=c1[cJ]local cW=G[cq]aL(cW,5)if cq>3 then cS=cS+1;local cs=c6[cS]local cr=(cq-cq%2)/2-1;aL(cs,cr)end end end end;local function c_(bL,bM,aI)assert(bM-bL+1<=65535)local cI=3;aI=aI+3;local aQ=(8-aI%8)%8;cI=cI+aQ;cI=cI+32;cI=cI+(bM-bL+1)*8;return cI end;local function d0(aL,aN,cO,Y,bL,bM,aI)assert(bM-bL+1<=65535)aL(cO and 1 or 0,1)aL(0,2)aI=aI+3;local aQ=(8-aI%8)%8;if aQ>0 then aL(o[aQ]-1,aQ)end;local d1=bM-bL+1;aL(d1,16)local d2=255-d1%256+(255-(d1-d1%256)/256)*256;aL(d2,16)aN(Y:sub(bL,bM))end;local function d3(au,aL,aN,aO,Y,al)local am={}local an={}local cO=nil;local bL;local bM;local d4;local aI=aO(aD)local Z=#Y;local bI;local bK;local d5;if au then if au.level then bK=au.level end;if au.strategy then d5=au.strategy end end;if not bK then if Z<2048 then bK=7 elseif Z>65536 then bK=3 else bK=5 end end;while not cO do if not bL then bL=1;bM=64*1024-1;bI=0 else bL=bM+1;bM=bM+32*1024;bI=bL-32*1024-1 end;if bM>=Z then bM=Z;cO=true else cO=false end;local bZ,c4,c0,c1,c6,c3;local cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy;local d6;local d7;local d8;if bK~=0 then bF(Y,am,bL,bM+3,bI)if bL==1 and al then local bW=al.string_table;local d9=al.strlen;for K=0,-d9+1<-257 and-257 or-d9+1,-1 do am[K]=bW[d9+K]end end;if d5=="huffman_only"then bZ={}bF(Y,bZ,bL,bM,bL-1)c4={}c0={}bZ[bM-bL+2]=256;for K=1,bM-bL+2 do local W=bZ[K]c0[W]=(c0[W]or 0)+1 end;c1={}c6={}c3={}else bZ,c4,c0,c1,c6,c3=bJ(bK,am,an,bL,bM,bI,al)end;cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy=cu(c0,c3)d6=cH(bZ,c1,cD,cB,cz,cv,cx)d7=cX(bZ,c1)end;d8=c_(bL,bM,aI)local da=d8;da=d7 and d7<da and d7 or da;da=d6 and d6<da and d6 or da;if bK==0 or d5~="fixed"and d5~="dynamic"and d8==da then d0(aL,aN,cO,Y,bL,bM,aI)aI=aI+d8 elseif d5~="dynamic"and(d5=="fixed"or d7==da)then cY(aL,cO,bZ,c4,c1,c6)aI=aI+d7 elseif d5=="dynamic"or d6==da then cN(aL,cO,bZ,c4,c1,c6,cF,cG,cD,cB,cC,cz,bB,cv,cw,cx,cy)aI=aI+d6 end;if cO then d4=aO(aD)else d4=aO(aA)end;assert(d4==aI)if not cO then local M;if al and bL==1 then M=0;while am[M]do am[M]=nil;M=M-1 end end;al=nil;M=1;for K=bM-32767,bM do am[M]=am[K-bI]M=M+1 end;for ay,V in pairs(an)do local db=#V;if db>0 and bM+1-V[1]>32768 then if db==1 then an[ay]=nil else local dc={}local dd=0;for K=2,db do M=V[K]if bM+1-M<=32768 then dd=dd+1;dc[dd]=M end end;an[ay]=dc end end end end end end;local function de(Y,al,au)local aL,aN,aO=aE()d3(au,aL,aN,aO,Y,al)local aI,df=aO(aB)local aQ=(8-aI%8)%8;return df,aQ end;local function dg(Y,al,au)local aL,aN,aO=aE()local dh=8;local di=7;local dj=di*16+dh;aL(dj,8)local dk=al and 1 or 0;local dl=2;local dm=dl*64+dk*32;local dn=31-(dj*256+dm)%31;dm=dm+dn;aL(dm,8)if dk==1 then local aj=al.adler32;local dp=aj%256;aj=(aj-dp)/256;local dq=aj%256;aj=(aj-dq)/256;local dr=aj%256;aj=(aj-dr)/256;local ds=aj%256;aL(ds,8)aL(dr,8)aL(dq,8)aL(dp,8)end;d3(au,aL,aN,aO,Y,al)aO(aC)local aj=a:Adler32(Y)local ds=aj%256;aj=(aj-ds)/256;local dr=aj%256;aj=(aj-dr)/256;local dq=aj%256;aj=(aj-dq)/256;local dp=aj%256;aL(dp,8)aL(dq,8)aL(dr,8)aL(ds,8)local aI,df=aO(aB)local aQ=(8-aI%8)%8;return df,aQ end;function a:CompressDeflate(Y,au)local dt,du=ar(Y,false,nil,true,au)if not dt then error("Usage: LibDeflate:CompressDeflate(str, configs): "..du,2)end;return de(Y,nil,au)end;function a:CompressDeflateWithDict(Y,al,au)local dt,du=ar(Y,true,al,true,au)if not dt then error("Usage: LibDeflate:CompressDeflateWithDict".."(str, dictionary, configs): "..du,2)end;return de(Y,al,au)end;function a:CompressZlib(Y,au)local dt,du=ar(Y,false,nil,true,au)if not dt then error("Usage: LibDeflate:CompressZlib(str, configs): "..du,2)end;return dg(Y,nil,au)end;function a:CompressZlibWithDict(Y,al,au)local dt,du=ar(Y,true,al,true,au)if not dt then error("Usage: LibDeflate:CompressZlibWithDict".."(str, dictionary, configs): "..du,2)end;return dg(Y,al,au)end;local function dv(dw)local dx=dw;local dy=#dw;local dz=1;local aH=0;local aG=0;local function dA(T)local aM=o[T]local W;if T<=aH then W=aG%aM;aG=(aG-W)/aM;aH=aH-T else local dB=o[aH]local dq,dr,ds,dC=h(dx,dz,dz+3)aG=aG+((dq or 0)+(dr or 0)*256+(ds or 0)*65536+(dC or 0)*16777216)*dB;dz=dz+4;aH=aH+32-T;W=aG%aM;aG=(aG-W)/aM end;return W end;local function dD(dE,aJ,aF)assert(aH%8==0)local dF=aH/8<dE and aH/8 or dE;for P=1,dF do local dG=aG%256;aF=aF+1;aJ[aF]=i(dG)aG=(aG-dG)/256 end;aH=aH-dF*8;dE=dE-dF;if(dy-dz-dE+1)*8+aH<0 then return-1 end;for K=dz,dz+dE-1 do aF=aF+1;aJ[aF]=l(dx,K,K)end;dz=dz+dE;return aF end;local function dH(dI,dJ,da)local W=0;local dK=0;local bq=0;local bj;if da>0 then if aH<15 and dx then local dB=o[aH]local dq,dr,ds,dC=h(dx,dz,dz+3)aG=aG+((dq or 0)+(dr or 0)*256+(ds or 0)*65536+(dC or 0)*16777216)*dB;dz=dz+4;aH=aH+32 end;local aM=o[da]aH=aH-da;W=aG%aM;aG=(aG-W)/aM;W=q[da][W]bj=dI[da]if W<bj then return dJ[W]end;bq=bj;dK=bj*2;W=W*2 end;for T=da+1,15 do local dL;dL=aG%2;aG=(aG-dL)/2;aH=aH-1;W=dL==1 and W+1-W%2 or W;bj=dI[T]or 0;local dM=W-dK;if dM<bj then return dJ[bq+dM]end;bq=bq+bj;dK=dK+bj;dK=dK*2;W=W*2 end;return-10 end;local function dN()return(dy-dz+1)*8+aH end;local function dO()local dP=aH%8;local aM=o[dP]aH=aH-dP;aG=(aG-aG%aM)/aM end;return dA,dD,dH,dN,dO end;local function dQ(Y,al)local dA,dD,dH,dN,dO=dv(Y)local dR={ReadBits=dA,ReadBytes=dD,Decode=dH,ReaderBitlenLeft=dN,SkipToByteBoundary=dO,buffer_size=0,buffer={},result_buffer={},dictionary=al}return dR end;local function dS(dT,b6,b7)local dI={}local da=b7;for bb=0,b6 do local T=dT[bb]or 0;da=T>0 and T<da and T or da;dI[T]=(dI[T]or 0)+1 end;if dI[0]==b6+1 then return 0,dI,{},0 end;local dU=1;for U=1,b7 do dU=dU*2;dU=dU-(dI[U]or 0)if dU<0 then return dU end end;local dV={}dV[1]=0;for U=1,b7-1 do dV[U+1]=dV[U]+(dI[U]or 0)end;local dJ={}for bb=0,b6 do local T=dT[bb]or 0;if T~=0 then local bI=dV[T]dJ[bI]=bb;dV[T]=dV[T]+1 end end;return dU,dI,dJ,da end;local function dW(dR,cv,dX,dY,cx,dZ,d_)local aJ,aF,dA,dH,dN,aK=dR.buffer,dR.buffer_size,dR.ReadBits,dR.Decode,dR.ReaderBitlenLeft,dR.result_buffer;local al=dR.dictionary;local bW;local d9;local e0=1;if al and not aJ[0]then bW=al.string_table;d9=al.strlen;e0=-d9+1;for K=0,-d9+1<-257 and-257 or-d9+1,-1 do aJ[K]=p[bW[d9+K]]end end;repeat local bb=dH(cv,dX,dY)if bb<0 or bb>285 then return-10 elseif bb<256 then aF=aF+1;aJ[aF]=p[bb]elseif bb>256 then bb=bb-256;local T=x[bb]T=bb>=8 and T+dA(y[bb])or T;bb=dH(cx,dZ,d_)if bb<0 or bb>29 then return-10 end;local X=z[bb]X=X>4 and X+dA(A[bb])or X;local e1=aF-X+1;if e1<e0 then return-11 end;if e1>=-257 then for P=1,T do aF=aF+1;aJ[aF]=aJ[e1]e1=e1+1 end else e1=d9+e1;for P=1,T do aF=aF+1;aJ[aF]=p[bW[e1]]e1=e1+1 end end end;if dN()<0 then return 2 end;if aF>=65536 then aK[#aK+1]=m(aJ,"",1,32768)for K=32769,aF do aJ[K-32768]=aJ[K]end;aF=aF-32768;aJ[aF+1]=nil end until bb==256;dR.buffer_size=aF;return 0 end;local function e2(dR)local aJ,aF,dA,dD,dN,dO,aK=dR.buffer,dR.buffer_size,dR.ReadBits,dR.ReadBytes,dR.ReaderBitlenLeft,dR.SkipToByteBoundary,dR.result_buffer;dO()local dE=dA(16)if dN()<0 then return 2 end;local e3=dA(16)if dN()<0 then return 2 end;if dE%256+e3%256~=255 then return-2 end;if(dE-dE%256)/256+(e3-e3%256)/256~=255 then return-2 end;aF=dD(dE,aJ,aF)if aF<0 then return 2 end;if aF>=65536 then aK[#aK+1]=m(aJ,"",1,32768)for K=32769,aF do aJ[K-32768]=aJ[K]end;aF=aF-32768;aJ[aF+1]=nil end;dR.buffer_size=aF;return 0 end;local function e4(dR)return dW(dR,F,D,7,J,H,5)end;local function e5(dR)local dA,dH=dR.ReadBits,dR.Decode;local e6=dA(5)+257;local e7=dA(5)+1;local e8=dA(4)+4;if e6>286 or e7>30 then return-3 end;local cB={}for K=1,e8 do cB[B[K]]=dA(3)end;local e9,ea,eb,ec=dS(cB,18,7)if e9~=0 then return-4 end;local cv={}local cx={}local bq=0;while bq<e6+e7 do local bb;local T;bb=dH(ea,eb,ec)if bb<0 then return bb elseif bb<16 then if bq<e6 then cv[bq]=bb else cx[bq-e6]=bb end;bq=bq+1 else T=0;if bb==16 then if bq==0 then return-5 end;if bq-1<e6 then T=cv[bq-1]else T=cx[bq-e6-1]end;bb=3+dA(2)elseif bb==17 then bb=3+dA(3)else bb=11+dA(7)end;if bq+bb>e6+e7 then return-6 end;while bb>0 do bb=bb-1;if bq<e6 then cv[bq]=T else cx[bq-e6]=T end;bq=bq+1 end end end;if(cv[256]or 0)==0 then return-9 end;local ed,ee,dX,dY=dS(cv,e6-1,15)if ed~=0 and(ed<0 or e6~=(ee[0]or 0)+(ee[1]or 0))then return-7 end;local ef,eg,dZ,d_=dS(cx,e7-1,15)if ef~=0 and(ef<0 or e7~=(eg[0]or 0)+(eg[1]or 0))then return-8 end;return dW(dR,ee,dX,dY,eg,dZ,d_)end;local function eh(dR)local dA=dR.ReadBits;local cO;while not cO do cO=dA(1)==1;local ei=dA(2)local ej;if ei==0 then ej=e2(dR)elseif ei==1 then ej=e4(dR)elseif ei==2 then ej=e5(dR)else return nil,-1 end;if ej~=0 then return nil,ej end end;dR.result_buffer[#dR.result_buffer+1]=m(dR.buffer,"",1,dR.buffer_size)local df=m(dR.result_buffer)return df end;local function ek(Y,al)local dR=dQ(Y,al)local df,ej=eh(dR)if not df then return nil,ej end;local el=dR.ReaderBitlenLeft()local em=(el-el%8)/8;return df,em end;local function en(Y,al)local dR=dQ(Y,al)local dA=dR.ReadBits;local dj=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;local dh=dj%16;local di=(dj-dh)/16;if dh~=8 then return nil,-12 end;if di>7 then return nil,-13 end;local dm=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;if(dj*256+dm)%31~=0 then return nil,-14 end;local dk=(dm-dm%32)/32%2;local dl=(dm-dm%64)/64%4;if dk==1 then if not al then return nil,-16 end;local ds=dA(8)local dr=dA(8)local dq=dA(8)local dp=dA(8)local ak=ds*16777216+dr*65536+dq*256+dp;if dR.ReaderBitlenLeft()<0 then return nil,2 end;if not ag(ak,al.adler32)then return nil,-17 end end;local df,ej=eh(dR)if not df then return nil,ej end;dR.SkipToByteBoundary()local eo=dA(8)local ep=dA(8)local eq=dA(8)local er=dA(8)if dR.ReaderBitlenLeft()<0 then return nil,2 end;local es=eo*16777216+ep*65536+eq*256+er;local et=a:Adler32(df)if not ag(es,et)then return nil,-15 end;local el=dR.ReaderBitlenLeft()local em=(el-el%8)/8;return df,em end;function a:DecompressDeflate(Y)local dt,du=ar(Y)if not dt then error("Usage: LibDeflate:DecompressDeflate(str): "..du,2)end;return ek(Y)end;function a:DecompressDeflateWithDict(Y,al)local dt,du=ar(Y,true,al)if not dt then error("Usage: LibDeflate:DecompressDeflateWithDict(str, dictionary): "..du,2)end;return ek(Y,al)end;function a:DecompressZlib(Y)local dt,du=ar(Y)if not dt then error("Usage: LibDeflate:DecompressZlib(str): "..du,2)end;return en(Y)end;function a:DecompressZlibWithDict(Y,al)local dt,du=ar(Y,true,al)if not dt then error("Usage: LibDeflate:DecompressZlibWithDict(str, dictionary): "..du,2)end;return en(Y,al)end;do E={}for eu=0,143 do E[eu]=8 end;for eu=144,255 do E[eu]=9 end;for eu=256,279 do E[eu]=7 end;for eu=280,287 do E[eu]=8 end;I={}for X=0,31 do I[X]=5 end;local ej;ej,F,D=dS(E,287,9)assert(ej==0)ej,J,H=dS(I,31,5)assert(ej==0)C=b3(F,E,287,9)G=b3(J,I,31,5)end;local ev={["\000"]="%z",["("]="%(",[")"]="%)",["."]="%.",["%"]="%%",["+"]="%+",["-"]="%-",["*"]="%*",["?"]="%?",["["]="%[",["]"]="%]",["^"]="%^",["$"]="%$"}local function ew(Y)return Y:gsub("([%z%(%)%.%%%+%-%*%?%[%]%^%$])",ev)end;function a:CreateCodec(ex,ey,ez)if type(ex)~="string"or type(ey)~="string"or type(ez)~="string"then error("Usage: LibDeflate:CreateCodec(reserved_chars,".." escape_chars, map_chars):".." All arguments must be string.",2)end;if ey==""then return nil,"No escape characters supplied."end;if#ex<#ez then return nil,"The number of reserved characters must be".." at least as many as the number of mapped chars."end;if ex==""then return nil,"No characters to encode."end;local eA=ex..ey..ez;local eB={}for K=1,#eA do local dG=h(eA,K,K)if eB[dG]then return nil,"There must be no duplicate characters in the".." concatenation of reserved_chars, escape_chars and".." map_chars."end;eB[dG]=true end;local eC={}local eD={}local eE={}local eF={}if#ez>0 then local eG={}local eH={}for K=1,#ez do local eI=l(ex,K,K)local eJ=l(ez,K,K)eF[eI]=eJ;eE[#eE+1]=eI;eH[eJ]=eI;eG[#eG+1]=eJ end;eC[#eC+1]="(["..ew(m(eG)).."])"eD[#eD+1]=eH end;local eK=1;local eL=l(ey,eK,eK)local eM=0;local eG={}local eH={}for K=1,#eA do local S=l(eA,K,K)if not eF[S]then while eM>=256 or eB[eM]do eM=eM+1;if eM>255 then eC[#eC+1]=ew(eL).."(["..ew(m(eG)).."])"eD[#eD+1]=eH;eK=eK+1;eL=l(ey,eK,eK)eM=0;eG={}eH={}if not eL or eL==""then return nil,"Out of escape characters."end end end;local eN=p[eM]eF[S]=eL..eN;eE[#eE+1]=S;eH[eN]=S;eG[#eG+1]=eN;eM=eM+1 end;if K==#eA then eC[#eC+1]=ew(eL).."(["..ew(m(eG)).."])"eD[#eD+1]=eH end end;local eO={}local eP="(["..ew(m(eE)).."])"local eQ=eF;function eO:Encode(Y)if type(Y)~="string"then error(("Usage: codec:Encode(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;return k(Y,eP,eQ)end;local eR=#eC;local eS="(["..ew(ex).."])"function eO:Decode(Y)if type(Y)~="string"then error(("Usage: codec:Decode(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if j(Y,eS)then return nil end;for K=1,eR do Y=k(Y,eC[K],eD[K])end;return Y end;return eO end;local eT;local function eU()return a:CreateCodec("\000","\001","")end;function a:EncodeForWoWAddonChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForWoWAddonChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eT then eT=eU()end;return eT:Encode(Y)end;function a:DecodeForWoWAddonChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForWoWAddonChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eT then eT=eU()end;return eT:Decode(Y)end;local function eV()local eM={}for K=128,255 do eM[#eM+1]=p[K]end;local ex="sS\000\010\013\124%"..m(eM)return a:CreateCodec(ex,"\029\031","\015\020")end;local eW;function a:EncodeForWoWChatChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForWoWChatChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eW then eW=eV()end;return eW:Encode(Y)end;function a:DecodeForWoWChatChannel(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForWoWChatChannel(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;if not eW then eW=eV()end;return eW:Decode(Y)end;local eX={[0]="a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9","(",")"}local eY={[97]=0,[98]=1,[99]=2,[100]=3,[101]=4,[102]=5,[103]=6,[104]=7,[105]=8,[106]=9,[107]=10,[108]=11,[109]=12,[110]=13,[111]=14,[112]=15,[113]=16,[114]=17,[115]=18,[116]=19,[117]=20,[118]=21,[119]=22,[120]=23,[121]=24,[122]=25,[65]=26,[66]=27,[67]=28,[68]=29,[69]=30,[70]=31,[71]=32,[72]=33,[73]=34,[74]=35,[75]=36,[76]=37,[77]=38,[78]=39,[79]=40,[80]=41,[81]=42,[82]=43,[83]=44,[84]=45,[85]=46,[86]=47,[87]=48,[88]=49,[89]=50,[90]=51,[48]=52,[49]=53,[50]=54,[51]=55,[52]=56,[53]=57,[54]=58,[55]=59,[56]=60,[57]=61,[40]=62,[41]=63}function a:EncodeForPrint(Y)if type(Y)~="string"then error(("Usage: LibDeflate:EncodeForPrint(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;local Z=#Y;local eZ=Z-2;local K=1;local aJ={}local aF=0;while K<=eZ do local _,a0,a1=h(Y,K,K+2)K=K+3;local aG=_+a0*256+a1*65536;local e_=aG%64;aG=(aG-e_)/64;local f0=aG%64;aG=(aG-f0)/64;local f1=aG%64;local f2=(aG-f1)/64;aF=aF+1;aJ[aF]=eX[e_]..eX[f0]..eX[f1]..eX[f2]end;local aG=0;local aH=0;while K<=Z do local af=h(Y,K,K)aG=aG+af*o[aH]aH=aH+8;K=K+1 end;while aH>0 do local f3=aG%64;aF=aF+1;aJ[aF]=eX[f3]aG=(aG-f3)/64;aH=aH-6 end;return m(aJ)end;function a:DecodeForPrint(Y)if type(Y)~="string"then error(("Usage: LibDeflate:DecodeForPrint(str):".." 'str' - string expected got '%s'."):format(type(Y)),2)end;Y=Y:gsub("^[%c ]+","")Y=Y:gsub("[%c ]+$","")local Z=#Y;if Z==1 then return nil end;local f4=Z-3;local K=1;local aJ={}local aF=0;while K<=f4 do local _,a0,a1,a2=h(Y,K,K+3)_=eY[_]a0=eY[a0]a1=eY[a1]a2=eY[a2]if not(_ and a0 and a1 and a2)then return nil end;K=K+4;local aG=_+a0*64+a1*4096+a2*262144;local e_=aG%256;aG=(aG-e_)/256;local f0=aG%256;local f1=(aG-f0)/256;aF=aF+1;aJ[aF]=p[e_]..p[f0]..p[f1]end;local aG=0;local aH=0;while K<=Z do local af=h(Y,K,K)af=eY[af]if not af then return nil end;aG=aG+af*o[aH]aH=aH+6;K=K+1 end;while aH>=8 do local dG=aG%256;aF=aF+1;aJ[aF]=p[dG]aG=(aG-dG)/256;aH=aH-8 end;return m(aJ)end;local function f5()eW=nil;eT=nil end;a.internals={LoadStringToTable=bF,IsValidDictionary=ap,IsEqualAdler32=ag,_byte_to_6bit_char=eX,_6bit_to_byte=eY,InternalClearCache=f5}if io and os and debug and _G.arg then local io=io;local os=os;local debug=debug;local f6=_G.arg;local f7=debug.getinfo(1)if f7.source==f6[0]or f7.short_src==f6[0]then local dx;local f8;local K=1;local ej;local f9=false;local fa=false;local bK;local d5;local al;while f6[K]do local Q=f6[K]if Q=="-h"then print(a._COPYRIGHT.."\nUsage: lua LibDeflate.lua [OPTION] [INPUT] [OUTPUT]\n".."  -0    store only. no compression.\n".."  -1    fastest compression.\n".."  -9    slowest and best compression.\n".."  -d    do decompression instead of compression.\n".."  --dict <filename> specify the file that contains".." the entire preset dictionary.\n".."  -h    give this help.\n".."  --strategy <fixed/huffman_only/dynamic>".." specify a special compression strategy.\n".."  -v    print the version and copyright info.\n".."  --zlib  use zlib format instead of raw deflate.\n")os.exit(0)elseif Q=="-v"then print(a._COPYRIGHT)os.exit(0)elseif Q:find("^%-[0-9]$")then bK=tonumber(Q:sub(2,2))elseif Q=="-d"then fa=true elseif Q=="--dict"then K=K+1;local fb=f6[K]if not fb then io.stderr:write("You must speicify the dict filename")os.exit(1)end;local fc,fd=io.open(fb,"rb")if not fc then io.stderr:write(("LibDeflate: Cannot read the dictionary file '%s': %s"):format(fb,fd))os.exit(1)end;local fe=fc:read("*all")fc:close()al=a:CreateDictionary(fe,#fe,a:Adler32(fe))elseif Q=="--strategy"then K=K+1;d5=f6[K]elseif Q=="--zlib"then f9=true elseif Q:find("^%-")then io.stderr:write(("LibDeflate: Invalid argument: %s"):format(Q))os.exit(1)else if not dx then dx,ej=io.open(Q,"rb")if not dx then io.stderr:write(("LibDeflate: Cannot read the file '%s': %s"):format(Q,tostring(ej)))os.exit(1)end elseif not f8 then f8,ej=io.open(Q,"wb")if not f8 then io.stderr:write(("LibDeflate: Cannot write the file '%s': %s"):format(Q,tostring(ej)))os.exit(1)end end end;K=K+1 end;if not dx or not f8 then io.stderr:write("LibDeflate:".." You must specify both input and output files.")os.exit(1)end;local ff=dx:read("*all")local au={level=bK,strategy=d5}local fg;if not fa then if not f9 then if not al then fg=a:CompressDeflate(ff,au)else fg=a:CompressDeflateWithDict(ff,al,au)end else if not al then fg=a:CompressZlib(ff,au)else fg=a:CompressZlibWithDict(ff,al,au)end end else if not f9 then if not al then fg=a:DecompressDeflate(ff)else fg=a:DecompressDeflateWithDict(ff,al)end else if not al then fg=a:DecompressZlib(ff)else fg=a:DecompressZlibWithDict(ff,al)end end end;if not fg then io.stderr:write("LibDeflate: Decompress fails.")os.exit(1)end;f8:write(fg)if dx and dx~=io.stdin then dx:close()end;if f8 and f8~=io.stdout then f8:close()end;io.stderr:write(("Successfully writes %d bytes"):format(fg:len()))os.exit(0)end end;return a
-]==] },
-["server/network/message.lua"] = { index = 12, compression = true, length = 333 },
-["server/ui/shell.lua"] = { index = 38, compression = true, length = 973 },
 }
 }
 --[[__BLOB_START__]]--
@@ -347,13 +364,23 @@ h˜bğ²{M2
 í¬MÎqKèO¬Äv¦G Ç)ºx7Dz8{‹_œ£úX†Ï'gÓ½¬e?âñ+ ª¤É­N¿†.É—6¬Œ	ÿ"ütÚ¤F!\›y0-—íV¹Œ_BÈ› e ïZ;º]à‹W—:Ó­Íwxl«ôŸÙ¹ı÷o«½k)~zöêüÔ¹:1v³aFîà&kİT*ƒkûNoÆêupĞÍßÔÂçV	w¸
 ˆ~uC–wªØ1‰%ßß?·Ší
 [BótL7 é…	-ôÀ2ÁŞr—ÿŞ·N·}ò‚³¡ş—j¡Ô2èÒ+Šè‘Wÿ*•JòGa>HÁğzbŒy0j¢jÔk?ƒSY"ëÓ“»6ôUÏ±7ÑÚ¾XÏ§èœ "‰~¥kaG^ë*Gntí<•´ûæ~é:³GÂf"Í»‡ÃëşC¨~¼]»Õ¡ÑşHÌ_'ôyÃìİŒ
-í‡aÇ8mùñû€B)ë› m};&†vzÚ|kPú×íÇz`z"gZ‘ûs€>ù¸1”Ïç¹U›ÍÆ¸úãïµWírÚFşß«Ğ¨õŒäÊ2nOGécl2†¤Í8.³H^[Záİ`Sz;½^YÏîêpúÎû¤Õ9ÏùşØ0öQh áû„0|l™û§	bÁ9¡wû³)fû!îóôÓëC7LikáVÌXÌx™ÇßÊ“VXo±ÜÁ€Ğ Ï½àHŸâ£QB}Abj.Å3käŒSÃ‘Ç±ˆ°@Cl-–N`Ëcw:âŞè{ãºÏ0¸M¹@ÔÇ–‰|?N¨à¦³$ÂpM<Áì„xŠCÏlwZ]ÓñCŒ˜:_ÚddĞX£:.x“°Œ-n05p}:„–ÙB$Ä!b#ŒQ`¤dˆ¢1fu#Bá(fPLDÚÅ5måÀÿÌLƒ#†EÂ¨r‰!ßµ‡n¼EöLÓIÈ‡ê]¹ šàœò{Ÿhz1‹GÈ1óF(äØ"ê-à€LqzcB‘S:AÂ¿Ws ‰Ãƒi.	â|3%™£PÈÿ
-C,8D{Y„¶Nøg’ ¡Mî€ÖÉOåãÔÆ¡Û8>î~êôÆÅÉàäâcÿ‹²™x¤!áßXæ;|×r÷løûÁ”0ÄÑ/Câú’Ğ2¯ö¿~­ïşúÕ|óöÏş¾NCı İùÜ8o7ÇgËâ{òö§Ú&­ûİîà¼Û9Íéß¼ÚFŞ;ë^ö3³$OS²ySää¾éºÄuM÷â°Në“ßÛ½~Ï(%OM½”b2Æ¢£I)bÙ)‘ïOãÉƒuc¯Ğk] n¥l|©’+PºjÓl°ˆs›Öü'A×fËİ_^êv\'t[wn3}î2ïÉ¤º5bfÜæi‘ÒşùØèõ~ë^6uj”aÖÑ”
-ÚÈóvêÏ‘¶¢âßÈU¥J"WÕªï1ÅPTøÓ§vS~¯”lÌİ@ò™;_öv¢½À,Q¨ª,(Îê;õ^Öh)`3Dƒ8ê	FèØ:8tL%ŒøE*=òêEn@ÆĞ*-êº·v]Ägxnå¶mYÅ6,fŒ¬çBw{hÿâöˆß÷º+²íu™`hEø‹F 1“Ê}yº­)œnĞ‚§¦Ï5ÓĞsqC=¤*AV‹àÉúÆ'´j~®-Ø¨¡ßf€Ğl¥^«ºñ\7¨ŒÊÁ‰Iğû<İªêß_Å×Şäè™ ­Ñdm(ïíÕ?Õg‹6iŒï+}0µ6kQRãA!8=âV*‚ÁpIw/·NVF÷¾iÇl±„‘j'15ÈÆ-n±ê$u­½×6t	í ¥šÚ5\"Ã),æhªgïP9¡¬.{&ƒzˆÂä~ÄAÙ=2k´ÂÓõŞ™–=£ûT5=Ü§ªoTû´Ò4ªC~ZijÀO]øÕ+ÂÔ•ù°ºéÓò¹ˆ©¨ ¾l^à%k–÷ïù³æÍ²àÏ×ÁJ-ñì[æùízâµœzsÕÓ×xÍÚazôèÉn˜¾4Šù˜7Hİğ¼‡ŠMĞTJºùòpyÒ<éôÛóŞs.…¸Ãğs¼ÑäÛÜ©¡š^íH–Â‰Ó’¥ +á]Z	¬%›oëÍÁ
-ff@¿nou//ù’r~çØiÀµû›^óÇ–r@ú5"4¸üu÷°V&¸‰Vùüê°V!ĞCåû/‡?W	&˜EˆB:fT{¹ƒçny­U—€b«…ù‰'±Ü&s±Øp›Ä€¶¿à’æîA­–o½Çp›¯
-ËÓl‚<ÓQb×NØíƒ˜æaMˆ•˜o‹sÕÚ/ñÿƒ)„¿C”â`›1ÏÛ¡4,eè©§¤eÜ©«-YÃT§nnŒXe,ËXŸºÚÊòZxêæ.Ù¨ÌÙj~ ¿Ro‹LMS•{¶§OsÉo½*”†ù¿Ç¯°q£ÆÚíìnY\¨<k	Ã®~Æœ—å‚õ>“¡/ñïåş0%>æWŠüÚ)ŸÀ®÷]óZS‡vfŸ@ü«'~“ˆ Qõ‚&Ä[\Š\{}(äK'8Ê“•+Æ=I?ä]^	×ËâF˜êªªa¯^7ò¦c‰I.)U–
-CuÙ‘PJE¬”ZI|ğlÙ†±fkY›ÊÓmP•<Ìİ~‡Ìj:—aàW(¸ò*²ñÉÎò|BÈ
-ÜSšÓ9@V•ğ¨«H!é6¿,%'>ªº‘/o»çr¹L)Úßıû}TËnÛ0¼÷+(€aÑÇÉ.)’´ÚHÛCá-­ÆetR@P¿½KÒ’·ÉEâcgw4;Zİ–RgRt½ä··ÊTğ[Èy:]‰îìüãOâ»¼º¸oÙùÍÍõxÇ.N¿Ÿ~ïûzgJ¯Z“Inà‘–E:ĞµpàğÒË•ÚõLá˜¯¤ƒ3eÑíÚ‘xôP;QÎ‡å¬‘›A§á	[j*$kÁï¬‰…20Õü@dVZ.óÒ”@+ÈZÛõ‰]-:#«p|fÒTÙ´çä5á<]¶öÉ«•†«ø°Ä¢±¬ó„yÕà[6[¼×D-µ¦á´ Àã"À‚´¤˜í¶[°´`AŒA
+í‡aÇ8mùñû€B)ë› m};&†vzÚ|kPú×íÇz`z"gZ‘ûs€>ù¸1”Ïç¹U›ÍÆ¸úãïÅXïrÛ6ÿ~OÁãgÈ”†åöêéÈA:Š$ÇŠm)µ”ö:O‹Œˆ"i ´ìèÔ×¹÷¸'»@R¤,ÒN;û"‘àşıíbw šÀ"˜Ó»„qÚvìƒw	áş9ç‚ò{Êvs nÉ·ß¡ !¶kxnå¡œG\y&Ïò$’%¯Ö>YèÓì›UšşOñ9“(œ²Ùï™¤ãIäS>‹(´§I8‘,
+-…téÌ¼ÛT‰ Á*TInê¬Öïªet?xvLñmsÂ)‘´
+IÂ	ul2™DI(…í­$[PX^ÄXò„z½§¶{ı“íMJ¸^_»lj…‘´fMúÀ„Æb\yKC‹6§`CàØ'„Ô·ddñ­”ì‚„dFyÓZ`ñPÄ„K¦ü?Ú®ıw3‡şqjâT c£3Íìbá4rì"¬–Ú0€ÿ¯Ö;RN$g¡,ˆƒ¸(¦¡3õì¥í2´ä Ä±Õã$ˆu´nNeÂCK½îÏx’Å¶í%	óÕ?ı®CÆw 0Å÷3ôrMÉDFOI ¨wCB¼‚vOÓˆ—š<dç'\óã†’ g@ÈÚ‹‰ËˆkÍ‚Rı/IP) ;×›´jÎ¨ìi|Ú
+g—û<e%~+œ ÿÜ"¡oÍ5ùI¤ÙI™ÎHÀ¾Ğ÷ÃAß™Á74v«AUN°Ó¢ov›ôÔCµÀu¦ Ûâ*¸Öôêvó§ıÃ4ªáfMçÜëC+çÁ™Y¢l–Õ-ÜB5}z“ÌÛøj©µ@¼ß´l„ÈFO½
++ S©×¥KyZ·®K!#¬\`
+èúØ?ë~é{ıŸ{£î¸=èt•uV™¼ƒÆv|
+Éò‚ôƒi¼HñüóÀÊê¬Ë‹¾.U‹æ*sœ!6Çöjmo
+J=v€—bŸ ¸G‹¡äPÌœ<{¦J›Øî5^é¤İáúwáÚÖNú+à»dòVç¥ìBÊêŒµİ*¨˜øôø-SŞûP%8!¶ŠÕãµÚíÁÇşhÜo]tÇİ‹£_µ´ÇÍ‘“[Çş×xå }şşn+11ŞªA•Rqs
+MÚ±¯>}j¾úñ“ıúÍ¿ÿûŸë´­= ùÑ:ïuÆíÓÖe*âoñ›ouVƒñù ÿ.§ıİsäÃÓÁå(31kèiû=¹é¿€|›Y¡Âêî?{ÃÑĞªK_è#ºˆo¾-&È§4nGñ£óÙİ¢OÛlìºßKÜ¹sÒlpbï.İ#+¡•ÙÂÃ)ìi“ç(ˆf™=Ü*Œw*3ïò´Hé7ø|h‡¿.;&5Šbªh
+^à
+?Ígi¼(á+‘âc‰ôl0A33€Ğ{õ½4"DùŠÏŞûuo±¿çÛ
+=l(N›{Í½aVg¼U
+%A"=$`G>-ä³Œ…N‚ĞÛ”Ñ)}pò¡²	#¨­Ø,é:b½ªj"İÊj`êsşM!€˜©_ng0ŸÀSGÏ-3¢ks±f?¤&Aˆ1+Ö=­Úêúœ[¤j~­=¦A•§¢mÛDnìŒ¶ƒwï-Ó€?äéV6ÿáêş/w­Â’ÊP>¸ÛxöÔg¬IcüPªƒÙø”¾*‹· z*(Sa˜5O_pî",Sl7â«5¬–÷ú—ÅbÂ¸p¾¸~d9o›"¹qö¿w¡J ´iú\…˜
+§t=CuèíiŠæ>îÈ !	á”ò…úExTÖƒÛÕè´‹È˜ƒD[s˜hëºQ>H´KE£|¨h—Ê…>P´üš#I©¿üpĞFéÓú¹He¨dU¼ %§“×ïîN÷:Yğ»UM°´—¸ó5ıü®š¸²‚'¸«aúz¯Y9L—ŞaUÓ—ÓM|—HP}ŠñIÉ§†UğåÃÃe·Óíz­óá.H!.›fØóŞ×ÂœFÔn«­pî]¨­`vB/İ	JØ…*¾Ùáæ‰£À~2¸¼håCÊ9à.(œ¬}aà?Ãgß\h Ò¯&’¿¾:j	n£„—>wÔ(øä±ôı‡£”	bÊ$„tÌ¨ös€»¨xŒÖ›S4ôOGjšL$ôÅÍ‰ú+Pöá 9{uØhä§ì÷°'m–§5Ù}¶§ÕVv™˜p?
+ó‚Pb­æëâ\ööÅ—À&Ş’0¤şsÎìöC[XÈĞ>ÖÚ²®Œ'<@ÕG¹C*b¥¶¬bİGÆËâXØG9$µÆ¶óøµyÏè44e½ƒ}³šk~ƒË¢Œ˜?=~k-6 |Èî²6—‡>^ÙĞlíµÇ Íá,œŸ2æÂò'5?Ü³	WšüÚ+®À¬=£Ü¾VíÔã ;óO1úIÜ&Ò–¡~!1Ã««!pª5ç‡~‚wY<˜l1.M'½Ì«¼Vn†ÅZ1åQÕˆÑ¼f¬åM'Æ“RÊ,%†ò°£`+ÕªØÚjUğe,²aä9SË–¸{µúœ¨Ræ°Ïé£#^$f;‹bàWĞâŠ£H­Ä'3Ëî„P;°NL¡Oç²]	fiI¦Ì×
+K;Ad&Æ7º¢Öòåew+<Åïš$Û¾úUì‰ ){­æÍıì%Rj
+›è%ì¥ËÅ‚³U_"¡tãf$ ìêêI	Z¯×)ñ‡¿üï}TËnÛ0¼÷+(€aÑÇÉ.)’´ÚHÛCá-­ÆetR@P¿½KÒ’·ÉEâcgw4;Zİ–RgRt½ä··ÊTğ[Èy:]‰îìüãOâ»¼º¸oÙùÍÍõxÇ.N¿Ÿ~ïûzgJ¯Z“Inà‘–E:ĞµpàğÒË•ÚõLá˜¯¤ƒ3eÑíÚ‘xôP;QÎ‡å¬‘›A§á	[j*$kÁï¬‰…20Õü@dVZ.óÒ”@+ÈZÛõ‰]-:#«p|fÒTÙ´çä5á<]¶öÉ«•†«ø°Ä¢±¬ó„yÕà[6[¼×D-µ¦á´ Àã"À‚´¤˜í¶[°´`AŒA
 ?ÓÄwà“ô5ßJ'êÀnÏ´©àGmÉ?zÆğb<Æ†] „¦d…ª³½À™¿“áŞ´>›ê¾¨–ñjLñh•‡IFHqŞî ´(¶ilÛÄ5ëFãñ¡m}Â{lùÄkÃéì62 kù¾«Åz‰:…×‡Õ"’‰J'æûú!wò‚š#.FJŸŸ®ïEëx…}¥$ÿy’7'y•åŸgù×YşJ8o•Yóºµô”,r·ÌÜı2„İ³˜?X¢€Ì^€&Ô	ªKtŠ©¢ìñ,*¯Š§¿ÁA#eê–nb_½’çØæYXÛÚcPüù_BU°Ú­Qq‚¼„ªÑQIq-bî­,a%Ë}š.NL‡.G™8×Ïæ¤ÅÌzPızğB³Ÿa2­ÁVÁÖ‰ ˜ôLåÅP‡šbo¥4øw`T	nÃ—!-³;\%ŒÒÌK·qqåîv¾jMÜÈ­İ"T$KÑ¥Ñu¨ˆ²¶˜»ãéÖ&´Xß{ô“…û~˜Í«¿ÍXmsâ8ş~¿Âå½TÙ»Š3sW»Èh·˜„ÀV 3·•ÉQÂDc3’ /ówîÜ/Û–d03“İ«ÚO±M÷£ÖÓOwK‰’€DÁœ~Z0N}r¾ <ì²øşDP¾¤ü$bãÊyÂ…-ˆíŸñ}’E%— ¯Ö7±8¤885_ÃÓÉ"$Kb+ğbúàP4AÓÔEĞh‚•3*‰$ãˆ:«5
 \õÙ[N¦§ú‘A²ˆå%‰É”r<9ñ´pJ$mÇB’8 ı@¢ˆJ­$›Qø8›cÉEtI#l·{­¾‚ˆ®¿¯]6±âDZ´F™¢Éx"lWŞÑØ
 k+rìa-™XQBBËX¥áÔ¬‰&	ŸÁœpÉÔ^Å/¶«I}©or*<ÖYêİPv‡W,Ä¶b2£êïŒÎÆ” I¤¸À¯ØŞÓOH$(ÒLpøRÙûi„õ&Aµ)•C:›G`é¸i c/¤tŞHæOÎ¬`ÏÄ;±ğ½ŞT"rXÆ+³n±ÚŒÈàÎ±ÿ}$¾ÿ{JkŠK¼÷õn×zõKä_ş:üMïüYm*rì›“jßÿòÁ~óóş÷ßÛ
@@ -414,11 +441,10 @@ wj,ÓY¬Ü©1K5£	ã%ÔUVXCš$Ğ4Å`"U–¤ÜU'¯4BSÃLÁ$,cÌ¸`ŠéÊæŠºz©‚£­a\çÉL˜”*W$÷œH
 V±~Ò”—­6	ãCN§“2ÿ S’ìdL[m
 ıœáLëf6cu-_¦”®d'ìÚ»¦îF<"ÉÏZÓä
 ËaãçrGà{–•ø’Gaò‹ìQ%ÿR—Åß+BO?¦ˆv-«!‰ÔŒ§I–şÉ&ß½EX?şËİ"°Ç*9$?‡£Ğ—@
-eP%ÆpÙÈv²»ôüüw Ó$~(óÑk¨U˜ìDú]ÇºÃ°h8ë¸Êk‘c×cu)YyMª7gmàbaÕéÁdÎ€Ê“èj–È²k³!¯¢^6º6ğğ$„a¿w/})Şî½EvFÖ}1•oÙÒ0GcŞ·%Mq3L£ß”‘Ÿ1‰ìc®¤ê>Ö‘ûîíUwŸŒ¶å	"_?ÚÏŒšó‘~ ß´¬oí„ğ¬eLˆş]“±˜ác÷ü?ÿû¥—Ërã(†÷óLÖı©Ê‚–q¢Š„Üº$“•ŠHØV¤N»ºúİlİ…lO÷&•pĞÿqçB˜Èäá'tœ ÁqŠşq£8zø™±‚òêán¼~÷…‰İÃİšŒæ  “”T,5¯îdz!?ú£P•úûî×—V C¥ÈßÄosñŞv€IIAF8x§€–‡ê8Äl`½áj	5¶_ÅmˆRŸBæ—.~»J'ÎCëUÜÙ;Á+Rp
-ş°B³÷D’¬¢rĞ N×ú·•%­©Â³¾V®Y?¶z)ŸİP©àÇ…KjÍW=áÆ“JÀßY)ÑSÆ0'ûíµ²2 6à±«…ÖAèÃÅÅ1
-1ôÒ…/(LQíµ¸M¸«¢4Ñ‘%é9!Z!»Ğ‹†z3ãDM8×[Â”{…‡æU6Z^òù“0F­5Ö|n+±™éšúR5Böd·oã\NõFÖGşWsWö ¬3*ÉsPÒòJó×4„¤±Y-:hŒ7¢Ú<‚Ñá]Í«wji 	ÿàâ“*¥÷àõ¤»PÊÄ…±´ÃêMSe£È]l%º8Ïh=/ÏH¹ â@%©
-Á;ÿ
-¥;GöAói~Ï”Íz-ûfíi*2éNVóÍ®7}…Äêò(Ø Æn€{Òâ–­y±=‚wÂÏhŸi]01! c:Iœ˜Šé‘Ë{fÌJ®¶:ÃgT^·…4”Kğ3^±n·xµ„ï¹ÙV„¢<_F†ÈAîË5h»ë`%Íhñ}>ı¾Ö­(Öù¼µ<İuØ9wãÎ 7)“Zç<;Ï¨(Y¯]ÇÕ3(]ër¨©í¤ËU½İ™‘ []İ§~¼J6ëÀ¥gäzÈÔ2CHºÓÓJ#Î_ÜÒ´`=8ÕÿTèí­LåÇëx,‹Q!ÔÍıœ?2rÍ_'×k¯Ÿ²$?ô0<¬¨ÚJ²ıù zÂaŒ¼z!‚«7S¥ƒ¶Yg,]¦tc¸?ıìbÖmÇ¢aSµÛoÆdL¨±/Ü@ÇßtM@çÉ†šî¸sö:k)³F¯m2>Š"øh{¥ÙìKí¶¤J‘İ õo·o	JĞäşû5ëÌ“ôßš*íÀ·šÖz´ÕŒ%zæ¨;T/83ÍtRdú½¶O˜9$ÍÛÃ“åFëø†¿Ãè¢Ñ¶+ıœjfïF‘‹õÿ@o^ W¤îJ|äÈ9İj<#œjˆoNÿGê±øĞ‰TJßc¶7â8hŠ?ºí1ESÃª´N\‹ÆğãşdÆ7¸÷]s9Êœç—¤U-upÿúïì}}sÇ‘÷ÿø¸Õ£
+eP%ÆpÙÈv²»ôüüw Ó$~(óÑk¨U˜ìDú]ÇºÃ°h8ë¸Êk‘c×cu)YyMª7gmàbaÕéÁdÎ€Ê“èj–È²k³!¯¢^6º6ğğ$„a¿w/})Şî½EvFÖ}1•oÙÒ0GcŞ·%Mq3L£ß”‘Ÿ1‰ìc®¤ê>Ö‘ûîíUwŸŒ¶å	"_?ÚÏŒšó‘~ ß´¬oí„ğ¬eLˆş]“±˜ác÷ü?ÿû¥WËrÛ8¼ïW`}Î¸Ê„‚”IPáÃO,˜„$–I@ËGlU*ÿ¾‰o‚’vsqÉh¨3˜é2óñ‡_Ø²ÜùAıÀøg©ÕÃİxıîK¦vwkf"A•Bq!x%cUËêá’#ŸiY•ßışÒ0ìˆ8›àuNŞcWÏŠ¹”ªBo‰üP‡2ìû/®·Z’ãWå6¼,?T‘\’¤ìÛtYß°7¢WåÎÑ)YñT–(•?y–‚ö<®D1N¨Dkø´2ä³…A|ææ:KPÇ–’Ù®Ù.{\¸¤¾‰Ô‘TJ¡LÉQÅÿæzÁ™~»N¹WE¥…Ú„ˆÖ®çà
+eñ¶#ŸxÏÄ‹ˆç¹íµĞ&İUšëì9ñYYPlûC¾8aƒ'°5åY	d!{bîÓUAYîŠôd°!Šô>Ä-ÊÕò]ª©+$­tÅ$ÈÉ…s˜Éà¹ø<¤pè	ù¶m2÷‡ÑòÒm}ğ,Fwh¾n2‡t}É"s›ÀÛt.7iCëç«®2sÒFèL•'	ÊEş&
+ıß4…¼Áz®MÔàRm*Ã»šûÎiÂ¦JEQ¨â½œxL¨¡¸`nK;ŒÑ4ş0ÊÜElØm×z"sÑóòL)QHDÁ«TÉ.¾´Ï‹ßE2­ï¹µšĞkÕ73Ö)ÉÄWğÍ"«~Å6féêÈİÔe½Òâ–™Z®’t{Do<ã2}¥uÉÔŠ‡™-MĞQ²PwL/¹¼g¦Y\–[¨ğ™ª¬ÛFÒµfì¶Z’ï¹A²íˆRÈdYÒ#¡Ï×DÛ]ÿA¶±HÎ…OŸ×`EÔ±×fáé®„­³w l*uiëì<]ıp½¦…é­¡GÃuŠİ IeYo·i¬)ĞºûäÇ«pcSëÁgkº^dŠÌ$
+±ƒiçoÜ#ŞX0Œ )ÀñOŞŞÊ”~¼>¸M#´ãüü%M×<OÖ¡m÷\ƒÅë§Ìù'ÃÓê(÷çƒÂ„cŒØ¶=‚W¯ºK=lBgZĞ¦ÀîO»„èu“„e»şĞTÍøÍ2q¦Êq,Ş`‹¯ĞØúf’šî¸$fí¡jEfÌ^k2ñ}ühz_šğ%»Íá¹Åw+ê_ßC’Éı÷kÆ™WˆjQB ßkQÃh«³L39ØÖ§ İ¡zÂ4ã=êô&ì¸éCŠ¤=ü°øWÔßà òëı.­]Ásª™õ}Êá×Û«íâÕ±;iY¦r‡ü˜)~ºÕÀ}",GŸşØõ…”§%Üc¼×äÌmšß¿ígSM—ıë¤MpHÃ/÷'Ó±¡Şwærà•>ÏïBTuÉıëßì}}sÇ‘÷ÿø¸Õ£
 `‚0AJ²,
 º²åØqø‰|¹ËÑ4jßH" -éXòg~¿î·İ(9ÎU]Õ“˜Âîì¼ôôôt÷ôôô,Ve¾èçùôî>ùt»¾­Oõ­Ì§ëúï·óuİÓ„*Ÿ^Ü.Ëí|µäÅ°w±Z÷‹bTıù²“Ï×›A«Uo~1Ø¾½©e1œN³m^,êl¸½ª—}©ŠÑ¬E©ZõQ¤*¦STË|½u½½]/û³r0¬—U_ş›šÙŠ­oÙÊ"Ê¶¬N]rN0QÖàŸ	ü¨+/~™.ç…ÍJåùY^œ£”«&ÏÙ~éÙÍâör¾ÌÎC=ãñxhx,¦wxs¨Ä›=–|t(›ñe½ıb¾FëgÇç«uöy¾ÉÛÌê™•ÌR®®‹ù²RFÖê&±E®ä—£2Âä¬„¼Áüx¾ÜÔë-cT”ÖFUNK ÖTUvÔ¬åU(dŠÆvV±Èf»//mpepÎfÕùÔ#µg	wïˆĞı‚ÂG#MĞ€†úÍ|³İfåpg¯‘kL’„d¤Z¢‚k˜oˆê£3"m¨õõ›jçëWU>(Ëñ8ûx¾œcœ„›%Q§Ëùìrs‹¡/nól”eC!A7'~T!4P©(¸ÿ0T+ÊmÆ»ÙİÏËhÅ&ê-JN›•½;Ğï4/Gøùìç|¾ •}'3c&†+î€¢æJ³„h!e$è(ëØëÈùD|Y*|O¹zæÁĞ7‡¨&,WÛNBÀìA#%›Y5­ÊæğÙôÆ§<¦#Ç.ô„Û’;¸]QÊh!S4‰ŠÖ$²‘-âIÄ‘eB÷ÈâZhO"Ç2™­Î;˜Ä³ë|[^²³~øøü_g?ò÷¿ÇçÃáÿEßÉ9*â&bñ	çĞsëtUFœƒfBw§ñ…Ø÷²Áqı-V¹‘[D‘Â-Uj9øŒ@?säÕT[&PyäC¯( /ë/ªé¬ğ]j/«QÕrãK³Y>­ª‰¢I¤Œg³ù²ªßLñ|Šº6õöºŞæBÎ¤@&‘<*LÚÔu³´dÏÉfER]ç{ä(!+Dèüşçz	Q`@A2Éˆ¿?«Ë-¤PaLbšYL¡ÅÄÛí|áKäBrÖĞ7«K
 0k¥œÎÊñííÜ1R^¯ó›ïë7[×$
@@ -680,13 +706,12 @@ z±¤k‚œJ0ËY©I9ó§AÜËˆÌ3ö(dI<MIscéÇá=ÉIÏÈ–Ä¹$¾{o¨_Ú<r·‹DÇDï‰°ä	Ì¢lÆ÷ÌJˆ
 lŸ5hexç…å*¦[Š”ÿ'´«ÀQÈ*Vâê\•ZA ‰¨Å3.ÊÂØÒšÇ¾¯$åf9$o‡Ô2ÊW3¸÷jíÒxw‡†l¡;Eß=R#G‰}øŒ¦g/Êh†áşè 	%¨b¶á÷`8ic2ËÁó.¼@7Ù»(Jdbix3A`ıùÎâ¦pdT]P)€òÚPsÅÍköï}áU@û#zô&UAtº÷ã=)z¼À0Hø
 ÓLø´—pT»ë)ô}*tÿ ½^íH—–vtiæ,×øT[´hy”{fxûö7ü©’áı°¨|.Îä”`Ù~°@q *dP¼‹Û³ÙÅBYÔŒñ>ÕEV1éÔ3Dµ´òÅHÓI"½«8Lå¯rët#oy yùJeğÎ.4—­„uÅKôsdmlÀ¯VöP+œ<«êRº¤àL[Ù©b›Ñ¹ãp+Ùé6+İ¶˜lMãÂó;h÷°bı^Y0#ëŞ¯42Y¸Ä[» V¶è2ôùKÑ+÷ï(¬›2ĞgeUUÆñ³Ş*`¸dl‚wû…l ;j7Etíò^ŠÛ¬¹§c ÔÑm(§¢	ŒMca§Ñ–~´+Òü ÀÌül
 äÙã“^E@/dÅã…ïå2vg<D/¸%¹,êÛ'Q<Éâ)/ÖŒÙ‹p‘ÏÉĞŞ¦Bz\‘Ü¢7ª<¶¦6Ô“e,[,Qöj f‘!ùÛ"ïªÃè÷ŞÛŠ‘x5ÊH¾ªH(Ü	ˆòó`Û ÏubI™¿nÛ·suy	x#†5­5K9Ï|ùZVYÁŸQŞôW§y¯!z­Ï‹@¶¨¬›* ªô¬øÖÕÖ¤„Y7•C®éB¬neº|(h}Ç5^Ğúˆİ"’íA´‰ıy»¨s]……ÜÎÉ}Û]“XÑ•ËÈ"<çUùŸNşk
-µxPôÂŠ¾íŒWËWå‚]\`aFfË{;­}Fr"ªLRD0æ)Ÿªê4R>sÒÙÚ»³w÷M£Hr–/§$Óã‹k—FªÂFç-WVa–k÷ûJtÃlë÷›Åol/»ü‘zç¨µ3»®º[6å0*©F¦õ®×OÔ]Ë™ëı@¢şVaT™ºnS8çÁä·™¼b»–äIW*±]IøP¹(c¾„k49TÊºË›.Óğ-V|aTûi/Š<İêyŠPRmŠ	n­üŒÁ[Sıwà¼‘,XoOø±°w°R\á¦¬š3jnÁ¯ˆof´v&œ!ûå¡@MäÙ#ñwuÚíñ£\éÑfpÛ1<ºóBå„6½º÷Ë­V_oÛ6ß§8ğ%À	I·¤€Øš>ôe(ºy{p’([5E
-$U·5¼Ï¾#))RcÉº °¥»ãıùİïx–:ç8Ûxªx-áy®[å,áKò©;²bûBØœ‘?ñ¬®…VâÂBg•*µ©¹«´"´lUÎü‡e4Ob„‚
-–§[a”4Oó]q%sÚ:S©õ,[¾XuækVÌÅg‘·NÌ†ŒÒµp[®*W}¡ûpyHª”v°·
-Œp­Q{tÊÈc´™ÃÅ/]®Ş¬Ä§b$MË4%„º/Ö]òJ’ƒP}b¶'®n^^^ÿ†aæoğÔ: E;åbñö~¢lÛªè•¯àN}îeÎ=j0>L„TåJMÎ@­ÓŒ«”#ÆŸDÒ›¿×rš¥AA¯ü‹K)œ;ã™i®UÎ:ÜEĞf „Iˆê8P7«”ÆÍ6”Ü·&$>uxó¢%ßÚ¾ÜN,M$óQÓ6]C<¯BCÈÄğ²b<õ”¼i`¦ª¤¡Ë²"zàÿcãç[Ñî|_Á]Ÿ)>:Z¤>Ç´^!ó@åÄ´¢é–yS§U[gÂ ŸZ%ÚÀÍ–?¯´!À9QB9‚’k/iÕVé"ÑÄ1”Ë+Vu~ë£càëìÉOû˜¤1o¶QÿÃ.OÏ¶ N¥^€Ñ	?"°á2®²@Iœ º¸íNÚ6Ï…µC³Z5iÅÂ¿šñ`¤çÀh¸)´š^gkïKzÕ¡åoœãåv) ;‡ÒGÒ	ES& y×3B~¨ûœPäV]ô§cõ_y,Üv#â5	.˜G­‡¡m¸µ;mŠçÍ§Š³éGòB]fÃtõÁ˜ú?Á"¿G@ÊVbßcÌb¨×/¦Àm„l<l§
-÷;«_u¹®‘Z……Oı‘2hÚà
-‡†WÆÎxRhÀB}øY“0FÂ%NĞ4ÉÇ×@Ü2˜¹ÆâG[&ñ7<x¾=öŒ\“³¢ÇxjÚˆH÷£ [^á\„/¬†<jŞ"ŞÀ}
-í,<naç’/½·Õ“]ùú'(ÑûK}!õ±î‡ÿ”O‹Û0Åïıƒz±À«&{ØBz,ôPúç”†¢Øc[D‘Œ$ï¶„ô³w$%!M6PšCkFšß›yŠq2 än¯„U[”,ª°	L-™Ñ!²•ÜµÉ>ymc exì)„[(Éu7ÙF¦¯¨­ÖuÃ=ÆÉÛ]ˆ^6bƒŞ¢YàOl¦ˆ+ïbLGş(Gğ:ş©º¶c{´íòË‰àËà´•6T:ıV¥Š ÖnŠ 2ÎK4Ee{¥ÇˆîÀºëåıÊyHTUúÍKFj´í-§Œv™ÖWq@grÙ7»±îÙ`Š¬˜³¬Ç‚‚Ôğ¨Ö…¶}¬°f_)Lˆ\î2úÁRÇŸ”É‡Ò.‹Œ®0VÇ£Bü<Ùw3P¶j× :ãœ¯.3î\8ºf¨ØÆù›ùl6ãÜy–à/y>Ò6ğ“Í<İ"Lëê¾~İq!lœmÉ,½cWBŞÓX0o»¢U9ÆÏİƒ/c@3&cÜšt/w¹Ğ¸íV%”»[¶'ÁPk2ŒJûP)Ş: äÙk.eÏRµHf„<ô¿”õõ@Òğ}şğvö@âJ&'bHs¿Hşg¼ó^ôW½8j%h¹'ÿÎ“Óƒ°K—şß¥|<®–éÜÛÖ?èZ@c4¦¿ìêùêê6”ÍÇóD’“EœÇ^ıù…TMoÛ8½÷W
+µxPôÂŠ¾íŒWËWå‚]\`aFfË{;­}Fr"ªLRD0æ)Ÿªê4R>sÒÙÚ»³w÷M£Hr–/§$Óã‹k—FªÂFç-WVa–k÷ûJtÃlë÷›Åol/»ü‘zç¨µ3»®º[6å0*©F¦õ®×OÔ]Ë™ëı@¢şVaT™ºnS8çÁä·™¼b»–äIW*±]IøP¹(c¾„k49TÊºË›.Óğ-V|aTûi/Š<İêyŠPRmŠ	n­üŒÁ[Sıwà¼‘,XoOø±°w°R\á¦¬š3jnÁ¯ˆof´v&œ!ûå¡@MäÙ#ñwuÚíñ£\éÑfpÛ1<ºóBå„6½º÷ËµV_oÛ6ß§ øà„fk;ÀlËò°bÈ–õÁ3J¢mÖ©T¼Îõ>û$K¶å%]‰t<İŸßıîx¥ÊY‰İîX*YÅ)fy®if3ü(øÏé¶à&§øwxCFU\I~aPTDB.”®˜Jb²hdNİ÷:ÉHá4O×\K^’<Í7Å›p° V«…\N²Ù7ó¨¾¤Å”ÿÉóÆòIQºäöŞ0)¬ø‹˜l}À‹]"H*‹–È®¸DšÛFË-¥ø'­•¢‹ïc¬NmOÅá4]¤)¾ÀÄ~¬!ï%ŞqÙ¶¢[üÇåëï^¼zn¦È?¿†¯–(ïîn®‡M#ŠöğGÍ™åÅà<w2 çNÀ?{Ë?0)ßv@-ÓŒÉ”Æ<iÕoU9ŒRƒ =|ÏÊ’[Ó7Æ²’§¹’9³`pÒÛÁád¨öpÃgB®ídEğu£}àÓ‡S/¢(9Ô½åÌ4µ$ó^ÑV± W¾ ;`¢™S–:J¾é©g¦¥É=Y=ä~Cá§[A	]¹¾EWm¤ğhxÔ µà9„õö™;*·$&‚| kêL¬’M•q|şv(.I6{9W×úDri1H^9I#×Rm$fJhÃröaNE´[l—gK~Òæ@Kâ¦kßÕßôÅx?@	ª´TËÓĞûÂµZ1ƒ2¦2OIè í«¸_š&Ï¹1]±9(Å{íã9ÀzHÏQ3](9gsoSzÖ>é&ÎétcÀÎ.õt@Ñ‚C—ñ=4¿´Œ(?¢pö_pBásXEïOÇêsyæ§]…0&C.˜£Ú]ÓÖÌ˜ÒÅóúS†Şt-y¡Y×]­3*¿$Xø× È¢)¡îÁgÑåë.¦à„|}à~f’-9
+b”+N{÷²—^ûŸBM>•ÂÀŒ›9İ9š5†›ù3€TÆxßªc(îÄóY!Â>¥-U¼£BM¨+cÎ¾l÷†sU½è‘­óLkâ<Ó‡/ZØ›}%Úºú‰3©áfÅšÉBU8q½²våO»"¼š˜ä¸kJÃ#±ƒûpx0bEêÑ¤
+AÕZ=Šbßš‡[Ï¹Áqàÿ†\¹úH},ôèÖ"¿÷‚Û}QÇıNš)ìŠøp!émˆ7}í¯Ç~ğ®L`®ë¨fB›‰N
+u´M…eÍe€õ–5“:®î)1WLHØ±ßíŒ2øÁÉøÖ ;,*È4Y®*¸³Bu”‹irÜŞÉQ±Qa+^Ön€j»­GOÿ
+¬%ÍXæ€…
+;ÿ“&šxt0B¿ŒOo²övˆ}ø&‰)AıŒXÏÀØ´X –ê& yšÍ.áj÷ÿ |<tcmºÂ´ÔG'Çª3ÉfÎÚüÉ¦\­İ#-ÜÚK]>ôşÙWÿü”O‹Û0Åïıƒz±À«&{ØBz,ôPúç”†¢Øc[D‘Œ$ï¶„ô³w$%!M6PšCkFšß›yŠq2 än¯„U[”,ª°	L-™Ñ!²•ÜµÉ>ymc exì)„[(Éu7ÙF¦¯¨­ÖuÃ=ÆÉÛ]ˆ^6bƒŞ¢YàOl¦ˆ+ïbLGş(Gğ:ş©º¶c{´íòË‰àËà´•6T:ıV¥Š ÖnŠ 2ÎK4Ee{¥ÇˆîÀºëåıÊyHTUúÍKFj´í-§Œv™ÖWq@grÙ7»±îÙ`Š¬˜³¬Ç‚‚Ôğ¨Ö…¶}¬°f_)Lˆ\î2úÁRÇŸ”É‡Ò.‹Œ®0VÇ£Bü<Ùw3P¶j× :ãœ¯.3î\8ºf¨ØÆù›ùl6ãÜy–à/y>Ò6ğ“Í<İ"Lëê¾~İq!lœmÉ,½cWBŞÓX0o»¢U9ÆÏİƒ/c@3&cÜšt/w¹Ğ¸íV%”»[¶'ÁPk2ŒJûP)Ş: äÙk.eÏRµHf„<ô¿”õõ@Òğ}şğvö@âJ&'bHs¿Hşg¼ó^ôW½8j%h¹'ÿÎ“Óƒ°K—şß¥|<®–éÜÛÖ?èZ@c4¦¿ìêùêê6”ÍÇóD’“EœÇ^ıù…TMoÛ8½÷W
 HX‚vöTØË‚ [¶‡nNmĞÔHbL‘*E%÷·wHÊ±lxw‚(Í×›7ohœ’†H±S/• ÊTWb·g­‚ó¯ñ¨ê&¾:7Ú vµ40J÷¬‚AyİíìRÁ'ÛA$Ÿ}Î½¾ÚCA·à-_´”ÓIlÖÙU­ëÑª˜È•q²ºu]'m5eí<©m‰î¥öCQÜ Æ‚.>ÒWwÚnøgğ‹¡cj
 ¦eY9’+Ô0·ÿ· œC©k?mÀ‚×Š›QÒĞ‚%˜šG²¾ÖÜÊDÍıh×hÃÚtÂ«c–ğÚCÑ–BĞ 7(– -’cÂ9¥SbÎ)A$Íƒ˜¼Óƒ“ËåàRXduş»Ü…
 Çg>™ÂØe.‚ÚØ¬à¨1'Ü@xTÎÖº¡Œ&VŸ9ê\JˆíÔr4á±Ò~†4Êó¢KÄ6ŸtûhÀ6¡e85ˆH¬^
