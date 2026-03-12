@@ -7,6 +7,8 @@ accountManager.__index = accountManager
 
 local log
 
+local invitePath = "/GuardLink/server/config/invite_codes.json"
+
 function accountManager.new(vfs, logger)
     local self = setmetatable({}, accountManager)
     self.vfs = vfs
@@ -15,6 +17,14 @@ function accountManager.new(vfs, logger)
         log:fatal("Failed to load accountManager: malformed partitions?") 
         error("Failed to load accountManager: malformed partitions?")        
     end
+
+    if not fs.exists(invitePath) then
+        log:info("invite_codes config not found! Generating...")
+        local f = fs.open(invitePath, "w")
+        f.write("")
+        f.close()
+    end
+
     return self
 end
 
@@ -35,6 +45,70 @@ local accountTemplate = {
     salt = "",
     wallets = {}
 }
+
+function accountManager:getInviteCodes()
+    local f = fs.open(invitePath, "r")
+    local content = f.readAll()
+    f.close()
+    if content and content ~= "" then
+        return textutils.unserializeJSON(content)
+    end
+    return nil
+end
+
+function accountManager:useInvite(code)
+    local f = fs.open(invitePath, "r+")
+    local content = f.readAll()
+    if content and content ~= "" then
+        local tbl = textutils.unserializeJSON(content)
+        if tbl[code] then
+            tbl[code].uses = tbl[code].uses - 1
+            local usesLeft = tbl[code].uses
+            if usesLeft < 1 then tbl[code] = nil end
+            f.write(textutils.serializeJSON(tbl))
+            f.close()
+            log:debug("Invite code used: " .. code .. ", uses left: " .. (tbl[code] and usesLeft or 0))
+        else
+            f.close()
+            return errors.UNKNOWN_INVITE_CODE
+        end
+    else
+        f.close()
+    end
+    return 0
+end
+
+function accountManager:deleteInvite(code)
+    local f = fs.open(invitePath, "r+")
+    local content = f.readAll()
+    if content and content ~= "" then
+        local tbl = textutils.unserializeJSON(content)
+        if tbl[code] then
+            tbl[code] = nil
+            f.write(textutils.serializeJSON(tbl))
+            f.close()
+            log:debug("Invite code deleted: " .. code)
+        else
+            f.close()
+            return errors.UNKNOWN_INVITE_CODE
+        end
+    else
+        f.close()
+    end
+    return 0
+end
+
+function accountManager:createInvite(code, uses)
+    local f = fs.open(invitePath, "r+")
+    local content = f.readAll()
+    if not content or content == "" then content = "{}" end
+    local tbl = textutils.unserializeJSON(content)
+    tbl[code or utils.randomString(8, "generic")] = {uses = uses or 1}
+    f.write(textutils.serializeJSON(tbl))
+    f.close()
+    log:debug("Created invite code with " .. (uses or 1) .. " uses")
+    return 0
+end
 
 function accountManager:isValidAccountName(name)
     if not name then return errors.ACCOUNT_NAME_EMPTY end
@@ -244,7 +318,11 @@ local service = {
             authenticate = function(self, args) return self:authenticateUser(args.name, args.password) end,
             ban = function(self, args) return self:banAccount(args.name, args.duration, args.reason) end,
             pardon = function(self, args) return self:pardon(args.name) end,
-            is_banned = function(self, args) return self:isBanned(args.name) end
+            is_banned = function(self, args) return self:isBanned(args.name) end,
+            get_invite_codes = function(self) return self:getInviteCodes() end,
+            use_invite = function(self, args) return self:useInvite(args.code) end,
+            delete_invite = function(self, args) return self:deleteInvite(args.code) end,
+            create_invite = function(self, args) return self:createInvite(args.code, args.uses) end,            
         }
     }
 }

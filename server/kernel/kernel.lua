@@ -67,6 +67,7 @@ kernel:addCommand("kernel", "print_tasks", function()
     return table.concat(str, " ")
 end)
 kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
+kernel:addCommand("kernel", "refresh_configs", function() kernel:refreshConfigs() end)
 
 function kernel:execute(cmd, args)
     return self.cmds[cmd](args)
@@ -104,6 +105,22 @@ function kernel:initConfigs()
         local key = files[i]:match("(.+)%..+")
         local ext = files[i]:match("%.([^%.]+)$")
         if self.ctx.configs[key] then error("Duplicate configs  found: " .. key ) end
+        local file = fs.open(configPath .. files[i], "r")
+        local contents = file.readAll()
+        file.close()
+        if ext == "lua" or ext == "conf" then
+            self.ctx.configs[key] = textutils.unserialize(contents)
+        elseif ext == "json" then
+            self.ctx.configs[key] = textutils.unserializeJSON(contents)
+        end
+    end
+end
+
+function kernel:refreshConfigs()
+    local files = fs.list(configPath)
+    for i = 1, #files do
+        local key = files[i]:match("(.+)%..+")
+        local ext = files[i]:match("%.([^%.]+)$")
         local file = fs.open(configPath .. files[i], "r")
         local contents = file.readAll()
         file.close()

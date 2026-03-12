@@ -36,6 +36,14 @@ local errors = {
         client ="INVALID_CREDENTIALS",
         log = "Invalid credentials"
     },
+    UNKNOWN_INVITE_CODE = {
+        client = "UNKNOWN_INVITE_CODE",
+        log = "Tried to access unknown invite code"
+    },
+    EXPIRED_INVITE_CODE = {
+        client = "EXPIRED_INVITE_CODE",
+        log = "Tried to access expired invite code"
+    },
     -- ACCOUNT RELATED -------------------------------------------------------------
 
     -- WALLET RELATED --------------------------------------------------------------
