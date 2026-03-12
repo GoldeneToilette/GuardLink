@@ -84,12 +84,12 @@ cmds["create"] = {
     end
 }
 
-cmds["invite"] = {
-    desc = "Manage invite codes: account invite <create|delete|list> [code] [uses]",
+cmds["code"] = {
+    desc = "Manage invite codes: account code <create|delete|list> [code] [uses]",
     func = function(args, ctx)
         local kernel = ctx.kernel
         local sub = args[2]
-        if not sub then return {str="Usage: account invite <create|delete|list> [code] [uses]", type="fail"} end
+        if not sub then return {str="Usage: account code <create|delete|list> [code] [uses]", type="fail"} end
 
         if sub == "create" then
             local code, uses = args[3], tonumber(args[4])

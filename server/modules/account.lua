@@ -57,55 +57,55 @@ function accountManager:getInviteCodes()
 end
 
 function accountManager:useInvite(code)
-    local f = fs.open(invitePath, "r+")
+    local f = fs.open(invitePath, "r")
     local content = f.readAll()
+    f.close()
     if content and content ~= "" then
         local tbl = textutils.unserializeJSON(content)
         if tbl[code] then
             tbl[code].uses = tbl[code].uses - 1
             local usesLeft = tbl[code].uses
             if usesLeft < 1 then tbl[code] = nil end
-            f.write(textutils.serializeJSON(tbl))
-            f.close()
+            local w = fs.open(invitePath, "w")
+            w.write(textutils.serializeJSON(tbl))
+            w.close()
             log:debug("Invite code used: " .. code .. ", uses left: " .. (tbl[code] and usesLeft or 0))
         else
-            f.close()
             return errors.UNKNOWN_INVITE_CODE
         end
-    else
-        f.close()
     end
     return 0
 end
 
 function accountManager:deleteInvite(code)
-    local f = fs.open(invitePath, "r+")
+    local f = fs.open(invitePath, "r")
     local content = f.readAll()
+    f.close()
     if content and content ~= "" then
         local tbl = textutils.unserializeJSON(content)
         if tbl[code] then
             tbl[code] = nil
-            f.write(textutils.serializeJSON(tbl))
-            f.close()
+            local w = fs.open(invitePath, "w")
+            w.write(textutils.serializeJSON(tbl))
+            w.close()
             log:debug("Invite code deleted: " .. code)
         else
-            f.close()
             return errors.UNKNOWN_INVITE_CODE
         end
-    else
-        f.close()
     end
     return 0
 end
 
 function accountManager:createInvite(code, uses)
-    local f = fs.open(invitePath, "r+")
+    local f = fs.open(invitePath, "r")
     local content = f.readAll()
+    f.close()
     if not content or content == "" then content = "{}" end
     local tbl = textutils.unserializeJSON(content)
     tbl[code or utils.randomString(8, "generic")] = {uses = uses or 1}
-    f.write(textutils.serializeJSON(tbl))
-    f.close()
+    local w = fs.open(invitePath, "w")
+    w.write(textutils.serializeJSON(tbl))
+    w.close()
     log:debug("Created invite code with " .. (uses or 1) .. " uses")
     return 0
 end

@@ -52,15 +52,36 @@ end
 
 function engine:run(str)
     local args = {}
-    for token in str:gmatch("%S+") do
-        table.insert(args, token)
+    local i = 1
+    while i <= #str do
+        if str:sub(i, i) == "'" then
+            local j = str:find("'", i + 1, true)
+            if j then
+                table.insert(args, str:sub(i + 1, j - 1))
+                i = j + 1
+            else
+                table.insert(args, str:sub(i + 1))
+                break
+            end
+        elseif str:sub(i, i) ~= " " then
+            local j = str:find(" ", i, true)
+            if j then
+                table.insert(args, str:sub(i, j - 1))
+                i = j
+            else
+                table.insert(args, str:sub(i))
+                break
+            end
+        else
+            i = i + 1
+        end
     end
-    local cmd = table.remove(args,1)
+
+    local cmd = table.remove(args, 1)
     if not cmd or cmd == "" then return {str="", type="empty"} end
     local fn = self.cmds[cmd]
     table.insert(self.history, str)
     if #self.history > self.history_length then table.remove(self.history, 1) end
-
     if fn then
         local ok, output = pcall(fn, args, self)
         if not ok then
@@ -73,7 +94,7 @@ function engine:run(str)
         else
             msg = msg .. table.concat(output.str, "\n")
             log:debug(msg)
-        end    
+        end
         return output
     else
         log:debug("Used unknown command: " .. cmd)
