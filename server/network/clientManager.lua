@@ -147,9 +147,8 @@ end
 
 function clientManager:getStaleClients()
     local staleClients = {}
-    local time = os.epoch("utc")
     for _, v in pairs(self.clients) do
-        if time - v.lastActivityTime - (v.throttle or 0) > self.max_idle then
+        if v.sleepy then
             table.insert(staleClients, v)
         end
     end
@@ -157,23 +156,21 @@ function clientManager:getStaleClients()
 end
 
 function clientManager:heartbeats()
-    local time = os.epoch("utc")
-    local clients = self:getStaleClients()
     log:debug("Sending out heartbeats:")
-    for _, v in pairs(clients) do
+    local toDisconnect = {}
+    for _, v in pairs(self.clients) do
         if v.sleepy then
-            if time - v.lastActivityTime > self.max_idle then
-                self:disconnectClient(v.id, "time_out")
-            else
-                v.sleepy = false
-            end
-            log:debug("Client " .. v.id .. " has not responded to heartbeat, timing out...")
-        else
+            table.insert(toDisconnect, v.id)
+        elseif os.epoch("utc") - v.lastActivityTime > self.max_idle then
             v.sleepy = true
             local msg = message.create("network", {action = "heartbeat"}, v.aesKey, false)
             self.ctx["network_session"]:send(v.channel, msg)
             log:debug("Awaiting heartbeat response from client " .. v.id)
         end
+    end
+    for _, id in ipairs(toDisconnect) do
+        log:debug("Client " .. id .. " has not responded to heartbeat, timing out...")
+        self:disconnectClient(id, "time_out")
     end
 end
 
@@ -181,16 +178,22 @@ function clientManager:updateChannels()
     local f = false
     log:debug("Rotating channels:")
     for _, v in pairs(self.clients) do
-        local newchannel = self:computeChannel(v.token)
-        local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
-        self.ctx["network_session"]:send(v.channel, msg)
-        self.ctx["network_session"]:close(v.channel)
-        log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)
-        v.channel = newchannel
-        f = true
+        if v.sleepy then
+            log:debug("Skipping rotation for client " .. v.id .. ": awaiting heartbeat")
+        else
+            local newchannel = self:computeChannel(v.token)
+            local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
+            self.ctx["network_session"]:send(v.channel, msg)
+            self.ctx["network_session"]:close(v.channel)
+            log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)
+            v.channel = newchannel
+            f = true
+        end
     end
     for _, v in pairs(self.clients) do
-        self.ctx["network_session"]:open(v.channel)
+        if not v.sleepy then
+            self.ctx["network_session"]:open(v.channel)
+        end
     end
     return not f and errors.NO_CLIENTS or 0
 end

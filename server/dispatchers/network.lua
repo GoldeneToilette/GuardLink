@@ -16,6 +16,8 @@ function handlers.discovery(msg, client, id, ctx, fn, logger)
 end
 
 function handlers.heartbeat(msg, client, id, ctx, fn, logger)
+    if not client then return errors.UNKNOWN_CLIENT end
+    client.sleepy = false
     return 0
 end
 

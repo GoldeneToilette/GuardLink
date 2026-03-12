@@ -1449,9 +1449,11 @@ function api.listen(onEvent)
 					if content.payload.action == "update_channel" then
 						handleChannelRotation(content.payload.channel)
 						internal = true
+						goto skip
 					elseif content.payload.action == "heartbeat" then
 						handleHeartbeat()
 						internal = true
+						goto skip
 					end
 				end
 
@@ -1467,6 +1469,7 @@ function api.listen(onEvent)
 				end
 			end
         end
+		::skip::
     end
 end
 

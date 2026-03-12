@@ -90,7 +90,6 @@ function NetworkSession:open(channel)
     if self:channelCount() + 1 >= 128 then return errors.CHANNEL_CAPACITY_REACHED end
     self.modem.open(channel)
     self.channels[channel] = true
-    log:debug("Opening channel " .. channel .. ", total: " .. self:channelCount())
     return 0
 end
 
@@ -98,7 +97,6 @@ function NetworkSession:close(channel)
     if not self.modem.isOpen(channel) then return errors.CHANNEL_ALREADY_CLOSED end
     self.modem.close(channel)
     self.channels[channel] = nil
-    log:debug("Closing channel " .. channel .. ", remaining: " .. self:channelCount())
 end
 
 function NetworkSession:closeAll()
@@ -119,7 +117,7 @@ function NetworkSession:listen()
     while not self.shutdown do
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
         if self.channels[channel] then
-            log:debug("Message received on channel " .. channel .. ",\n" .. message)
+            log:debug("Message received on channel " .. channel)
             local status = self.ctx["request_queue"]:addRequest(message)
             if status ~= 0 then log:error(status[2]) end
         end
