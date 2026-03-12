@@ -5,16 +5,16 @@ dispatcher.__index = dispatcher
 
 --[[
 REMINDER FOR MYSELF:
-A message is a serialized table consisting of id, timestamp, message = {action, payload}, isPlaintext
+A message is a serialized table consisting of id, timestamp, message = {header, payload}, isPlaintext
 requestQueue deserializes and if needed decrypts it and passes it to the dispatcher.
 If a callbacks existsDir for that message ID, the dispatcher executes it.
-Dispatcher matches the msg.action to the sub-dispatchers and calls the handler. Returns status code. 
+Dispatcher matches the msg.header to the sub-dispatchers and calls the handler. Returns status code. 
 Example:
 {
     id = "A1B2C3D4E5F6G7H8",
     timestamp = 1708712345678,
     message = {
-        action = "login",
+        header = "login",
         payload = {
             username = "bob",
             password = "secret"
@@ -30,12 +30,18 @@ Since it wouldnt make sense for an unregistered client to be sending AES encrypt
 ]]--
 
 -- one request has the following fields: id, timestamp, message, clientID
+
+local log
+
 function dispatcher.new(ctx)
     local self = setmetatable({}, dispatcher)
     self.handlers = {}
     self.callbacks = {}
     self.path = "/GuardLink/server/dispatchers/"
     self.ctx = ctx
+
+    log = ctx.services.logger:createInstance("dispatcher", {timestamp = true, level = "DEBUG", clear = true})
+    
     local list = fs.list(self.path)
     for _, v in ipairs(list) do
         local name = v:gsub("%.lua$", "")
@@ -50,15 +56,28 @@ function dispatcher:register(action, func)
 end
 
 function dispatcher:dispatch(msg, client, id)
-    if not self.handlers[msg.action] or not msg.action then return errors.UNKNOWN_DISPATCHER end
-    if not msg.payload then return errors.MISSING_PAYLOAD end
+    if not msg or not msg.header or not self.handlers[msg.header] then
+            log:debug("Failed to dispatch: " .. errors.UNKNOWN_DISPATCHER.log)
+            return errors.UNKNOWN_DISPATCHER 
+        end
+    if not msg.payload then 
+        log:debug("Failed to dispatch: " .. errors.MISSING_PAYLOAD.log)
+        return errors.MISSING_PAYLOAD 
+    end
     if self.callbacks[id] then
-        local ok, result = pcall(self.callbacks[id], msg, client, id, self.ctx, self.addCallback)
+        local ok, result = pcall(self.callbacks[id], msg, client, id, self.ctx, self.addCallback, log)
         self.callbacks[id] = nil
-        if not ok then return errors.MALFORMED_MESSAGE end
+        if not ok then 
+            log:debug("Failed to dispatch: " .. errors.MALFORMED_MESSAGE.log .. ":\n" .. textutils.serialize(msg))
+            return errors.MALFORMED_MESSAGE 
+        end
         if result ~= 0 then return result end
     else
-        local result = self.handlers[msg.action](msg, client, id, self.ctx, self.addCallback)
+        local ok, result = pcall(self.handlers[msg.header], msg, client, id, self.ctx, self.addCallback, log)
+        if not ok then
+            log:debug("Handler crashed: " .. tostring(result))
+            return errors.MALFORMED_MESSAGE
+        end
         if result ~= 0 then return result end
     end
     

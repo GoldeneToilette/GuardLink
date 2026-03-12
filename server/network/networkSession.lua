@@ -10,20 +10,19 @@ local defaultKeyPath = "/GuardLink/server/"
 
 local log
 
-function NetworkSession.new(queue, settings, logger)
+function NetworkSession.new(ctx, settings, logger)
     local self = setmetatable({}, NetworkSession)
-    self.requestQueue = queue
+    self.ctx = ctx
+    self.settings = settings
 
     log = logger:createInstance("session", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
 
-    self.discovery = settings.discoveryChannel or 65535
+    self.discovery = settings.session.discoveryChannel or 65535
+    self.keyPath = settings.session.keyPath
     self.channels = {}
 
     self.privateKey = nil
     self.publicKey = nil
-
-    self:initModem()
-    self:initKeys(settings.keyPath)
 
     self.shutdown = false
     return self
@@ -41,26 +40,41 @@ function NetworkSession:initModem()
     log:debug("Modem found: " .. peripheral.getName(self.modem))
 end
 
-function NetworkSession:initKeys(keyPath)
-    local privatePath = (keyPath or defaultKeyPath) .. "private.key"
-    local publicPath  = (keyPath or defaultKeyPath) .. "public.key"
-    if not fileUtils.read(privatePath) then
+local function serializeKey(key)
+    local s = "{\n"
+    for k, v in pairs(key) do
+        s = s .. "    " .. k .. " = \"" .. tostring(v) .. "\",\n"
+    end
+    return s .. "}"
+end
+
+local function deserializeKey(str)
+    local key = {}
+    for k, v in str:gmatch('(%w+)%s*=%s*"([^"]+)"') do
+        key[k] = v
+    end
+    return key
+end
+
+function NetworkSession:initKeys()
+    local privatePath = (self.keyPath or defaultKeyPath) .. "private.key"
+    local publicPath  = (self.keyPath or defaultKeyPath) .. "public.key"
+    if not fs.exists(privatePath) then
         local start = os.clock()
         log:info("Couldnt find keypair, generating... ")
         local privateKey, publicKey = rsa.generateKeyPair()
         self.privateKey, self.publicKey = privateKey, publicKey
         fileUtils.newFile(privatePath)
         fileUtils.newFile(publicPath)
-        fileUtils.write(privatePath, textutils.serialize(privateKey))
-        fileUtils.write(publicPath, textutils.serialize(publicKey))
-
+        fileUtils.write(privatePath, serializeKey(privateKey))
+        fileUtils.write(publicPath, serializeKey(publicKey))
         log:info("Finished generating keypair: Took " .. math.ceil(os.clock() - start) .. " seconds.")
         log:info("Keys saved to " .. privatePath .. " and " .. publicPath)
     else
-        self.privateKey = textutils.unserialize(fileUtils.read(privatePath))
-        self.publicKey  = textutils.unserialize(fileUtils.read(publicPath))
-        log:debug("RSA Public key loaded: " .. publicPath)
-        log:debug("RSA Private key loaded: " .. privatePath)
+        self.privateKey = deserializeKey(fileUtils.read(privatePath))
+        self.publicKey  = deserializeKey(fileUtils.read(publicPath))
+        log:debug("RSA Public key loaded " .. publicPath .. ":\n" .. tostring(fileUtils.read(publicPath)))
+        log:debug("RSA Private key loaded " .. privatePath .. ":\n" .. tostring(fileUtils.read(privatePath)))
     end
 end
 
@@ -73,7 +87,6 @@ function NetworkSession:channelCount()
 end
 
 function NetworkSession:open(channel)
-    if self.modem.isOpen(channel) then return errors.CHANNEL_ALREADY_OPEN end
     if self:channelCount() + 1 >= 128 then return errors.CHANNEL_CAPACITY_REACHED end
     self.modem.open(channel)
     self.channels[channel] = true
@@ -85,8 +98,7 @@ function NetworkSession:close(channel)
     if not self.modem.isOpen(channel) then return errors.CHANNEL_ALREADY_CLOSED end
     self.modem.close(channel)
     self.channels[channel] = nil
-    log:debug("Closing channel " .. channel .. ", remaining: " .. self:channelCount())    
-    return 0
+    log:debug("Closing channel " .. channel .. ", remaining: " .. self:channelCount())
 end
 
 function NetworkSession:closeAll()
@@ -99,16 +111,17 @@ end
 
 function NetworkSession:send(channel, message)
     self.modem.transmit(channel, math.random(0, 65535), message)
-    log:debug("Sending message on channel " .. channel)
+    log:debug("Sending message on channel " .. channel .. ":\n" .. message)
 end
 
 function NetworkSession:listen()
     log:debug("Starting event listener loop")
     while not self.shutdown do
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
-        if self.channels[channel]  then
-            local status = self.requestQueue:addRequest(message)
-            if status ~= 0 then log:error(status[2]) end 
+        if self.channels[channel] then
+            log:debug("Message received on channel " .. channel .. ",\n" .. message)
+            local status = self.ctx["request_queue"]:addRequest(message)
+            if status ~= 0 then log:error(status[2]) end
         end
     end
     return self.exitCode or 0
@@ -119,9 +132,10 @@ function NetworkSession:start()
         function()
             local startTime = os.clock()
             log:info("Launching Server with discovery channel: " .. self.discovery)
-
-            self:open(self.discovery) 
-            local code = self:listen() -- listener loop runs here until it exits with a code
+            self:initModem()
+            self:initKeys()
+            self:open(self.discovery)
+            local code = self:listen()
             log:info("Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
             log:info("Server was online for " .. string.format("%.2f", os.clock() - startTime) .. " seconds")
             if code ~= 0 then log:error("Exit code: " .. code) end
@@ -130,8 +144,8 @@ function NetworkSession:start()
         function(err, stackTrace)
             log:fatal("Network session crashed :(")
             log:error("Error:" .. err)
-            os.shutdown()            
-        end        
+            os.shutdown()
+        end
     )
 end
 
@@ -139,7 +153,7 @@ local service = {
     name = "network_session",
     deps = {"request_queue"},
     init = function(ctx)
-        return NetworkSession.new(ctx.services["request_queue"], ctx.configs["settings"], ctx.services["logger"])
+        return NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"])
     end,
     runtime = function(self) self:start() end,
     tasks = nil,

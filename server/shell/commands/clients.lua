@@ -20,7 +20,7 @@ cmds["info"] = {
             table.insert(str, "\16706Throttle: \167rr" .. client.throttle)
             table.insert(str, "\16706Logged into: \167rr" .. client.account)
             table.insert(str, "\16706Channel: \167rr" .. client.channel)
-            table.insert(str, "\16706Sleepy: \167rr" .. client.sleepy)
+            table.insert(str, "\16706Sleepy: \167rr" .. tostring(client.sleepy))
             table.insert(str, "\16706Average packet size: \167rr" .. client.avgPacketSize / 1024)
             table.insert(str, "\16706Packets sent: \167rr" .. client.packetsSent)
             table.insert(str, "\16706Total packet size: \167rr" .. client.totalPacketSize / 1024)
@@ -30,6 +30,9 @@ cmds["info"] = {
         end        
     end
 }
+cmds["view"] = cmds["info"]
+cmds["view"].desc = nil
+
 
 cmds["count"] = {
     desc = "Show how many clients are currently connected",

@@ -504,4 +504,11 @@ cmds["craftos"] = {
     end
 }
 
+cmds["checkqueue"] = {
+    desc = "Returns a list of all requests inside the queue (should return nothing)",
+    func = function(args, ctx)
+        return {str=ctx.kernel:execute("queue.list"), type="info"}
+    end
+}
+
 return cmds

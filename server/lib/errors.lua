@@ -32,6 +32,10 @@ local errors = {
         client = "INTERNAL_SERVER_ERROR",
         log = "Invalid time format!"
     },
+    INVALID_CREDENTIALS = {
+        client ="INVALID_CREDENTIALS",
+        log = "Invalid credentials"
+    },
     -- ACCOUNT RELATED -------------------------------------------------------------
 
     -- WALLET RELATED --------------------------------------------------------------

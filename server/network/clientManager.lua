@@ -1,5 +1,5 @@
 local errors = requireC("/GuardLink/server/lib/errors.lua")
-local message = requireC("/GuardLink/server/network.message.lua")
+local message = requireC("/GuardLink/server/network/message.lua")
 local aes = requireC("/GuardLink/server/lib/aes.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 
@@ -8,10 +8,10 @@ clientManager.__index = clientManager
 
 local log
 
-function clientManager.new(session, settings, logger)
+function clientManager.new(ctx, settings, logger)
     local self = setmetatable({}, clientManager)
+    self.ctx = ctx
     self.clients = {}
-    self.session = session or nil
 
     log = logger:createInstance("clients", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
 
@@ -46,7 +46,7 @@ function clientManager:updateActivity(id, activityType)
     local client = self:getClient(id)
     if client then
         client.lastActivityTime = os.epoch("utc")
-        client.lastActivityType = activityType        
+        client.lastActivityType = activityType
         return 0
     end
     return errors.UNKNOWN_CLIENT
@@ -56,8 +56,8 @@ function clientManager:disconnectClient(id, reason)
     local client = self.clients[id]
     if client then
         local msg = message.create("network", {action = "disconnect", reason = reason or "unknown_reason"}, client.aesKey, false)
-        self.session:send(client.channel, msg)
-        self.session:close(client.channel)
+        self.ctx["network_session"]:send(client.channel, msg)
+        self.ctx["network_session"]:close(client.channel)
         self.clients[id] = nil
         log:debug("Disconnecting client: " .. id .. ", for reason: " .. reason)
         return 0
@@ -71,8 +71,8 @@ function clientManager:disconnectAll(reason)
     local i = 0
     for _, client in pairs(self.clients) do
         local msg = message.create("network", payload, client.aesKey, false)
-        self.session:send(client.channel, msg)
-        self.session:close(client.channel)
+        self.ctx["network_session"]:send(client.channel, msg)
+        self.ctx["network_session"]:close(client.channel)
         i = i + 1
     end
     self.clients = {}
@@ -108,7 +108,7 @@ function clientManager:registerClient(account, aesKey)
     until not self.clients[clientID] and not f
 
     local channel = self:computeChannel(sessionToken)
-    self.session:open(channel)
+    self.ctx["network_session"]:open(channel)
     self.clients[clientID] = {
         token = sessionToken,
         id = clientID,
@@ -119,7 +119,7 @@ function clientManager:registerClient(account, aesKey)
         throttle = 0,
         account = account,
         channel = channel,
-        aesKey = aes.Cipher:new(nil, aesKey),
+        aesKey = aesKey,
         sleepy = false,
         avgPacketSize = 0,
         packetsSent = 0,
@@ -170,8 +170,8 @@ function clientManager:heartbeats()
             log:debug("Client " .. v.id .. " has not responded to heartbeat, timing out...")
         else
             v.sleepy = true
-            local msg = message.create("network", { action = "heartbeat" }, v.aesKey, false)
-            self.session:send(v.channel, msg)
+            local msg = message.create("network", {action = "heartbeat"}, v.aesKey, false)
+            self.ctx["network_session"]:send(v.channel, msg)
             log:debug("Awaiting heartbeat response from client " .. v.id)
         end
     end
@@ -182,17 +182,15 @@ function clientManager:updateChannels()
     log:debug("Rotating channels:")
     for _, v in pairs(self.clients) do
         local newchannel = self:computeChannel(v.token)
-
         local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
-        self.session:send(v.channel, msg)
-        self.session:close(v.channel)
-        log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)         
+        self.ctx["network_session"]:send(v.channel, msg)
+        self.ctx["network_session"]:close(v.channel)
+        log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)
         v.channel = newchannel
-        f = true       
+        f = true
     end
-
     for _, v in pairs(self.clients) do
-        self.session:open(v.channel)
+        self.ctx["network_session"]:open(v.channel)
     end
     return not f and errors.NO_CLIENTS or 0
 end
@@ -201,13 +199,13 @@ local service = {
     name = "client_manager",
     deps = {"network_session"},
     init = function(ctx)
-        return clientManager.new(ctx.services["network_session"], ctx.configs["settings"], ctx.services["logger"])
+        return clientManager.new(ctx.services, ctx.configs["settings"], ctx.services["logger"])
     end,
     runtime = nil,
     tasks = function(self)
         return {
             client_heartbeats = {function(self) self:heartbeats() end, self.channelRotation},
-            client_update_channel = {function(self) self:updateChannels() end, self.heartbeat_interval}      
+            client_update_channel = {function(self) self:updateChannels() end, self.heartbeat_interval}
         }
     end,
     shutdown = function(self) self:disconnectAll("SERVER_SHUTDOWN") end,

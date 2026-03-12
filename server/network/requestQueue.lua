@@ -1,18 +1,16 @@
 local errors = requireC("/GuardLink/server/lib/errors.lua")
-local rsa = requireC("/GuardLink/server/lib.rsa-keygen.lua")
+local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
+local aes = requireC("/GuardLink/server/lib/aes.lua")
 
 local requestQueue = {}
 requestQueue.__index = requestQueue
 
 local log
 
--- one request has the following fields: id, timestamp, message, clientID
 function requestQueue.new(ctx, settings)
     local self = setmetatable({}, requestQueue)
+    self.ctx = ctx
     self.queue = {}
-    self.clientManager = ctx.clientManager
-    self.session = ctx.session
-    self.dispatcher = ctx.dispatcher
 
     local loglevel = settings.debug and "DEBUG" or "INFO"
     log = ctx.logger:createInstance("queue", {timestamp = true, level = loglevel, clear = true})
@@ -42,7 +40,7 @@ function requestQueue:addRequest(message)
     self.avgPacketSize = self.totalPacketSize / self.packetsSent
     local msg = textutils.unserialize(message)
     if not msg then return errors.MALFORMED_MESSAGE end
-    if msg.clientID and not self.clientManager:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
+    if msg.clientID and not self.ctx["client_manager"]:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
     local tbl = {
         id = msg.id,
         message = msg.message,
@@ -56,30 +54,37 @@ end
 
 function requestQueue:handleUnknownClient(request)
     if request.isPlaintext then
-        log:debug("Received plaintext message: " .. request.message)
-        local result = self.dispatcher:dispatch(textutils.unserialize(request.message), nil, request.id)
-        if result ~= 0 then log:debug(result.log) return false end -- If request is malformed, it just logs it, no response
+        log:debug("Received plaintext message: " .. textutils.serialize(request.message))
+        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id)
+        if result ~= 0 then log:debug(result.log) return false end
     else
-        local ok, data = pcall(function() return rsa.rsaDecrypt(request.message, self.session.privateKey) end)
+        local privateKey = self.ctx["network_session"].privateKey
+        if not request.message or not request.message.cipher then return true end
+        local ok, data = pcall(function() return rsa.rsaDecrypt(request.message.cipher, privateKey) end)
         if ok then
             log:debug("Received RSA-encrypted message: " .. data)
-            local result = self.dispatcher:dispatch(textutils.unserialize(data), nil, request.id)
+            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id)
             if result ~= 0 then log:debug(result.log) return false end
         else
-            log:debug("RSA decryption failed for unknown client! ")
-        end   
+            log:debug("RSA decryption failed for unknown client!")
+            log:debug("Message: " .. request.message)
+            log:debug("Private key: " .. textutils.serialize(privateKey))
+        end
     end
-    return true    
+    return true
 end
 
 function requestQueue:handleKnownClient(request, client, time)
     if time - client.lastActivityTime > ((client.throttle or 0)) then
         client.packetsSent = client.packetsSent + 1
-        client.totalPacketSize = client.totalPacketSize + #request
+        client.totalPacketSize = client.totalPacketSize + #textutils.serialize(request)
         client.avgPacketSize = client.totalPacketSize / client.packetsSent
-        local cipher = client.aesKey
+        if not request.message or not request.message.iv or not request.message.cipher then
+            log:debug("Malformed message from client " .. client.id)
+            return true
+        end
         local ok, plaintext = pcall(function()
-            return cipher:decrypt(request.message)
+            return aes.Cipher:new(nil, client.aesKey, request.message.iv):decrypt(request.message.cipher)
         end)
         if not ok or not plaintext then
             log:debug("AES decryption failed for " .. client.id)
@@ -87,7 +92,8 @@ function requestQueue:handleKnownClient(request, client, time)
         end
         log:debug("Received AES-encrypted message: " .. plaintext)
         local data = textutils.unserialize(plaintext)
-        local result = self.dispatcher:dispatch(data, client, request.id)
+        if not data then return true end
+        local result = self.ctx["dispatcher"]:dispatch(data, client, request.id)
         client.lastActivityTime = time
         if result ~= 0 then log:debug(result.log) end
         return true
@@ -97,26 +103,26 @@ end
 
 function requestQueue:processQueue()
     while true do
-        if not self.paused then 
+        if not self.paused then
             local time = os.epoch("utc")
             local processed = {}
-            if time - self.lastProcessed > ((self.throttle or 0)) then 
+            if time - self.lastProcessed > ((self.throttle or 0)) then
                 self.lastProcessed = time
                 for i, request in ipairs(self.queue) do
                     local clientID = request.client
-                    local client = self.clientManager:getClient(clientID)
+                    local client = self.ctx["client_manager"]:getClient(clientID)
                     local success
                     if not client then
                         success = self:handleUnknownClient(request)
-                    else 
+                    else
                         success = self:handleKnownClient(request, client, time)
                     end
                     if success then table.insert(processed, i) end
                 end
                 for p = #processed, 1, -1 do
                     table.remove(self.queue, processed[p])
-                end  
-            end   
+                end
+            end
         end
         os.sleep(0.01)
     end
@@ -133,7 +139,14 @@ local service = {
     shutdown = nil,
     api = {
         ["queue"] = {
-            throttle = function(self, args) return self:setThrottle(args) end
+            throttle = function(self, args) return self:setThrottle(args) end,
+            list = function(self)
+                local tbl = {}
+                for k, v in pairs(self.queue) do
+                    table.insert(tbl, v.id)
+                end
+                return tbl
+            end,
         }
     }
 }
