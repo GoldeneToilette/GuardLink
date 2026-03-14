@@ -1,8 +1,3 @@
---[[
-WARNING: A FUNCTION WITH THE PREFIX '_' MEANS THE CALLER IS RESPONSIBLE 
-FOR  UPDATING RELATED ACCOUNTS!
-]]--
-
 local kernel = require("kernel.kernel")
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local roles = {}
@@ -55,7 +50,7 @@ function roles.add(name, seats)
         return errors.ROLES_EXCEED_CAPACITY
     end
     if roles.exists(name) then return errors.ROLE_EXISTS end
-    config.roles[name] = {seats = seats or 1, occupied = 0, permissions = {}}
+    config.roles[name] = {seats = seats or 1, members = {}, permissions = {}}
     saveRoles(config.roles)
     return 0
 end
@@ -63,7 +58,25 @@ end
 function roles._remove(name)
     if not roles.exists(name) then return errors.ROLE_NOT_FOUND end
     local config = getIdentity()
+    local members = config.roles[name].members or {}
+    for _, accountName in ipairs(members) do
+        kernel:execute("accounts.unassign_role", {name=accountName})
+    end
     config.roles[name] = nil
+    saveRoles(config.roles)
+    return 0
+end
+
+function roles._rename(name, newname)
+    if not roles.exists(name) then return errors.ROLE_NOT_FOUND end
+    if roles.exists(newname) then return errors.ROLE_EXISTS end
+    local config = getIdentity()
+    config.roles[newname] = config.roles[name]
+    config.roles[name] = nil
+    local members = config.roles[newname].members or {}
+    for _, accountName in ipairs(members) do
+        kernel:execute("accounts.set_value", {name=accountName, key="role", value=newname})
+    end
     saveRoles(config.roles)
     return 0
 end
@@ -71,6 +84,9 @@ end
 function roles._setSeats(name, seats)
     if not roles.exists(name) then return errors.ROLE_NOT_FOUND end
     local config = getIdentity()
+    if seats < #config.roles[name].members then
+        return errors.ROLE_SEATS_BELOW_OCCUPIED
+    end
     config.roles[name].seats = seats
     saveRoles(config.roles)
     return 0
@@ -117,23 +133,35 @@ end
 function roles.isFull(name)
     local role = roles.getRole(name)
     if not role then return nil end
-    return role.occupied >= role.seats
+    return #role.members >= role.seats
 end
 
-function roles.incrementOccupied(name)
+function roles.addMember(name, accountName)
     if not roles.exists(name) then return errors.ROLE_NOT_FOUND end
     local config = getIdentity()
-    config.roles[name].occupied = config.roles[name].occupied + 1
+    table.insert(config.roles[name].members, accountName)
     saveRoles(config.roles)
     return 0
 end
 
-function roles.decrementOccupied(name)
+function roles.removeMember(name, accountName)
     if not roles.exists(name) then return errors.ROLE_NOT_FOUND end
     local config = getIdentity()
-    config.roles[name].occupied = math.max(0, config.roles[name].occupied - 1)
-    saveRoles(config.roles)
-    return 0
+    local members = config.roles[name].members
+    for i, v in ipairs(members) do
+        if v == accountName then
+            table.remove(members, i)
+            saveRoles(config.roles)
+            return 0
+        end
+    end
+    return errors.ACCOUNT_NOT_FOUND
+end
+
+function roles.getMembers(name)
+    local role = roles.getRole(name)
+    if not role then return nil end
+    return role.members
 end
 
 return roles

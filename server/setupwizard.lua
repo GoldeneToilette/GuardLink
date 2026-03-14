@@ -610,7 +610,8 @@ local function finishInstall()
         roles[v[1]] = {
             seats = v[2],
             occupied = 0,
-            permissions = {}
+            permissions = {},
+            members = {}
         }
     end
 

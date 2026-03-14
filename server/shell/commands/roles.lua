@@ -12,8 +12,7 @@ cmds["view"] = {
         if not role then return {str="Error: Role not found: " .. name, type="fail"} end
         local output = {
             "\16705Name: \16706" .. name,
-            "\16705Seats: \16706" .. role.seats,
-            "\16705Occupied: \16706" .. role.occupied,
+            "\16705Occupied: \16706" .. #role.members .. "/" .. role.seats,
             "\16705Permissions: \16706" .. (#role.permissions > 0 and table.concat(role.permissions, ", ") or "none")
         }
         return {str=output, type="info"}
@@ -24,10 +23,10 @@ cmds["list"] = {
     desc = "List all roles",
     func = function(args, ctx)
         local all = roles.getRoles()
-        if not all then return {str="No roles found", type="info"} end
+        if not all or not next(all) then return {str="No roles found", type="info"} end
         local output = {"Roles -------------------------"}
         for name, role in pairs(all) do
-            table.insert(output, "\16705" .. name .. ": \16706" .. role.occupied .. "/" .. role.seats .. " seats")
+            table.insert(output, "\16705" .. name .. ": \16706" .. #role.members .. "/" .. role.seats .. " seats")
         end
         table.insert(output, "-------------------------------")
         return {str=output, type="info"}
@@ -112,6 +111,35 @@ cmds["permission"] = {
         else
             return {str="Unknown subcommand: " .. sub .. " (add|remove|list)", type="fail"}
         end
+    end
+}
+
+cmds["rename"] = {
+    desc = "Rename a role: roles rename <name> <newname>",
+    func = function(args, ctx)
+        local name, newname = args[2], args[3]
+        if not name or not newname then return {str="Usage: roles rename <name> <newname>", type="fail"} end
+        local success = roles._rename(name, newname)
+        if success ~= 0 then
+            return {str="Error: '" .. success.log .. "'", type="fail"}
+        end
+        return {str="Role " .. name .. " renamed to " .. newname, type="success"}
+    end
+}
+
+cmds["members"] = {
+    desc = "List members of a role: roles members <name>",
+    func = function(args, ctx)
+        local name = args[2]
+        if not name then return {str="Usage: roles members <name>", type="fail"} end
+        local members = roles.getMembers(name)
+        if not members then return {str="Error: Role not found: " .. name, type="fail"} end
+        if #members == 0 then return {str="Role " .. name .. " has no members", type="info"} end
+        local output = {"Members of " .. name .. ":"}
+        for _, v in ipairs(members) do
+            table.insert(output, "\16706" .. v)
+        end
+        return {str=output, type="info"}
     end
 }
 

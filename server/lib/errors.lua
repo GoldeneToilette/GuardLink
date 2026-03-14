@@ -202,6 +202,10 @@ local errors = {
     ACCOUNT_HAS_NO_ROLE = {
         client = "ACCOUNT_HAS_NO_ROLE",
         log = "Account has no role"
+    },
+    ROLE_SEATS_BELOW_OCCUPIED = {
+        client = "ROLE_SEATS_BELOW_OCCUPIED",
+        log = "New seat amount cant be smaller than the current member count"
     }
 }
 

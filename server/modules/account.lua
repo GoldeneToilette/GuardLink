@@ -309,10 +309,10 @@ function accountManager:assignRole(name, roleName)
     if roles.isFull(roleName) then return errors.ROLE_FULL end
     local current = self:getAccountValue(name, "role")
     if current and current ~= "" then
-        roles.decrementOccupied(current)
+        roles.removeMember(current, name)
     end
     self:setAccountValue(name, "role", roleName)
-    roles.incrementOccupied(roleName)
+    roles.addMember(roleName, name)
     return 0
 end
 
@@ -320,8 +320,8 @@ function accountManager:unassignRole(name)
     if not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
     local current = self:getAccountValue(name, "role")
     if not current or current == "" then return errors.ACCOUNT_HAS_NO_ROLE end
+    roles.removeMember(current, name)
     self:setAccountValue(name, "role", "")
-    roles.decrementOccupied(current)
     return 0
 end
 
