@@ -126,6 +126,48 @@ cmds["code"] = {
     end
 }
 
+cmds["role"] = {
+    desc = "Manage account roles: account role <assign|unassign|view> <name> [role]",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local sub = args[2]
+        if not sub then return {str="Usage: account role <assign|unassign|view> <name> [role]", type="fail"} end
+
+        if sub == "assign" then
+            local name, role = args[3], args[4]
+            if not name or not role then return {str="Usage: account role assign <name> <role>", type="fail"} end
+            local success = kernel:execute("accounts.assign_role", {name=name, role=role})
+            if success ~= 0 then
+                return {str="Error: '" .. success.log .. "'", type="fail"}
+            end
+            return {str=name .. " has been assigned role: " .. role, type="success"}
+
+        elseif sub == "unassign" then
+            local name = args[3]
+            if not name then return {str="Usage: account role unassign <name>", type="fail"} end
+            local success = kernel:execute("accounts.unassign_role", {name=name})
+            if success ~= 0 then
+                return {str="Error: '" .. success.log .. "'", type="fail"}
+            end
+            return {str=name .. " has been unassigned from their role", type="success"}
+
+        elseif sub == "view" then
+            local name = args[3]
+            if not name then return {str="Usage: account role view <name>", type="fail"} end
+            local account = kernel:execute("accounts.get_sanitized", {name=name})
+            if not account then return {str="Error: Account not found: " .. name, type="fail"} end
+            local role = account.role
+            if not role or role == "" then
+                return {str=name .. " has no role assigned", type="info"}
+            end
+            return {str=name .. " has role: " .. role, type="info"}
+
+        else
+            return {str="Unknown subcommand: " .. sub .. " (assign|unassign|view)", type="fail"}
+        end
+    end
+}
+
 cmds["help"] = {
     func = function(args, ctx)
         local output = {"Account commands -------------------------"}

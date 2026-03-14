@@ -36,7 +36,8 @@ kernel.tasks = {}
 
 kernel.ctx = {
     services = {},
-    configs = {}
+    configs = {},
+    _cfgExt = {}
 }
 kernel.cmds = {}
 
@@ -68,6 +69,27 @@ kernel:addCommand("kernel", "print_tasks", function()
 end)
 kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
 kernel:addCommand("kernel", "refresh_configs", function() kernel:refreshConfigs() end)
+kernel:addCommand("kernel", "set_config", function(args)
+    if not args.config or not args.key then return false end
+    local cfg = kernel.ctx.configs[args.config]
+    local ext = kernel.ctx._cfgExt[args.config]
+    if not cfg or not ext then return false end
+    cfg[args.key] = args.value
+    local path = configPath .. args.config .. "." .. ext
+    local f = fs.open(path, "w")
+    if ext == "conf" then
+        f.write(textutils.serialize(cfg))
+        f.close()
+    elseif ext == "json" then
+        f.write(textutils.serializeJSON(cfg))
+        f.close()
+    else
+        f.close()
+        return false
+    end
+    return true
+end)
+
 
 function kernel:execute(cmd, args)
     return self.cmds[cmd](args)
@@ -108,11 +130,15 @@ function kernel:initConfigs()
         local file = fs.open(configPath .. files[i], "r")
         local contents = file.readAll()
         file.close()
-        if ext == "lua" or ext == "conf" then
+        if ext == "lua" then
+            local module = load(contents)
+            if module then self.ctx.configs[key] = module() end
+        elseif ext == "conf" then
             self.ctx.configs[key] = textutils.unserialize(contents)
         elseif ext == "json" then
             self.ctx.configs[key] = textutils.unserializeJSON(contents)
         end
+        self.ctx._cfgExt[key] = ext
     end
 end
 
@@ -124,11 +150,15 @@ function kernel:refreshConfigs()
         local file = fs.open(configPath .. files[i], "r")
         local contents = file.readAll()
         file.close()
-        if ext == "lua" or ext == "conf" then
+        if ext == "lua" then
+            local module = load(contents)
+            if module then self.ctx.configs[key] = module() end
+        elseif ext == "conf" then
             self.ctx.configs[key] = textutils.unserialize(contents)
         elseif ext == "json" then
             self.ctx.configs[key] = textutils.unserializeJSON(contents)
         end
+        self.ctx._cfgExt[key] = ext
     end
 end
 

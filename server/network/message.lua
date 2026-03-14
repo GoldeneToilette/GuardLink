@@ -26,6 +26,7 @@ function message.create(header, payload, key, rsaFlag, id)
     else
         msg.isPlaintext = true
     end
+    msg.sender = "server"
     return textutils.serialize(msg), msg.id
 end
 

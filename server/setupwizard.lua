@@ -605,6 +605,15 @@ local function finishInstall()
     print("Manifest saved under " .. lib.settings.server.manifestPath)
 
     print("Generating nation identity...")
+    local roles = {}
+    for i, v in ipairs(panels[2].data.roles) do
+        roles[v[1]] = {
+            seats = v[2],
+            occupied = 0,
+            permissions = {}
+        }
+    end
+
     local nation = {
         nation_name = panels[2].data.nation_name,
         nation_tag = panels[2].data.nation_tag,
@@ -612,15 +621,17 @@ local function finishInstall()
         currency_name = panels[2].data.currency_name,
         starting_balance = panels[2].data.balance,
         nation_trade = panels[2].data.tradeCheck,
-        roles = panels[2].data.roles
+        roles = roles,
+        defaultRole = nil
     }
     lib.fileUtils.newFile(lib.settings.server.identityPath)
     lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))
 
+    local rulesRaw = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua").readAll()
     lib.fileUtils.newFile(lib.settings.server.rulesPath)
-    lib.fileUtils.write(lib.settings.server.rulesPath, textutils.serialize(lib.settings))
+    lib.fileUtils.write(lib.settings.server.rulesPath, rulesRaw)
+    print("Rules saved under " .. lib.settings.server.rulesPath)
     term.setTextColor(colors.green)
-
 
     lib.fileUtils.newFile("/startup.lua")
     lib.fileUtils.write("/startup.lua",

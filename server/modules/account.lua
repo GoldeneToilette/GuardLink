@@ -1,6 +1,8 @@
 local sha256 = requireC("/GuardLink/server/lib/sha256.lua")
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
+local roles = requireC("/GuardLink/server/lib/roles.lua")
+local kernel = require("kernel.kernel")
 
 local accountManager = {}
 accountManager.__index = accountManager
@@ -129,7 +131,7 @@ function accountManager:exists(name)
     return self.vfs:existsFile("accounts/" .. name .. ".json")
 end
 
-function accountManager:createAccount(name, password)
+function accountManager:createAccount(name, password, role)
     local valid = self:isValidAccountName(name)
     if valid ~= 0 then
         log:info(valid.log)
@@ -152,6 +154,11 @@ function accountManager:createAccount(name, password)
 
     self.vfs:newFile(filePath)
     self.vfs:writeFile(filePath, textutils.serializeJSON(template))
+
+    local defaultRole = role or kernel:execute("kernel.get_config", "identity").defaultRole
+    if defaultRole then
+        self:assignRole(name, defaultRole)
+    end
     return 0
 end
 
@@ -296,6 +303,35 @@ function accountManager:isBanned(name)
     return true, account.ban.reason
 end
 
+function accountManager:assignRole(name, roleName)
+    if not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
+    if not roles.exists(roleName) then return errors.ROLE_NOT_FOUND end
+    if roles.isFull(roleName) then return errors.ROLE_FULL end
+    local current = self:getAccountValue(name, "role")
+    if current and current ~= "" then
+        roles.decrementOccupied(current)
+    end
+    self:setAccountValue(name, "role", roleName)
+    roles.incrementOccupied(roleName)
+    return 0
+end
+
+function accountManager:unassignRole(name)
+    if not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
+    local current = self:getAccountValue(name, "role")
+    if not current or current == "" then return errors.ACCOUNT_HAS_NO_ROLE end
+    self:setAccountValue(name, "role", "")
+    roles.decrementOccupied(current)
+    return 0
+end
+
+function accountManager:hasPermission(name, permission)
+    if not self:exists(name) then return false end
+    local role = self:getAccountValue(name, "role")
+    if not role or role == "" then return false end
+    return roles.hasPermission(role, permission)
+end
+
 local service = {
     name = "accounts",
     deps = {"vfs"},
@@ -322,7 +358,10 @@ local service = {
             get_invite_codes = function(self) return self:getInviteCodes() end,
             use_invite = function(self, args) return self:useInvite(args.code) end,
             delete_invite = function(self, args) return self:deleteInvite(args.code) end,
-            create_invite = function(self, args) return self:createInvite(args.code, args.uses) end,            
+            create_invite = function(self, args) return self:createInvite(args.code, args.uses) end,   
+            assign_role = function(self, args) return self:assignRole(args.name, args.role) end,
+            unassign_role = function(self, args) return self:unassignRole(args.name) end,
+            has_permission = function(self, args) return self:hasPermission(args.name, args.permission) end,
         }
     }
 }

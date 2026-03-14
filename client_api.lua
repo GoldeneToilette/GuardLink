@@ -1339,6 +1339,7 @@ local function createMessage(header, payload, key, rsaFlag, id)
 	if api.clientID ~= nil then
 		msg.clientID = api.clientID
 	end
+	msg.sender = "client"
     return textutils.serialize(msg), msg.id
 end
 

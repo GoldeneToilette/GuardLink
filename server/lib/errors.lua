@@ -172,8 +172,37 @@ local errors = {
     UNKNOWN_UI = {
         client = "INTERNAL_ERROR",
         log = "Failed to load UI: unknown path!"
-    }
+    },
     -- UI RELATED ------------------------------------------------------------------
+
+    ROLES_EXCEED_CAPACITY = {
+        client = "ROLES_EXCEED_CAPACITY",
+        log = "Cannot add role: Full capacity"
+    },
+    ROLE_EXISTS = {
+        client = "ROLE_EXISTS",
+        log = "Cannot add role: Role already exists"
+    },
+    ROLE_NOT_FOUND = {
+        client = "ROLE_NOT_FOUND",
+        log = "Role not found"
+    },
+    PERMISSION_EXISTS = {
+        client = "PERMISSION_EXISTS",
+        log = "Permission already exists"
+    },
+    PERMISSION_NOT_FOUND = {
+        client = "PERMISSION_NOT_FOUND",
+        log = "Permission not found"        
+    },
+    ROLE_FULL = {
+        client = "ROLE_FULL",
+        log = "Failed to assign role: No seats left"
+    },
+    ACCOUNT_HAS_NO_ROLE = {
+        client = "ACCOUNT_HAS_NO_ROLE",
+        log = "Account has no role"
+    }
 }
 
 return errors
