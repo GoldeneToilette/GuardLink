@@ -30,8 +30,7 @@ cmds["info"] = {
         end        
     end
 }
-cmds["view"] = cmds["info"]
-cmds["view"].desc = nil
+cmds["view"] = {func = cmds["info"].func}
 
 
 cmds["count"] = {
@@ -52,8 +51,7 @@ cmds["disconnect"] = {
         return{str="Client " .. client .. " has been disconnected for '" .. reason .. "'", type="success"}
     end
 }
-cmds["dc"] = cmds.disconnect
-cmds["dc"].desc = nil
+cmds["dc"] = {func = cmds["disconnect"].func}
 
 cmds["disconnectall"] = {
     desc = "Disconnect all clients. Usage: disconnectall <REASON>",
@@ -62,8 +60,7 @@ cmds["disconnectall"] = {
         return{str="Disconnected " .. count .. " clients with reason '" .. (args[2] or "unknown_reason") .. "'", type="success"}
     end
 }
-cmds["dcall"] = cmds.disconnectall
-cmds["dcall"].desc = nil
+cmds["dcall"] = {func = cmds["disconnectall"].func}
 
 cmds["throttle"] = {
     desc = "Apply throttle to a client by ID. Usage: clients throttle <ID> <SECONDS>",
@@ -184,8 +181,7 @@ cmds["stats"] = {
         return {str = output, type = "info"}
     end
 }
-cmds["statistics"] = cmds["stats"]
-cmds["statistics"].desc = nil
+cmds["statistics"] = {func = cmds["stats"].func}
 
 
 cmds["throttlerequests"] = {
@@ -202,8 +198,7 @@ cmds["throttlerequests"] = {
         return {str = "Request queue throttled to one execution every " .. seconds .. " seconds", type = "success"}
     end
 }
-cmds["thrq"] = cmds["throttlerequests"]
-cmds["thrq"].desc = nil
+cmds["thrq"] = {func = cmds["throttlerequests"].func}
 
 cmds["help"] = {
     func = function(args, ctx)

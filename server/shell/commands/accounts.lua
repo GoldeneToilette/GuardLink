@@ -25,8 +25,7 @@ cmds["view"] = {
         return {str=output, type="info"}
     end
 }
-cmds["info"] = cmds.view
-cmds["info"].desc = nil
+cmds["info"] = {func = cmds["view"].func}
 
 cmds["ban"] = {
     desc = "Ban an account: account ban <name> <duration> <time unit> <reason>",
@@ -55,8 +54,7 @@ cmds["unban"] = {
         return {str=name .. " has been unbanned", type="success"}
     end
 }
-cmds["pardon"] = cmds["unban"]
-cmds["pardon"].desc = nil
+cmds["pardon"] = {func = cmds["unban"].func}
 
 cmds["delete"] = {
     desc = "Permanently delete an account",

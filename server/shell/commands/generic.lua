@@ -123,10 +123,8 @@ cmds["listcolor"] = {
         return {str=ctx.kernel:execute("ui.list_colors"), type="info"}
     end
 }
-cmds["sc"] = cmds["setcolor"]
-cmds["sc"].desc = nil
-cmds["lc"] = cmds["listcolor"]
-cmds["lc"].desc = nil
+cmds["sc"] = {func = cmds["setcolor"].func}
+cmds["lc"] = {func = cmds["listcolor"].func}
 
 cmds["pwd"] = {
     desc = "Show the current working directory",
@@ -209,10 +207,8 @@ cmds["exit"] = {
         os.shutdown()
     end
 }
-cmds["shutdown"] = cmds["exit"]
-cmds["terminate"] = cmds["exit"]
-cmds["shutdown"].desc = nil
-cmds["terminate"].desc = nil
+cmds["shutdown"] = {func = cmds["exit"].func}
+cmds["terminate"] = {func = cmds["exit"].func}
 
 cmds["reboot"] = {
     desc = "Reboot the computer",
@@ -266,8 +262,7 @@ cmds["unmount"] = {
         return {str="", type="success"}
     end    
 }
-cmds["umount"] = cmds["unmount"]
-cmds["umount"].desc = nil
+cmds["umount"] = {func = cmds["unmount"].func}
 
 cmds["lsblk"] = {
     desc = "Displays information about partitions",
