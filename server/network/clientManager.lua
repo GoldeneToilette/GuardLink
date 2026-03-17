@@ -123,7 +123,8 @@ function clientManager:registerClient(account, aesKey)
         sleepy = false,
         avgPacketSize = 0,
         packetsSent = 0,
-        totalPacketSize = 0
+        totalPacketSize = 0,
+        isServer = false
     }
     log:debug("Registering client with ID " .. clientID)
     return self.clients[clientID]

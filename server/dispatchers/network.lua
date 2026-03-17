@@ -7,10 +7,11 @@ function handlers.discovery(msg, client, id, ctx, fn, logger)
     local session = ctx.services["network_session"]
     local identity = ctx.configs["identity"]
     local msg = message.create("network", {
-        action="discovery", 
-        key = session.publicKey, 
-        name = identity.nation_name},
-        nil, false, id)
+        action = "discovery",
+        key = session.publicKey,
+        name = identity.nation_name,
+        certificate = session.certificate or nil
+    }, nil, false, id)
     session:send(session.discovery, msg)
     return 0
 end

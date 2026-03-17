@@ -740,8 +740,25 @@ local function rsaDecrypt(ciphertext, privateKey)
     return bigintToText(m)	
 end
 
+local function rsaSign(message, privateKey)
+    local n = bigint(privateKey.shared)
+    local d = bigint(privateKey.private)
+    local m = textToBigint(message)
+    return tostring(modexp(m, d, n))
+end
+
+local function rsaVerify(message, signature, publicKey)
+    local n = bigint(publicKey.shared)
+    local e = bigint(publicKey.public)
+    local s = bigint(signature)
+    local decrypted = bigintToText(modexp(s, e, n))
+    return decrypted == message
+end
+
 return {
-	generateKeyPair = generateKeyPair,
-	rsaEncrypt = rsaEncrypt,
-	rsaDecrypt = rsaDecrypt
+    generateKeyPair = generateKeyPair,
+    rsaEncrypt = rsaEncrypt,
+    rsaDecrypt = rsaDecrypt,
+    rsaSign = rsaSign,
+    rsaVerify = rsaVerify
 }

@@ -506,4 +506,43 @@ cmds["checkqueue"] = {
     end
 }
 
+cmds["keygen"] = {
+    desc = "Generate an RSA keypair. Usage: keygen <path>",
+    func = function(args, ctx)
+        local path = args[1]
+        if not path then
+            path = ctx.cwd
+        else
+            if path:sub(1,1) ~= "/" then
+                path = (ctx.cwd .. "/" .. path):gsub("/+", "/")
+            end
+        end
+        local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
+        local publicKey, privateKey = rsa.generateKeyPair()
+        local function serializeKey(key)
+            local s = "{\n"
+            for k, v in pairs(key) do
+                s = s .. "    " .. k .. " = \"" .. tostring(v) .. "\",\n"
+            end
+            return s .. "}"
+        end
+        fs.makeDir(path)
+        local pubPath = path .. "/public.key"
+        local privPath = path .. "/private.key"
+        local f = fs.open(pubPath, "w")
+        f.write(serializeKey(publicKey))
+        f.close()
+        f = fs.open(privPath, "w")
+        f.write(serializeKey(privateKey))
+        f.close()
+        return {str={
+            "Keypair generated successfully:",
+            "\16705Public key: \16706" .. pubPath,
+            "\16705Private key: \16706" .. privPath,
+            "\16705Public (n): \16706" .. publicKey.shared,
+            "\16705Public (e): \16706" .. publicKey.public,
+        }, type="success"}
+    end
+}
+
 return cmds

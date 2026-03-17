@@ -2,6 +2,7 @@ local errors = requireC("/GuardLink/server/lib/errors.lua")
 local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
 local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
+local sha256 = requireC("/GuardLink/server/lib/sha256.lua")
 
 local NetworkSession = {}
 NetworkSession.__index = NetworkSession
@@ -10,10 +11,11 @@ local defaultKeyPath = "/GuardLink/server/"
 
 local log
 
-function NetworkSession.new(ctx, settings, logger)
+function NetworkSession.new(ctx, settings, logger, identity)
     local self = setmetatable({}, NetworkSession)
     self.ctx = ctx
     self.settings = settings
+    self.identity = identity
 
     log = logger:createInstance("session", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
 
@@ -24,12 +26,12 @@ function NetworkSession.new(ctx, settings, logger)
     self.privateKey = nil
     self.publicKey = nil
 
-    self.shutdown = false
+    self.stopped = false
     return self
 end
 
 function NetworkSession:shutdown(reason, code)
-    self.shutdown = true
+    self.stopped = true
     self.shutdownReason = reason or "unknown"
     self.exitCode = code or 0
 end
@@ -56,9 +58,79 @@ local function deserializeKey(str)
     return key
 end
 
+function NetworkSession:fetchCertificate(certPath)
+    local keyString = self.publicKey.shared .. ":" .. self.publicKey.public
+    local keyHash = sha256.digest(keyString):toHex():sub(1, 30)
+
+    local r1 = http.post(
+        "https://guardlink.goldenetoilette.workers.dev/",
+        textutils.serializeJSON({
+            step = "challenge",
+            shared = self.publicKey.shared,
+            public = self.publicKey.public,
+            name = self.identity.nation_name
+        }),
+        {["Content-Type"] = "application/json"}
+    )
+    if not r1 then
+        log:error("Could not reach CA for challenge")
+        return
+    end
+    local challengeData = textutils.unserializeJSON(r1.readAll())
+    r1.close()
+    if not challengeData or not challengeData.challenge then
+        log:error("CA did not return a challenge")
+        return
+    end
+    local challenge = challengeData.challenge
+
+    local challengeHash = sha256.digest(challenge):toHex():sub(1, 30)
+    local signature = rsa.rsaSign(challengeHash, self.privateKey)
+    local r2 = http.post(
+        "https://guardlink.goldenetoilette.workers.dev/",
+        textutils.serializeJSON({
+            step = "register",
+            shared = self.publicKey.shared,
+            public = self.publicKey.public,
+            name = self.identity.nation_name,
+            signature = signature
+        }),
+        {["Content-Type"] = "application/json"}
+    )
+    if not r2 then
+        log:error("Could not reach CA for registration")
+        return
+    end
+    local data = textutils.unserializeJSON(r2.readAll())
+    r2.close()
+
+    if data and data.certificate then
+        self.certificate = {
+            signature = data.certificate,
+            issuedAt = os.date("%Y-%m-%d %H:%M:%S"),
+            issuedAtEpoch = os.epoch("utc"),
+            publicKey = self.publicKey.public,
+            shared = self.publicKey.shared
+        }
+        fileUtils.newFile(certPath)
+        fileUtils.write(certPath, textutils.serializeJSON(self.certificate))
+        log:info("Certificate obtained and saved to " .. certPath)
+        log:debug("Signing keyString: " .. keyString)
+        log:debug("Signing hash: " .. keyHash)
+    elseif data and data.error then
+        log:error("CA registration failed: " .. data.error)
+    else
+        log:error("CA returned invalid response, running without certificate")
+    end
+end
+
 function NetworkSession:initKeys()
+    local servername = self.identity.nation_name or "server"
+
     local privatePath = (self.keyPath or defaultKeyPath) .. "private.key"
     local publicPath  = (self.keyPath or defaultKeyPath) .. "public.key"
+    local certPath = (self.keyPath or defaultKeyPath) .. servername .. ".cert"
+    
     if not fs.exists(privatePath) then
         local start = os.clock()
         log:info("Couldnt find keypair, generating... ")
@@ -75,6 +147,20 @@ function NetworkSession:initKeys()
         self.publicKey  = deserializeKey(fileUtils.read(publicPath))
         log:debug("RSA Public key loaded " .. publicPath .. ":\n" .. tostring(fileUtils.read(publicPath)))
         log:debug("RSA Private key loaded " .. privatePath .. ":\n" .. tostring(fileUtils.read(privatePath)))
+    end
+
+    if not fs.exists(certPath) then
+        log:info("Certificate not found, requesting from CA...")
+        self:fetchCertificate(certPath)        
+    else
+        local certData = textutils.unserializeJSON(fileUtils.read(certPath))
+        if certData then
+            self.certificate = certData
+            log:debug("Certificate loaded from " .. certPath)            
+        else
+            log:error("Certificate file is malformed, re-requesting...")
+            self:fetchCertificate(certPath)
+        end
     end
 end
 
@@ -114,7 +200,7 @@ end
 
 function NetworkSession:listen()
     log:debug("Starting event listener loop")
-    while not self.shutdown do
+    while not self.stopped do
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
         if self.channels[channel] then
             log:debug("Message received on channel " .. channel)
@@ -151,7 +237,7 @@ local service = {
     name = "network_session",
     deps = {"request_queue"},
     init = function(ctx)
-        return NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"])
+        return NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"], ctx.configs["identity"])
     end,
     runtime = function(self) self:start() end,
     tasks = nil,
