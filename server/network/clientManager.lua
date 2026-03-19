@@ -157,7 +157,7 @@ function clientManager:getStaleClients()
 end
 
 function clientManager:heartbeats()
-    log:debug("Sending out heartbeats:")
+    --log:debug("Sending out heartbeats:")
     local toDisconnect = {}
     for _, v in pairs(self.clients) do
         if v.sleepy then
@@ -177,7 +177,7 @@ end
 
 function clientManager:updateChannels()
     local f = false
-    log:debug("Rotating channels:")
+    --log:debug("Rotating channels:")
     for _, v in pairs(self.clients) do
         if v.sleepy then
             log:debug("Skipping rotation for client " .. v.id .. ": awaiting heartbeat")
