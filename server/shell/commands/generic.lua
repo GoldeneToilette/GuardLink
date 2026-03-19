@@ -155,11 +155,11 @@ cmds["help"] = {
         local groups = {
             filesystem = {
                 desc = "Filesystem operations",
-                cmds = {"cd","ls","pwd","tree","touch","mkdir","rm","cp","mv","cat","lsblk","mount","unmount","umount"}
+                cmds = {"cd","ls","pwd","tree","touch","mkdir","rm","cp","mv","cat","lsblk","mount","unmount","umount","size"}
             },
             system = {
                 desc = "System commands",
-                cmds = {"version","shutdown","reboot","clear","craftos","history","date"}
+                cmds = {"version","shutdown","reboot","clear","craftos","history","date","keygen"}
             },
             ui = {
                 desc = "UI and theme commands",
@@ -542,6 +542,24 @@ cmds["keygen"] = {
             "\16705Public (n): \16706" .. publicKey.shared,
             "\16705Public (e): \16706" .. publicKey.public,
         }, type="success"}
+    end
+}
+
+cmds["size"] = {
+    desc = "Get the size of a file or directory. Usage: size <path>",
+    func = function(args, ctx)
+        local cwd = ctx.cwd
+        if not args[1] then return {str="No path provided", type="fail"} end
+        local target = args[1]
+        if target:sub(1,1) ~= "/" then
+            target = (cwd .. "/" .. target):gsub("/+", "/"):gsub("/$", "")
+        end
+        if not fs.exists(target) then
+            return {str="No such file or directory: " .. target, type="fail"}
+        end
+        local bytes = fs.getSize(target)
+        local kb = math.floor((bytes / 1024) * 100 + 0.5) / 100
+        return {str=string.format("%s bytes (%.2f KB)", bytes, kb), type="info"}
     end
 }
 

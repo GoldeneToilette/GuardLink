@@ -48,6 +48,17 @@ local accountTemplate = {
     wallets = {}
 }
 
+function accountManager:isValidInvite(code)
+    local f = fs.open(invitePath, "r")
+    if not f then return errors.UNKNOWN_INVITE_CODE end
+    local content = f.readAll()
+    f.close()
+    if not content or content == "" then return errors.UNKNOWN_INVITE_CODE end
+    local tbl = textutils.unserializeJSON(content)
+    if not tbl or not tbl[code] then return errors.UNKNOWN_INVITE_CODE end
+    return 0
+end
+
 function accountManager:getInviteCodes()
     local f = fs.open(invitePath, "r")
     local content = f.readAll()

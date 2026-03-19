@@ -44,6 +44,14 @@ local errors = {
         client = "EXPIRED_INVITE_CODE",
         log = "Tried to access expired invite code"
     },
+    REGISTRATION_LIMIT_REACHED = {
+        client = "INTERNAL_SERVER_ERROR",
+        log = "Registration limit reached for this hour"
+    },
+    MISSING_INVITE_CODE = {
+        client = "MISSING_INVITE_CODE",
+        log = "Missing invite code"
+    },
     -- ACCOUNT RELATED -------------------------------------------------------------
 
     -- WALLET RELATED --------------------------------------------------------------

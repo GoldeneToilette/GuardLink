@@ -83,7 +83,7 @@ cmds["create"] = {
 }
 
 cmds["code"] = {
-    desc = "Manage invite codes: account code <create|delete|list> [code] [uses]",
+    desc = "Manage invite codes: account code <create|delete|list|toggle> [code] [uses]",
     func = function(args, ctx)
         local kernel = ctx.kernel
         local sub = args[2]
@@ -117,7 +117,10 @@ cmds["code"] = {
             end
             table.insert(output, "--------------------------------------")
             return {str=output, type="info"}
-
+        elseif sub == "toggle" then
+            local current = kernel:execute("kernel.get_config", "settings").server.inviteOnly
+            kernel:execute("kernel.set_config", {config="settings", key="server.inviteOnly", value=not current})
+            return {str="Invite requirement " .. (not current and "enabled" or "disabled"), type="success"}
         else
             return {str="Unknown subcommand: " .. sub .. " (create|delete|list)", type="fail"}
         end

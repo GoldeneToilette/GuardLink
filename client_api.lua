@@ -17,6 +17,8 @@ local function rrotate(n, b)
     local f = s%1
     return (s-f) + f*mod32
 end
+
+-- THIS FUNCTION WAS RENAMED TO AVOID NAMING COLLISIONS, NOT PART OF THE ORIGINAL LIBRARY
 local function sha_brshift(int, by)
     local s = int / (2^by)
     return s - s%1
@@ -933,6 +935,7 @@ local function bigintToText(num)
     return table.concat(bytes)
 end
 
+-- rsaDecrypt, rsaEncrypt and rsaVerify ARE NOT PART OF THE ORIGINAL LIBRARY
 local function rsaEncrypt(message, publicKey)
 	local n = bigint(publicKey.shared)
 	local e = bigint(publicKey.public)
@@ -1590,7 +1593,7 @@ function api.broadcast(timeout, callback)
 	registerCallback(id, function(response)
 		local trusted = false
 		if response.payload.certificate then
-			local keyString = response.payload.key.shared .. ":" .. response.payload.key.public
+			local keyString = response.payload.name .. ":" .. response.payload.key.shared .. ":" .. response.payload.key.public
 			local keyHash = sha256.digest(keyString):toHex():sub(1, 30)
 			trusted = rsaVerify(keyHash, response.payload.certificate.signature, api.MASTER_PUBLIC_KEY)
 		end
@@ -1604,7 +1607,7 @@ function api.broadcast(timeout, callback)
     api.modem.transmit(api.discovery, api.discovery, message)
 end
 
-local function sendCredentials(nation, name, password, action, id)
+local function sendCredentials(nation, name, password, action, id, inviteCode)
     local keyStr = randomString(16, "generic")
     api._pendingKeyStr = keyStr
     local iv1 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
@@ -1623,6 +1626,10 @@ local function sendCredentials(nation, name, password, action, id)
         id = id,
         isPlaintext = true
     }
+	if inviteCode then
+        local iv3 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
+        message.payload.invite_code = {cipher = Cipher:new(nil, keyStr, iv3):encrypt(inviteCode), iv = iv3}		
+	end
     return message, keyStr
 end
 
@@ -1645,12 +1652,12 @@ function api.auth(nation, name, password, callback)
     api.modem.transmit(api.discovery, api.discovery, textutils.serialize(message))
 end
 
-function api.createAccount(nation, name, password, callback)
+function api.createAccount(nation, name, password, callback, inviteCode)
     if not api.nations[nation] then error("Unknown nation: " .. nation) end
     if not name or not password then error("Missing fields: name or password") end
     if not callback then error("This function expects a callback!") end
     local id = randomString(16, "generic")
-    local message, keyStr = sendCredentials(nation, name, password, "register", id)
+    local message, keyStr = sendCredentials(nation, name, password, "register", id, inviteCode)
     registerCallback(id, function(response)
         api._pendingKeyStr = nil
         callback(response)

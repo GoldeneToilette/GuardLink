@@ -32,6 +32,7 @@ data.server.queue = {
 data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "default"
 data.server.debug = false
+data.server.registrationsPerHour = 30
 data.server.minDiskCount = 20
 data.server.settingsPath = "/GuardLink/server/config/settings.conf"
 data.server.manifestPath = "/GuardLink/server/config/manifest.json"

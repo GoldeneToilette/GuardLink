@@ -2,7 +2,7 @@
 
 # GuardLink
 
-GuardLink is a RP toolkit and "nation" simulator providing various systems for accounts, economies, laws and more. Everything happens on a centralized server and players interact with the systems via pocket computers. Admins will be able to manage the systems through an interface on the computer or remotely through their account. Each server simulates a country/nation/empire with features such as:
+GuardLink is a RP toolkit and "nation" simulator providing various systems for accounts, economies, laws and more. Everything happens on a centralized server and players interact with the systems via client computers. Admins will be able to manage the systems through an interface on the computer or remotely through their account. Each server simulates a country/nation/empire with features such as:
 
 - Accounts & Identities (done)
 - Wallets & Currencies (done)
@@ -13,7 +13,7 @@ GuardLink is a RP toolkit and "nation" simulator providing various systems for a
 
 Some features do not work with every government type/ethic.
 
-External Libraries:
+This project uses the following third-party libraries:
 - [RSA Key generator](https://gist.github.com/1lann/c9d4d2e7c1f825cad36b)
 - [SHA256-Algorithm](https://pastebin.com/6UV4qfNF)
 - [Basalt (UI Library)](https://basalt.madefor.cc/#/)
@@ -23,7 +23,8 @@ External Libraries:
 - [LibDeflate](https://github.com/safeteeWow/LibDeflate?tab=readme-ov-file)
 - [TaskMaster](https://gist.github.com/MCJack123/1678fb2c240052f1480b07e9053d4537)
 
-Note: All libraries except for RSA Key generator are unmodified and contain their original licenses on the repository.
+**License Compliance**: All original copyright notices and license texts are preserved in the source files (but are not included in the release package). Some files contain modifications to better integrate with this project's codebase and are marked with comments in the source code. If you think any licensing requirements have not been met, let me know.
+
 
 Installation:
 - 

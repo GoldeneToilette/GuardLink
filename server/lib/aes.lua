@@ -1,3 +1,5 @@
+-- THIS LIBRARY WAS MODIFIED TO INCLUDE A RETURN STATEMENT; NOT PART OF THE ORIGINAL CODE
+
 -- aes encrypt API
 -- translate by zyxkad@gmail.com
 -- original code is from golang.org standard library "crypto/aes"

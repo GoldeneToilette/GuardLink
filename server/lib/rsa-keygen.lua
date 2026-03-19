@@ -1,3 +1,5 @@
+-- rsaEncrypt, rsaDecrypt, rsaSign, rsaVerify are NOT part of the original code.
+
 --
 -- RSA Key Generator
 -- By 1lann

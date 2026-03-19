@@ -59,7 +59,7 @@ local function deserializeKey(str)
 end
 
 function NetworkSession:fetchCertificate(certPath)
-    local keyString = self.publicKey.shared .. ":" .. self.publicKey.public
+    local keyString = self.identity.nation_name .. ":" .. self.publicKey.shared .. ":" .. self.publicKey.public
     local keyHash = sha256.digest(keyString):toHex():sub(1, 30)
 
     local r1 = http.post(
