@@ -548,18 +548,42 @@ cmds["keygen"] = {
 cmds["size"] = {
     desc = "Get the size of a file or directory. Usage: size <path>",
     func = function(args, ctx)
-        local cwd = ctx.cwd
+        local kernel, cwd, mount = ctx.kernel, ctx.cwd, ctx.mount
         if not args[1] then return {str="No path provided", type="fail"} end
         local target = args[1]
         if target:sub(1,1) ~= "/" then
             target = (cwd .. "/" .. target):gsub("/+", "/"):gsub("/$", "")
         end
-        if not fs.exists(target) then
-            return {str="No such file or directory: " .. target, type="fail"}
+
+        local function getSize(path)
+            if mount[1] then
+                if kernel:execute("vfs.exists_dir", path) then
+                    local total = 0
+                    local list = kernel:execute("vfs.list", path) or {}
+                    for _, name in ipairs(list) do
+                        total = total + getSize(path .. "/" .. name)
+                    end
+                    return total
+                else
+                    return kernel:execute("vfs.get_file_size", path) or 0
+                end
+            else
+                if not fs.exists(path) then return nil end
+                if fs.isDir(path) then
+                    local total = 0
+                    for _, name in ipairs(fs.list(path)) do
+                        total = total + getSize(path .. "/" .. name)
+                    end
+                    return total
+                else
+                    return fs.getSize(path)
+                end
+            end
         end
-        local bytes = fs.getSize(target)
+        local bytes = getSize(target)
+        if not bytes then return {str="No such file or directory: " .. target, type="fail"} end
         local kb = math.floor((bytes / 1024) * 100 + 0.5) / 100
-        return {str=string.format("%s bytes (%.2f KB)", bytes, kb), type="info"}
+        return {str=string.format("%d bytes (%.2f KB)", bytes, kb), type="info"}
     end
 }
 

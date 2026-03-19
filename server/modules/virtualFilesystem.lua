@@ -190,6 +190,12 @@ function VFS:getUsedBytes(name)
     return total
 end
 
+function VFS:getFileSize(path)
+    local disk = self:existsFile(path)
+    if not disk then return nil end
+    return fs.getSize(disk.path .. "/" .. path)
+end
+
 local service = {
     name = "vfs",
     deps = {"disk_manager"},
@@ -215,6 +221,7 @@ local service = {
             get_config = function(self, args) return self.config end,
             get_capacity = function(self, args) return self:getTotalCapacity(args) end,
             get_size = function(self, args) return self:getUsedBytes(args) end,
+            get_file_size = function(self, args) return self:getFileSize(args) end,
         }
     }
 }
