@@ -119,6 +119,10 @@ local errors = {
         client = "INSUFFICIENT_FUNDS",
         log = "Failed to transfer balance: Insufficient funds!"             
     },
+    WALLET_LIMIT_REACHED = {
+        client = "WALLET_LIMIT_REACHED",
+        log = "Failed to do action: Wallet limit reached!"
+    },
     -- WALLET RELATED --------------------------------------------------------------
 
     -- NETWORK RELATED -------------------------------------------------------------
@@ -214,6 +218,10 @@ local errors = {
     ROLE_SEATS_BELOW_OCCUPIED = {
         client = "ROLE_SEATS_BELOW_OCCUPIED",
         log = "New seat amount cant be smaller than the current member count"
+    },
+    INSUFFICIENT_PERMISSIONS = {
+        client = "INSUFFICIENT_PERMISSIONS",
+        log = "Insufficient permissions"        
     }
 }
 

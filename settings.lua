@@ -33,6 +33,7 @@ data.server.inviteOnly = false -- if set to true, any client registering needs a
 data.server.theme = "default"
 data.server.debug = false
 data.server.registrationsPerHour = 30
+data.server.walletsPerHour = 30
 data.server.minDiskCount = 20
 data.server.settingsPath = "/GuardLink/server/config/settings.conf"
 data.server.manifestPath = "/GuardLink/server/config/manifest.json"
@@ -137,6 +138,12 @@ data.server.formulas = {
         local adjusted = base * (1 - (stability or 0) * 0.1)
         return math.min(maxVol, math.max(minVol, adjusted))
     end
+}
+data.server.permissions = {
+    "accounts.view_others",
+    "wallets.view_others",
+    "wallets.create",
+    "accounts.2fa_required"
 }
 -- RULES ---------------------------------------------------------------------------
 return data
