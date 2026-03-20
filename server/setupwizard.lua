@@ -3,7 +3,7 @@ local dep = {
     basalt = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/basalt.lua",
     uiHelper = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/uiHelper.lua",
     pixelbox = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/pixelbox_lite.lua",
-    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua",
+    settings = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/ruleset.lua",
     disk = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/modules/disk.lua",
     fileUtils = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/server/lib/fileUtils.lua"
 }
