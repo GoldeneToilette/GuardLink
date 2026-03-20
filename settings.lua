@@ -124,10 +124,6 @@ data.server.formulas = {
 
         return rate
     end,
-    telemetryAllowed = function(stability, autonomy, commerce)
-        local score = (stability + (1 - autonomy)) + (commerce - 1) * 0.5
-        return score >= 1.5
-    end,
     logsAccessible = function(autonomy, consent)
         local score = 0.7 * autonomy + 0.3 * consent
         return score >= 1.5

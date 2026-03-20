@@ -17,7 +17,7 @@ Some features are not fully implemented and/or do not work with every ethic/gove
 1. Run `pastebin run zypekhWp`
 2. Follow the setup wizard — nation name, tag, ethic, currency, roles
 3. Wait for the server to generate an RSA keypair and register with the certificate authority (this may take a few minutes)
-4. Optionally configure roles, permissions, and settings via the shell
+4. Optionally configure roles, permissions, and settings via the shell or UI
 
 ### Client
 *WIP*
