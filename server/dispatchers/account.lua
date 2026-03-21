@@ -2,6 +2,7 @@ local errors = requireC("/GuardLink/server/lib/errors.lua")
 local message = requireC("/GuardLink/server/network/message.lua")
 local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
 local aes = requireC("/GuardLink/server/lib/aes.lua")
+local audit = requireC("/GuardLink/server/lib/audit.lua")
 
 local handlers = {}
 
@@ -211,6 +212,36 @@ function handlers.change_password(msg, client, id, ctx, fn, logger)
     local msg = message.create("account", {
         action = "change_password",
         status = "success"
+    }, client.aesKey, false, id)
+    session:send(client.channel, msg)
+    return 0
+end
+
+function handlers.audit(msg, client, id, ctx, fn, logger)
+    if not client then return 0 end
+    local session = ctx.services["network_session"]
+
+    local name = msg.payload.name
+    local ethic = ctx.configs["identity"].selectedEthic
+    local ethics = ctx.configs["rules"].rules.ethics[ethic].values
+    local logsAccessible = ctx.configs["rules"].server.formulas.logsAccessible
+    local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
+
+    if name ~= client.account and not hasPermission and not logsAccessible(ethics.autonomy, ethics.consent) then
+        local msg = message.create("account", {
+            action = "audit",
+            status = "failure",
+            error = errors.INSUFFICIENT_PERMISSIONS.client
+        }, client.aesKey, false, id)
+        session:send(client.channel, msg)
+        return 0
+    end
+
+    local entries = audit.get("accounts", name, ctx.services["vfs"])
+    local msg = message.create("account", {
+        action = "audit",
+        status = "success",
+        data = entries
     }, client.aesKey, false, id)
     session:send(client.channel, msg)
     return 0
