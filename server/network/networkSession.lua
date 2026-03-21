@@ -195,7 +195,7 @@ end
 
 function NetworkSession:send(channel, message)
     self.modem.transmit(channel, math.random(0, 65535), message)
-    log:debug("Sending message on channel " .. channel .. ":\n" .. message)
+    --log:debug("Sending message on channel " .. channel .. ":\n" .. message)
 end
 
 function NetworkSession:listen()

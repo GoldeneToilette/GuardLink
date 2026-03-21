@@ -1,21 +1,16 @@
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
+local audit = requireC("/GuardLink/server/lib/audit.lua")
 
 local walletManager = {}
 walletManager.__index = walletManager
 
 local log
 
-function walletManager.new(vfs, accounts, logger)
+function walletManager.new(ctx)
     local self = setmetatable({}, walletManager)
-    self.vfs = vfs
-    self.accountManager = accounts
-
-    log = logger:createInstance("wallet", {timestamp = true, level = "INFO", clear = true})
-    if not vfs:existsDir("wallets") then
-        log:fatal("Failed to load walletManager: malformed partitions?") 
-        error("Failed to load walletManager: malformed partitions?") 
-    end
+    self.ctx = ctx
+    log = ctx.services["logger"]:createInstance("wallet", {timestamp = true, level = "INFO", clear = true})
     return self
 end
 
@@ -29,27 +24,29 @@ local walletTemplate = {
     creationTime = ""
 }
 
+function walletManager:vfs()
+    return self.ctx.services["vfs"]
+end
+
+function walletManager:accounts()
+    return self.ctx.services["accounts"]
+end
+
 function walletManager:getTemplate()
     return utils.deepCopy(walletTemplate)
 end
 
 function walletManager:isValidWalletName(name)
-    if not name or name:match("^%s*$") then
-        return errors.WALLET_NAME_EMPTY
-    end
-    if name:find("[/\\:*?\"<>|§]") then
-        return errors.WALLET_INVALID_CHAR
-    end
+    if not name or name:match("^%s*$") then return errors.WALLET_NAME_EMPTY end
+    if name:find("[/\\:*?\"<>|§]") then return errors.WALLET_INVALID_CHAR end
     if #name > 20 then return errors.WALLET_NAME_TOO_LONG end
     if #name < 3 then return errors.WALLET_NAME_TOO_SHORT end
-    if self.vfs:existsFile("wallets/" .. name .. ".json") then
-        return errors.WALLET_EXISTS
-    end
+    if self:vfs():existsFile("wallets/" .. name .. ".json") then return errors.WALLET_EXISTS end
     return 0
 end
 
 function walletManager:exists(name)
-    return self.vfs:existsFile("wallets/" .. name .. ".json")
+    return self:vfs():existsFile("wallets/" .. name .. ".json")
 end
 
 function walletManager:createWallet(name)
@@ -58,29 +55,28 @@ function walletManager:createWallet(name)
 
     local filePath = "wallets/" .. name .. ".json"
     local template = self:getTemplate()
-
     template.name = name
     template.id = utils.randomString(16, "generic")
     template.creationDate = os.date("%Y-%m-%d")
     template.creationTime = os.date("%H:%M:%S")
 
-    self.vfs:newFile(filePath)
-    self.vfs:writeFile(filePath, textutils.serializeJSON(template))
+    self:vfs():newFile(filePath)
+    self:vfs():writeFile(filePath, textutils.serializeJSON(template))
+    audit.log("wallets", name, {"CREATE", name}, self:vfs())
     return 0
 end
 
 function walletManager:getWalletData(name)
-    if name then
-        return textutils.unserializeJSON(self.vfs:readFile("wallets/" .. name .. ".json"))
-    else
-        return nil
-    end
+    if not name then return nil end
+    local data = self:vfs():readFile("wallets/" .. name .. ".json")
+    if not data then return nil end
+    return textutils.unserializeJSON(data)
 end
 
 function walletManager:getWalletValue(name, key)
     local values = self:getWalletData(name)
     if not values then return nil end
-    return values[key]    
+    return values[key]
 end
 
 function walletManager:isLocked(name)
@@ -90,32 +86,32 @@ end
 function walletManager:deleteWallet(name)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     local wallet = self:getWalletData(name)
+    local accounts = self:accounts()
     for member, _ in pairs(wallet.members) do
-        local account = self.accountManager.getAccountData(member) or {}
-        for i = #account.wallets, 1, -1 do
-            if account.wallets[i] == wallet.id then
-                table.remove(account.wallets, i)
+        local accountWallets = accounts:getAccountValue(member, "wallets") or {}
+        for i = #accountWallets, 1, -1 do
+            if accountWallets[i] == wallet.name then
+                table.remove(accountWallets, i)
             end
         end
-        self.accountManager.setAccountValue(member, "wallets", account.wallets)
+        accounts:setAccountValue(member, "wallets", accountWallets)
     end
-    self.vfs:deleteFile("wallets/" .. name .. ".json")
+    self:vfs():deleteFile("wallets/" .. name .. ".json")
+    audit.log("wallets", name, {"DELETE", name}, self:vfs())
     return 0
 end
 
--- NOT SAFE; ONLY USE IF YOU KNOW WHAT YOU ARE DOING 
 function walletManager:setWalletValue(name, key, value)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     local values = self:getWalletData(name)
     values[key] = value
-    self.vfs:writeFile("wallets/" .. name .. ".json", textutils.serializeJSON(values))
+    self:vfs():writeFile("wallets/" .. name .. ".json", textutils.serializeJSON(values))
     return 0
 end
 
 function walletManager:listWallets()
     local walletNames = {}
-
-    local files = self.vfs:listDir("wallets/") or {}
+    local files = self:vfs():listDir("wallets/") or {}
     for _, file in ipairs(files) do
         if file:sub(-5) == ".json" then
             table.insert(walletNames, file:sub(1, -6))
@@ -130,48 +126,53 @@ function walletManager:addMember(name, member, role)
 
     local members = self:getWalletValue(name, "members") or {}
     if members[member] then return errors.WALLET_MEMBER_EXISTS end
-    if role ~= "owner" and role ~= "associate" then
-        return errors.WALLET_INVALID_ROLE
-    end
-    if not self.accountManager.exists(member) then return errors.WALLET_ACCOUNT_NOT_FOUND end
+    if role ~= "owner" and role ~= "associate" then return errors.WALLET_INVALID_ROLE end
+
+    local accounts = self:accounts()
+    if not accounts:exists(member) then return errors.WALLET_ACCOUNT_NOT_FOUND end
 
     members[member] = role
     self:setWalletValue(name, "members", members)
-    local accountWallets = self.accountManager.getAccountValue(member, "wallets") or {}
-    table.insert(accountWallets, self:getWalletValue(name, "name"))
-    self.accountManager.setAccountValue(member, "wallets", accountWallets)
+
+    local accountWallets = accounts:getAccountValue(member, "wallets") or {}
+    table.insert(accountWallets, name)
+    accounts:setAccountValue(member, "wallets", accountWallets)
+    audit.log("wallets", name, {"MEMBER_ADD",name,member,role}, self:vfs())
     return 0
 end
 
 function walletManager:removeMember(name, member)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
-    if self:isLocked(name) then return errors.WALLET_LOCKED end 
-    
-    local members = self:getWalletValue(name, "members") or {}    
-    if not self.accountManager.exists(member) then return errors.WALLET_ACCOUNT_NOT_FOUND end
-    
+    if self:isLocked(name) then return errors.WALLET_LOCKED end
+
+    local accounts = self:accounts()
+    if not accounts:exists(member) then return errors.WALLET_ACCOUNT_NOT_FOUND end
+
+    local members = self:getWalletValue(name, "members") or {}
     members[member] = nil
     self:setWalletValue(name, "members", members)
-    local accountWallets = self.accountManager.getAccountValue(member, "wallets") or {}
-    local walletName = self:getWalletValue(name, "name")
+
+    local accountWallets = accounts:getAccountValue(member, "wallets") or {}
     for i = #accountWallets, 1, -1 do
-        if accountWallets[i] == walletName then
+        if accountWallets[i] == name then
             table.remove(accountWallets, i)
         end
     end
-    self.accountManager.setAccountValue(member, "wallets", accountWallets)
+    accounts:setAccountValue(member, "wallets", accountWallets)
+    audit.log("wallets", name, {"MEMBER_REMOVE",name,member}, self:vfs())
     return 0
 end
 
 function walletManager:lockWallet(name, flag)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     self:setWalletValue(name, "locked", flag or true)
+    audit.log("wallets", name, {"LOCK",name,flag}, self:vfs())
     return 0
 end
 
 function walletManager:changeBalance(operation, name, value)
-    if self:isLocked(name) then return errors.WALLET_LOCKED end
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
+    if self:isLocked(name) then return errors.WALLET_LOCKED end
     local wallet = self:getWalletData(name)
     if operation == "set" then
         wallet.balance = value
@@ -184,25 +185,28 @@ function walletManager:changeBalance(operation, name, value)
     else
         return errors.BALANCE_INVALID_OPERATION
     end
-    self.vfs:writeFile("wallets/" .. name .. ".json", textutils.serializeJSON(wallet))
+    self:vfs():writeFile("wallets/" .. name .. ".json", textutils.serializeJSON(wallet))
+    audit.log("wallets", name, {"BALANCE_" .. operation:upper(),name,value}, self:vfs())
     return 0
 end
 
 function walletManager:transferBalance(sender, receiver, value)
-    if value <= 0 or utils.isInteger(value) == false or not value then
+    if not value or value <= 0 or not utils.isInteger(value) then
         return errors.TRANSACTION_INVALID_NUMBER
     end
-    if not walletManager.exists(sender) then return errors.TRANSACTION_UNKNOWN_SENDER end
-    if not walletManager.exists(receiver) then return errors.TRANSACTION_UNKNOWN_RECEIVER end
+    if not self:exists(sender) then return errors.TRANSACTION_UNKNOWN_SENDER end
+    if not self:exists(receiver) then return errors.TRANSACTION_UNKNOWN_RECEIVER end
     if sender == receiver then return errors.TRANSACTION_TRANSFER_TO_SELF end
 
     local senderBalance = self:getWalletValue(sender, "balance")
     if senderBalance < value then return errors.INSUFFICIENT_FUNDS end
 
     local a = self:changeBalance("subtract", sender, value)
-    local b = self:changeBalance("add", receiver, value)
     if a ~= 0 then return a end
+    local b = self:changeBalance("add", receiver, value)
     if b ~= 0 then return b end
+    audit.log("wallets", sender, {"TRANSFER",sender,receiver,value}, self:vfs())
+    audit.log("wallets", receiver, {"TRANSFER",sender,receiver,value}, self:vfs())
     return 0
 end
 
@@ -210,7 +214,7 @@ local service = {
     name = "wallets",
     deps = {"vfs", "accounts"},
     init = function(ctx)
-        return walletManager.new(ctx.services["vfs"], ctx.services["accounts"], ctx.services["logger"])
+        return walletManager.new(ctx)
     end,
     runtime = nil,
     tasks = nil,

@@ -2,23 +2,18 @@ local sha256 = requireC("/GuardLink/server/lib/sha256.lua")
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 local roles = requireC("/GuardLink/server/lib/roles.lua")
-local kernel = require("kernel.kernel")
+local audit = requireC("/GuardLink/server/lib/audit.lua")
 
 local accountManager = {}
 accountManager.__index = accountManager
 
 local log
-
 local invitePath = "/GuardLink/server/config/invite_codes.json"
 
-function accountManager.new(vfs, logger)
+function accountManager.new(ctx)
     local self = setmetatable({}, accountManager)
-    self.vfs = vfs
-    log = logger:createInstance("accounts", {timestamp = true, level = "INFO", clear = true})
-    if not vfs:existsDir("accounts") then
-        log:fatal("Failed to load accountManager: malformed partitions?") 
-        error("Failed to load accountManager: malformed partitions?")        
-    end
+    self.ctx = ctx
+    log = ctx.services["logger"]:createInstance("accounts", {timestamp = true, level = "INFO", clear = true})
 
     if not fs.exists(invitePath) then
         log:info("invite_codes config not found! Generating...")
@@ -47,6 +42,10 @@ local accountTemplate = {
     salt = "",
     wallets = {}
 }
+
+function accountManager:vfs()
+    return self.ctx.services["vfs"]
+end
 
 function accountManager:isValidInvite(code)
     local f = fs.open(invitePath, "r")
@@ -130,7 +129,7 @@ function accountManager:isValidAccountName(name)
     if name:find("[/\\:*?\"<>|§]") then return errors.ACCOUNT_INVALID_CHAR end
     if #name > 20 then return errors.ACCOUNT_NAME_TOO_LONG end
     if #name < 3 then return errors.ACCOUNT_NAME_TOO_SHORT end
-    if self.vfs:existsFile("accounts/" .. name .. ".json") then return errors.ACCOUNT_EXISTS end
+    if self:vfs():existsFile("accounts/" .. name .. ".json") then return errors.ACCOUNT_EXISTS end
     return 0
 end
 
@@ -139,7 +138,7 @@ function accountManager:getTemplate()
 end
 
 function accountManager:exists(name)
-    return self.vfs:existsFile("accounts/" .. name .. ".json")
+    return self:vfs():existsFile("accounts/" .. name .. ".json")
 end
 
 function accountManager:createAccount(name, password, role)
@@ -163,25 +162,27 @@ function accountManager:createAccount(name, password, role)
     template.salt = salt
     template.password = sha256.digest(salt .. password):toHex()
 
-    self.vfs:newFile(filePath)
-    self.vfs:writeFile(filePath, textutils.serializeJSON(template))
+    self:vfs():newFile(filePath)
+    self:vfs():writeFile(filePath, textutils.serializeJSON(template))
 
-    local defaultRole = role or kernel:execute("kernel.get_config", "identity").defaultRole
+    local defaultRole = role or self.ctx:execute("kernel.get_config", "identity").defaultRole
     if defaultRole then
         self:assignRole(name, defaultRole)
     end
+    audit.log("accounts", name, {"CREATE", name}, self:vfs())
     return 0
 end
 
 function accountManager:deleteAccount(name)
     if not name or not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
-    self.vfs:deleteFile("accounts/" .. name .. ".json")
+    self:vfs():deleteFile("accounts/" .. name .. ".json")
+    audit.log("accounts", name, {"DELETE", name}, self:vfs())
     return 0
 end
 
 function accountManager:getAccountData(name)
     if name and self:exists(name) then
-        return textutils.unserializeJSON(self.vfs:readFile("accounts/" .. name .. ".json"))
+        return textutils.unserializeJSON(self:vfs():readFile("accounts/" .. name .. ".json"))
     else
         return nil
     end
@@ -190,7 +191,7 @@ end
 function accountManager:setAccountValue(name, key, value)
     local values = self:getAccountData(name)
     values[key] = value
-    self.vfs:writeFile("accounts/" .. name .. ".json", textutils.serializeJSON(values))
+    self:vfs():writeFile("accounts/" .. name .. ".json", textutils.serializeJSON(values))
 end
 
 function accountManager:getAccountValue(name, key)
@@ -201,8 +202,7 @@ end
 
 function accountManager:listAccounts()
     local accountNames = {}
-
-    local files = self.vfs:listDir("accounts/") or {}
+    local files = self:vfs():listDir("accounts/") or {}
     for _, file in ipairs(files) do
         if file:sub(-5) == ".json" then
             table.insert(accountNames, file:sub(1, -6))
@@ -233,14 +233,13 @@ function accountManager:authenticateUser(username, password)
     if not account then return errors.ACCOUNT_NOT_FOUND end
     if username == "" then return errors.ACCOUNT_NAME_EMPTY end
     if password == "" then return errors.ACCOUNT_PASSWORD_EMPTY end
-    
-    local salt = account.salt
-    local storedPasswordHash = account.password
-    local saltedPassword = salt .. password
-    local hashedPassword = sha256.digest(saltedPassword):toHex()
-    if hashedPassword == storedPasswordHash then
+
+    local hashedPassword = sha256.digest(account.salt .. password):toHex()
+    if hashedPassword == account.password then
+        audit.log("accounts", username, {"AUTH_OK",username}, self:vfs())
         return 0
     else
+        audit.log("accounts", username, {"AUTH_FAIL",username}, self:vfs())
         return errors.INVALID_CREDENTIALS
     end
 end
@@ -252,16 +251,11 @@ function accountManager:banAccount(name, duration, reason)
     local seconds = 0
     for k, v in pairs(duration) do
         if not v or v < 1 then return errors.INVALID_TIME_FORMAT end
-        if k == "seconds" then
-            seconds = seconds + v
-        elseif k == "minutes" then
-            seconds = seconds + (v*60)
-        elseif k == "hours" then
-            seconds = seconds + (v*3600)
-        elseif k == "days" then
-            seconds = seconds + (v*86400)
-        elseif k == "permanent" then
-            seconds = -1
+        if k == "seconds" then seconds = seconds + v
+        elseif k == "minutes" then seconds = seconds + (v * 60)
+        elseif k == "hours" then seconds = seconds + (v * 3600)
+        elseif k == "days" then seconds = seconds + (v * 86400)
+        elseif k == "permanent" then seconds = -1
         end
     end
 
@@ -271,21 +265,21 @@ function accountManager:banAccount(name, duration, reason)
         duration = (seconds == -1) and -1 or (seconds * 1000),
         reason = reason or ""
     }
-
     self:setAccountValue(name, "ban", account.ban)
+    audit.log("accounts", name, {"BAN",name,duration,reason}, self:vfs())
     return 0
 end
 
 function accountManager:pardon(name)
     local account = self:getAccountData(name or "")
     if not account then return errors.ACCOUNT_NOT_FOUND end
-    account.ban = {
+    self:setAccountValue(name, "ban", {
         active = false,
         startTime = nil,
         duration = 0,
         reason = ""
-    }
-    self:setAccountValue(name, "ban", account.ban)
+    })
+    audit.log("accounts", name, {"PARDON",name}, self:vfs())
     return 0
 end
 
@@ -299,19 +293,33 @@ function accountManager:isBanned(name)
     if not ban.startTime then return false end
 
     local now = os.epoch("utc")
-    if account.ban.duration == -1 then return true, account.ban.reason end
-    if now - account.ban.startTime >= account.ban.duration then
-        account.ban = {
+    if now - ban.startTime >= ban.duration then
+        self:setAccountValue(name, "ban", {
             active = false,
             startTime = nil,
             duration = 0,
             reason = ""
-        }
-        self:setAccountValue(name, "ban", account.ban)
+        })
         return false
     end
 
-    return true, account.ban.reason
+    return true, ban.reason
+end
+
+function accountManager:changePassword(name, oldPassword, newPassword)
+    local account = self:getAccountData(name)
+    if not account then return errors.ACCOUNT_NOT_FOUND end
+    if not newPassword or newPassword == "" then return errors.ACCOUNT_PASSWORD_EMPTY end
+    
+    local hashedOld = sha256.digest(account.salt .. oldPassword):toHex()
+    if hashedOld ~= account.password then return errors.INVALID_CREDENTIALS end
+
+    local salt = utils.randomString(16, "generic")
+    local hashedNew = sha256.digest(salt .. newPassword):toHex()
+    self:setAccountValue(name, "salt", salt)
+    self:setAccountValue(name, "password", hashedNew)
+    audit.log("accounts", name, {"PASSWORD_CHANGE", name}, self:vfs())
+    return 0
 end
 
 function accountManager:assignRole(name, roleName)
@@ -324,6 +332,7 @@ function accountManager:assignRole(name, roleName)
     end
     self:setAccountValue(name, "role", roleName)
     roles.addMember(roleName, name)
+    audit.log("accounts", name, {"ROLE_ASSIGN",name,roleName}, self:vfs())
     return 0
 end
 
@@ -333,6 +342,7 @@ function accountManager:unassignRole(name)
     if not current or current == "" then return errors.ACCOUNT_HAS_NO_ROLE end
     roles.removeMember(current, name)
     self:setAccountValue(name, "role", "")
+    audit.log("accounts", name, {"ROLE_UNASSIGN",name}, self:vfs())
     return 0
 end
 
@@ -347,7 +357,7 @@ local service = {
     name = "accounts",
     deps = {"vfs"},
     init = function(ctx)
-        return accountManager.new(ctx.services["vfs"], ctx.services["logger"])
+        return accountManager.new(ctx)
     end,
     runtime = nil,
     tasks = nil,
@@ -369,10 +379,11 @@ local service = {
             get_invite_codes = function(self) return self:getInviteCodes() end,
             use_invite = function(self, args) return self:useInvite(args.code) end,
             delete_invite = function(self, args) return self:deleteInvite(args.code) end,
-            create_invite = function(self, args) return self:createInvite(args.code, args.uses) end,   
+            create_invite = function(self, args) return self:createInvite(args.code, args.uses) end,
             assign_role = function(self, args) return self:assignRole(args.name, args.role) end,
             unassign_role = function(self, args) return self:unassignRole(args.name) end,
             has_permission = function(self, args) return self:hasPermission(args.name, args.permission) end,
+            change_password = function(self, args) return self:changePassword(args.name, args.old_password, args.new_password) end,
         }
     }
 }

@@ -15,7 +15,7 @@ local function isOwner(wallet, account)
     return wallet.members and wallet.members[account] == "owner"
 end
 
-function handlers.view(msg, client, id, ctx, fn, logger)
+function handlers.info(msg, client, id, ctx, fn, logger)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -25,7 +25,7 @@ function handlers.view(msg, client, id, ctx, fn, logger)
 
     if not wallet then
         local msg = message.create("wallet", {
-            action = "view", status = "failure",
+            action = "info", status = "failure",
             error = errors.WALLET_NOT_FOUND.client
         }, client.aesKey, false, id)
         session:send(client.channel, msg)
@@ -35,7 +35,7 @@ function handlers.view(msg, client, id, ctx, fn, logger)
     local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "wallets.view_others")
     if not isMember(wallet, client.account) and not hasPermission then
         local msg = message.create("wallet", {
-            action = "view", status = "failure",
+            action = "info", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
         }, client.aesKey, false, id)
         session:send(client.channel, msg)
@@ -43,7 +43,7 @@ function handlers.view(msg, client, id, ctx, fn, logger)
     end
 
     local msg = message.create("wallet", {
-        action = "view", status = "success",
+        action = "info", status = "success",
         data = wallet
     }, client.aesKey, false, id)
     session:send(client.channel, msg)
@@ -103,7 +103,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         walletCount = 0
         windowStart = now
     end
-    local limit = ctx.configs["settings"].server.walletsPerHour
+    local limit = ctx.configs["settings"].walletsPerHour
     if walletCount >= limit then
         local msg = message.create("wallet", {
             action = "create", status = "failure",
@@ -113,7 +113,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         return 0
     end
 
-    local name = msg.payload.name
+    local name = msg.payload.wallet
     local wallets = ctx.services["wallets"]
     local result = wallets:createWallet(name)
     walletCount = walletCount + 1

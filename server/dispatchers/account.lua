@@ -131,7 +131,7 @@ function handlers.info(msg, client, id, ctx, fn, logger)
 
     if name ~= client.account then
         local ethic = ctx.configs["identity"].selectedEthic
-        local consent = ctx.configs["rules"].rules.ethics[ethic].consent
+        local consent = ctx.configs["rules"].rules.ethics[ethic].values.consent
         local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
         if consent < 1.0 and not hasPermission then
             local msg = message.create("account", {
@@ -167,7 +167,7 @@ function handlers.list(msg, client, id, ctx, fn, logger)
     if not client then return 0 end    
     local session = ctx.services["network_session"]
     local ethic = ctx.configs["identity"].selectedEthic
-    local consent = ctx.configs["rules"].rules.ethics[ethic].consent
+    local consent = ctx.configs["rules"].rules.ethics[ethic].values.consent
     local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
 
     if consent < 1.0 and not hasPermission then
@@ -184,6 +184,33 @@ function handlers.list(msg, client, id, ctx, fn, logger)
         action = "list",
         status = "success",
         data = ctx.services["accounts"]:listAccounts()
+    }, client.aesKey, false, id)
+    session:send(client.channel, msg)
+    return 0
+end
+
+function handlers.change_password(msg, client, id, ctx, fn, logger)
+    local session = ctx.services["network_session"]
+    if not client then return 0 end
+
+    local oldPassword = msg.payload.old_password
+    local newPassword = msg.payload.new_password
+    if not oldPassword or not newPassword then return errors.MALFORMED_MESSAGE end
+
+    local result = ctx.services["accounts"]:changePassword(client.account, oldPassword, newPassword)
+    if result ~= 0 then
+        local msg = message.create("account", {
+            action = "change_password",
+            status = "failure",
+            error = result.client
+        }, client.aesKey, false, id)
+        session:send(client.channel, msg)
+        return 0
+    end
+
+    local msg = message.create("account", {
+        action = "change_password",
+        status = "success"
     }, client.aesKey, false, id)
     session:send(client.channel, msg)
     return 0
