@@ -1,6 +1,6 @@
 # GuardLink
 
-GuardLink is an RP toolkit and nation simulator providing various systems for accounts, economies, laws and more. Everything happens on a centralized server and players interact via client computers. Admins can manage systems through the server shell or remotely via their account. Each server simulates a country/nation/empire with features such as:
+GuardLink is an RP toolkit and nation simulator for Computercraft providing various systems for accounts, economies, laws and more. Everything happens on a centralized server and players interact via client computers. Admins can manage systems through the server shell or remotely via their account. Each server simulates a country/nation/empire with features such as:
 
 - Accounts & Identities
 - Wallets & Currencies
