@@ -1,4 +1,4 @@
-local rsa = requireC("/GuardLink/server/lib/rsa.keygen.lua")
+local rsa = requireC("/GuardLink/server/lib/rsa-keygen.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 local aes = requireC("/GuardLink/server/lib/aes.lua")
 
