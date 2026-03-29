@@ -1574,6 +1574,7 @@ end
 
 function api.send(header, payload, callback, limit, timeout)
 	if not api.keyStr then error("Failed to send message: Not authenticated") end
+	payload.token = api.sessionToken
 	local message, id = createMessage(header, payload, api.keyStr, false)
 	if callback then registerCallback(id, callback, limit, timeout) end
 	api.modem.transmit(api.channel, api.channel, message)
@@ -1628,7 +1629,7 @@ local function sendCredentials(nation, name, password, action, id, inviteCode)
     }
 	if inviteCode then
         local iv3 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
-        message.payload.invite_code = {cipher = Cipher:new(nil, keyStr, iv3):encrypt(inviteCode), iv = iv3}		
+        message.message.payload.invite_code = {cipher = Cipher:new(nil, keyStr, iv3):encrypt(inviteCode), iv = iv3}
 	end
     return message, keyStr
 end
@@ -1743,6 +1744,8 @@ function api.disconnect()
 	api.clientID = nil
 	api.callbacks = {}
 	api.keyStr = nil
+
+	api.modem.closeAll()
 end
 
 return api

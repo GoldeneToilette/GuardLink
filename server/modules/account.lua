@@ -169,14 +169,14 @@ function accountManager:createAccount(name, password, role)
     if defaultRole then
         self:assignRole(name, defaultRole)
     end
-    audit.log("accounts", name, {"CREATE", name}, self:vfs())
+    audit.log("accounts", name, {"CREATE"}, self:vfs())
     return 0
 end
 
 function accountManager:deleteAccount(name)
     if not name or not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
     self:vfs():deleteFile("accounts/" .. name .. ".json")
-    audit.log("accounts", name, {"DELETE", name}, self:vfs())
+    audit.log("accounts", name, {"DELETE"}, self:vfs())
     return 0
 end
 

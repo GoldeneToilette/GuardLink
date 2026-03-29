@@ -63,7 +63,7 @@ cmds["delete"] = {
         local kernel = ctx.kernel
         local name = args[2]
         if not name then return {str="Usage: wallets delete <name>", type="fail"} end
-        local success = kernel:execute("wallets.delete", {wallet=name})
+        local success = kernel:execute("wallets.delete", {name=name})
         if success ~= 0 then
             return {str="Error: '" .. success.log .. "'", type="fail"}
         end

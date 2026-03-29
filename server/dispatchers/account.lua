@@ -131,8 +131,7 @@ function handlers.info(msg, client, id, ctx, fn, logger)
     local name = msg.payload.name
 
     if name ~= client.account then
-        local ethic = ctx.configs["identity"].selectedEthic
-        local consent = ctx.configs["rules"].rules.ethics[ethic].values.consent
+        local consent = ctx.services["nation"]:getValue("consent")
         local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
         if consent < 1.0 and not hasPermission then
             local msg = message.create("account", {
@@ -167,8 +166,7 @@ end
 function handlers.list(msg, client, id, ctx, fn, logger)
     if not client then return 0 end    
     local session = ctx.services["network_session"]
-    local ethic = ctx.configs["identity"].selectedEthic
-    local consent = ctx.configs["rules"].rules.ethics[ethic].values.consent
+    local consent = ctx.services["nation"]:getValue("consent")
     local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
 
     if consent < 1.0 and not hasPermission then
@@ -222,12 +220,9 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
     local session = ctx.services["network_session"]
 
     local name = msg.payload.name
-    local ethic = ctx.configs["identity"].selectedEthic
-    local ethics = ctx.configs["rules"].rules.ethics[ethic].values
-    local logsAccessible = ctx.configs["rules"].server.formulas.logsAccessible
     local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "accounts.view_others")
 
-    if name ~= client.account and not hasPermission and not logsAccessible(ethics.autonomy, ethics.consent) then
+    if name ~= client.account and not hasPermission and not ctx.services["nation"]:logsAccessible() then
         local msg = message.create("account", {
             action = "audit",
             status = "failure",

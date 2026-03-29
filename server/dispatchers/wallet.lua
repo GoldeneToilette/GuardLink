@@ -130,7 +130,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
 
     -- add creator as owner and apply starting balance
     wallets:addMember(name, client.account, "owner")
-    local startingBalance = tonumber(ctx.configs["identity"].starting_balance) or 0
+    local startingBalance = tonumber(ctx.services["nation"]:getIdentity().starting_balance) or 0
     if startingBalance > 0 then
         wallets:changeBalance("add", name, startingBalance)
     end
@@ -289,12 +289,9 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
         return 0
     end
 
-    local ethic = ctx.configs["identity"].selectedEthic
-    local ethics = ctx.configs["rules"].rules.ethics[ethic].values
-    local logsAccessible = ctx.configs["rules"].server.formulas.logsAccessible
     local hasPermission = ctx.services["accounts"]:hasPermission(client.account, "wallets.view_others")
 
-    if not isMember(wallet, client.account) and not hasPermission and not logsAccessible(ethics.autonomy, ethics.consent) then
+    if not isMember(wallet, client.account) and not hasPermission and not ctx.services["nation"]:logsAccessible() then
         local msg = message.create("wallet", {
             action = "audit",
             status = "failure",
@@ -316,6 +313,9 @@ end
 
 local function func(msg, client, id, ctx, fn, logger)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
+    if client and msg.payload.token ~= client.token then
+        return errors.TOKEN_MISMATCH
+    end
     return handlers[msg.payload.action](msg, client, id, ctx, fn, logger)
 end
 

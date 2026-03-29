@@ -62,7 +62,7 @@ function walletManager:createWallet(name)
 
     self:vfs():newFile(filePath)
     self:vfs():writeFile(filePath, textutils.serializeJSON(template))
-    audit.log("wallets", name, {"CREATE", name}, self:vfs())
+    audit.log("wallets", name, {"CREATE"}, self:vfs())
     return 0
 end
 
@@ -97,7 +97,7 @@ function walletManager:deleteWallet(name)
         accounts:setAccountValue(member, "wallets", accountWallets)
     end
     self:vfs():deleteFile("wallets/" .. name .. ".json")
-    audit.log("wallets", name, {"DELETE", name}, self:vfs())
+    audit.log("wallets", name, {"DELETE"}, self:vfs())
     return 0
 end
 
@@ -137,7 +137,7 @@ function walletManager:addMember(name, member, role)
     local accountWallets = accounts:getAccountValue(member, "wallets") or {}
     table.insert(accountWallets, name)
     accounts:setAccountValue(member, "wallets", accountWallets)
-    audit.log("wallets", name, {"MEMBER_ADD",name,member,role}, self:vfs())
+    audit.log("wallets", name, {"MEMBER_ADD",member,role}, self:vfs())
     return 0
 end
 
@@ -159,14 +159,14 @@ function walletManager:removeMember(name, member)
         end
     end
     accounts:setAccountValue(member, "wallets", accountWallets)
-    audit.log("wallets", name, {"MEMBER_REMOVE",name,member}, self:vfs())
+    audit.log("wallets", name, {"MEMBER_REMOVE",member}, self:vfs())
     return 0
 end
 
 function walletManager:lockWallet(name, flag)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     self:setWalletValue(name, "locked", flag or true)
-    audit.log("wallets", name, {"LOCK",name,flag}, self:vfs())
+    audit.log("wallets", name, {"LOCK",flag}, self:vfs())
     return 0
 end
 
@@ -186,7 +186,7 @@ function walletManager:changeBalance(operation, name, value)
         return errors.BALANCE_INVALID_OPERATION
     end
     self:vfs():writeFile("wallets/" .. name .. ".json", textutils.serializeJSON(wallet))
-    audit.log("wallets", name, {"BALANCE_" .. operation:upper(),name,value}, self:vfs())
+    audit.log("wallets", name, {"BALANCE_" .. operation:upper(),value}, self:vfs())
     return 0
 end
 

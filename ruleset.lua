@@ -136,10 +136,48 @@ data.server.formulas = {
     end
 }
 data.server.permissions = {
+    -- accounts
     "accounts.view_others",
+    "accounts.2fa_required",
+    "accounts.create",
+    "accounts.delete",
+    "accounts.ban",
+    "accounts.pardon",
+    "accounts.assign_role",
+    "accounts.set_value",
+    "accounts.create_invite",
+    "accounts.delete_invite",
+    "accounts.change_password",
+    -- wallets
     "wallets.view_others",
     "wallets.create",
-    "accounts.2fa_required"
+    "wallets.delete",
+    "wallets.change_balance",
+    "wallets.transfer",
+    "wallets.lock",
+    "wallets.add_member",
+    "wallets.remove_member",
+    -- clients
+    "clients.disconnect",
+    "clients.disconnect_all",
+    "clients.throttle",
+    "clients.update_channels",
+    "clients.heartbeats",
+    -- disk
+    "disk.scan",
+    "disk.clear",
+    -- queue
+    "queue.throttle",
+    -- nation
+    "nation.set_tag",
+    "nation.set_currency",
+    "nation.set_starting_balance",
+    -- kernel
+    "kernel.stop",
+    "kernel.pause_task",
+    "kernel.resume_task",
+    "kernel.refresh_configs",
+    "kernel.set_config",
 }
 -- RULES ---------------------------------------------------------------------------
 return data
