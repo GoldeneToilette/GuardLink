@@ -29,6 +29,11 @@ data.server.queue = {
     queueSize = 40,
     throttle = 0
 }
+data.server.health = {
+    interval = 60,       -- seconds between checks
+    warnThreshold = 0.8, -- 80% full -> warning
+    critThreshold = 0.95 -- 95% full -> critical popup
+}
 data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "default"
 data.server.debug = false

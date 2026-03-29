@@ -19,7 +19,7 @@ cmds["info"] = {
         table.insert(tbl, "Task: " .. args[2])
         table.insert(tbl, "Interval: " .. tasks[args[2]].interval)
         local lastRun = tostring(tasks[args[2]].lastRun > 0 and math.floor((tasks[args[2]].lastRun - os.epoch("utc")) / 1000)) or " nil"
-        table.insert(tbl, "Last run: " .. lastRun:sub(2, #lastRun) .. " seconds ago")
+        table.insert(tbl, "Last run: " .. lastRun:sub(1, #lastRun) .. " seconds ago")
         table.insert(tbl, "Active: " .. tostring(tasks[args[2]].active))
         return {str=tbl, type="info"}
     end

@@ -3,6 +3,8 @@ local fileUtils = requireC("/GuardLink/server/lib/fileUtils.lua")
 local VFS = {}
 VFS.__index = VFS
 
+local log
+
 local errors = {
     "Failed to write to file: Path could not be found!",
     "Failed to write to file: Not enough space!",
@@ -13,6 +15,8 @@ function VFS.new(diskManager)
     local self = setmetatable({}, VFS)
     self.diskManager = diskManager
     self.config = self.diskManager:getConfig()
+    self.criticalWarningShown = false
+
     return self
 end
 
@@ -196,14 +200,54 @@ function VFS:getFileSize(path)
     return fs.getSize(disk.path .. "/" .. path)
 end
 
+function VFS:healthCheck(ctx)
+    if not log then
+        log = ctx.services["logger"]:createInstance("vfs", {timestamp = true, level = "INFO", clear = false})
+    end
+
+    local health = ctx.configs["settings"].health
+    local warn = health and health.warnThreshold or 0.8
+    local crit = health and health.critThreshold or 0.95
+    local issues = {}
+
+    for partitionName, _ in pairs(self.config) do
+        local capacity = self:getTotalCapacity(partitionName)
+        local used = self:getUsedBytes(partitionName)
+        if capacity and capacity > 0 then
+            local ratio = used / capacity
+            if ratio >= crit then
+                local msg = "CRITICAL: partition '" .. partitionName .. "' is " .. math.floor(ratio * 100) .. "% full"
+                log:error(msg)
+                table.insert(issues, {partition = partitionName, ratio = ratio, level = "critical"})
+                if not self.criticalWarningShown then
+                    ctx:execute("ui.popup", {title = "Disk Critical", message = msg, type = "error", canClose = true})
+                    self.criticalWarningShown = true
+                end
+            elseif ratio >= warn then
+                local msg = "WARNING: partition '" .. partitionName .. "' is " .. math.floor(ratio * 100) .. "% full"
+                log:info(msg)
+                table.insert(issues, {partition = partitionName, ratio = ratio, level = "warning"})
+            end
+        end
+    end
+    return issues
+end
+
 local service = {
     name = "vfs",
     deps = {"disk_manager"},
     init = function(ctx)
-        return VFS.new(ctx.services["disk_manager"])
+        local instance = VFS.new(ctx.services["disk_manager"])
+        instance.ctx = ctx
+        return instance
     end,
     runtime = nil,
-    tasks = nil,
+    tasks = function(self)
+        local interval = self.ctx.configs["settings"].health and self.ctx.configs["settings"].health.interval or 60
+        return {
+            vfs_health_check = {function(self) self:healthCheck(self.ctx) end, interval}
+        }
+    end,
     shutdown = nil,
     api = {
         ["vfs"] = {
@@ -222,6 +266,7 @@ local service = {
             get_capacity = function(self, args) return self:getTotalCapacity(args) end,
             get_size = function(self, args) return self:getUsedBytes(args) end,
             get_file_size = function(self, args) return self:getFileSize(args) end,
+            health_check = function(self) return self:healthCheck(self.ctx) end,
         }
     }
 }

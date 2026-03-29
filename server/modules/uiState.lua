@@ -78,6 +78,11 @@ function uiState:setFrame(name)
     return 0
 end
 
+function uiState:showPopup(title, message, popupType, canClose)
+    self.uiHelper.newPopup(self.mainframe, 30, 7, title, popupType or "info", message, canClose ~= false)
+    return 0
+end
+
 local service = {
     name = "ui_manager",
     deps = {},
@@ -95,6 +100,7 @@ local service = {
     api = {
         ["ui"] = {
             frame_set = function(self, args) return self:setFrame(args) end,
+            popup = function(self, args) return self:showPopup(args.title, args.message, args.type, args.canClose) end,
             set_theme = function(self, args) return self.theme.setTheme(args.theme, args.current or nil) end,
             get_themes = function(self) return self.theme.getThemes() end,
             get_color = function(self, args) return self.theme.colors[args] end,
