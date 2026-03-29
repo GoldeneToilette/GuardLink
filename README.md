@@ -11,6 +11,8 @@ GuardLink is an RP toolkit and nation simulator for Computercraft providing vari
 
 Some features are not fully implemented and/or do not work with every ethic/government type for balancing reasons. See the [wiki](../../wiki) for full documentation.
 
+For updates & questions: https://discord.gg/DXy4MNQPV2
+
 ## Installation
 
 ### Server
