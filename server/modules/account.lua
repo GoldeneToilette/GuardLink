@@ -266,7 +266,7 @@ function accountManager:banAccount(name, duration, reason)
         reason = reason or ""
     }
     self:setAccountValue(name, "ban", account.ban)
-    audit.log("accounts", name, {"BAN",duration,reason}, self:vfs())
+    audit.log("accounts", name, {"BAN", textutils.serialize(duration), reason}, self:vfs())
     return 0
 end
 

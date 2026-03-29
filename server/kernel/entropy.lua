@@ -32,7 +32,7 @@ end
 
 function entropy.seed()
     local entry = mix(pool[head], pool[(head % POOL_SIZE) + 1])
-    local seed = tonumber(entry:sub(1, 13))
+    local seed = tonumber(entry:sub(1, 8), 16)
     math.randomseed(seed)
     entropy.add(seed)
     return math.random()

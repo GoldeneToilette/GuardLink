@@ -23,7 +23,7 @@ local function func(msg, client, id, ctx, fn, logger)
         return 0
     end
 
-    local result = ctx:execute(permission, args)
+    local result = ctx.execute(permission, args)
     local msg = message.create("admin", {
         action = service,
         command = command,

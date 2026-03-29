@@ -42,9 +42,6 @@ end
 
 local function func(msg, client, id, ctx, fn, logger)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
-    if client and msg.payload.token ~= client.token then
-        return errors.TOKEN_MISMATCH
-    end
     return handlers[msg.payload.action](msg, client, id, ctx, fn, logger)
 end
 

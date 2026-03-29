@@ -13,10 +13,8 @@ _G.requireC = function(path)
 
         local decomp = deflate:DecompressDeflate(contents)
         if not decomp then error("Failed to decompress file: " .. path) end
-        local env = {}
-        for k,v in pairs(_G) do env[k] = v end
-        env.require = require
-        local module = load(decomp, "@"..path, "t", env)()
+        _G.require = require
+        local module = load(decomp, "@"..path, "t", _G)()
         
         package.loaded[path] = module
         return module
@@ -41,6 +39,7 @@ kernel.ctx = {
     configs = {},
     _cfgExt = {}
 }
+kernel.ctx.execute = function(cmd, args) return kernel:execute(cmd, args) end
 kernel.cmds = {}
 
 function kernel:addCommand(prefix, suffix, func)
