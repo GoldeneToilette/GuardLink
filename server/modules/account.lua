@@ -236,10 +236,10 @@ function accountManager:authenticateUser(username, password)
 
     local hashedPassword = sha256.digest(account.salt .. password):toHex()
     if hashedPassword == account.password then
-        audit.log("accounts", username, {"AUTH_OK",username}, self:vfs())
+        audit.log("accounts", username, {"AUTH_OK"}, self:vfs())
         return 0
     else
-        audit.log("accounts", username, {"AUTH_FAIL",username}, self:vfs())
+        audit.log("accounts", username, {"AUTH_FAIL"}, self:vfs())
         return errors.INVALID_CREDENTIALS
     end
 end
@@ -266,7 +266,7 @@ function accountManager:banAccount(name, duration, reason)
         reason = reason or ""
     }
     self:setAccountValue(name, "ban", account.ban)
-    audit.log("accounts", name, {"BAN",name,duration,reason}, self:vfs())
+    audit.log("accounts", name, {"BAN",duration,reason}, self:vfs())
     return 0
 end
 
@@ -279,7 +279,7 @@ function accountManager:pardon(name)
         duration = 0,
         reason = ""
     })
-    audit.log("accounts", name, {"PARDON",name}, self:vfs())
+    audit.log("accounts", name, {"PARDON"}, self:vfs())
     return 0
 end
 
@@ -318,7 +318,7 @@ function accountManager:changePassword(name, oldPassword, newPassword)
     local hashedNew = sha256.digest(salt .. newPassword):toHex()
     self:setAccountValue(name, "salt", salt)
     self:setAccountValue(name, "password", hashedNew)
-    audit.log("accounts", name, {"PASSWORD_CHANGE", name}, self:vfs())
+    audit.log("accounts", name, {"PASSWORD_CHANGE"}, self:vfs())
     return 0
 end
 
@@ -332,7 +332,7 @@ function accountManager:assignRole(name, roleName)
     end
     self:setAccountValue(name, "role", roleName)
     roles.addMember(roleName, name)
-    audit.log("accounts", name, {"ROLE_ASSIGN",name,roleName}, self:vfs())
+    audit.log("accounts", name, {"ROLE_ASSIGN",roleName}, self:vfs())
     return 0
 end
 
@@ -342,7 +342,7 @@ function accountManager:unassignRole(name)
     if not current or current == "" then return errors.ACCOUNT_HAS_NO_ROLE end
     roles.removeMember(current, name)
     self:setAccountValue(name, "role", "")
-    audit.log("accounts", name, {"ROLE_UNASSIGN",name}, self:vfs())
+    audit.log("accounts", name, {"ROLE_UNASSIGN"}, self:vfs())
     return 0
 end
 

@@ -7,6 +7,7 @@ local charsets = {
 }
 
 function utils.randomString(length, charset)
+    seedRandom()
     if charsets[charset] then charset = charsets[charset] end
     local str = ""
     for i = 1, length do

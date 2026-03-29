@@ -148,6 +148,7 @@ function NetworkSession:initKeys()
         log:debug("RSA Public key loaded " .. publicPath .. ":\n" .. tostring(fileUtils.read(publicPath)))
         log:debug("RSA Private key loaded " .. privatePath .. ":\n" .. tostring(fileUtils.read(privatePath)))
     end
+    addEntropy(self.privateKey.private .. self.publicKey.public)
 
     if not fs.exists(certPath) then
         log:info("Certificate not found, requesting from CA...")

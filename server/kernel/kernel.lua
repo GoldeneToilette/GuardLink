@@ -27,6 +27,8 @@ end
 local shutdown = requireC("/GuardLink/server/kernel/shutdown.lua")
 local utils = requireC("/GuardLink/server/lib/utils.lua")
 local taskmaster = requireC("/GuardLink/server/lib/TaskMaster.lua")()
+local entropy = requireC("/GuardLink/server/kernel/entropy.lua")
+entropy.init()
 
 local kernel = {}
 kernel.modules = {}
@@ -69,6 +71,9 @@ kernel:addCommand("kernel", "print_tasks", function()
 end)
 kernel:addCommand("kernel", "get_tasks", function() return kernel.tasks end)
 kernel:addCommand("kernel", "refresh_configs", function() kernel:refreshConfigs() end)
+kernel:addCommand("kernel", "add_entropy", function(args) entropy.add(args) end)
+kernel:addCommand("kernel", "seed_random", function() return entropy.seed() end)
+kernel:addCommand("kernel", "reset_entropy", function() entropy.reset() end)
 kernel:addCommand("kernel", "set_config", function(args)
     if not args.config or not args.key then return false end
     local cfg = kernel.ctx.configs[args.config]

@@ -19,6 +19,7 @@ function message.create(header, payload, key, rsaFlag, id)
         if rsaFlag then
             msg.message = {cipher = rsa.rsaEncrypt(textutils.serialize(msg.message), key)}
         else
+            seedRandom()
             local iv = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
             local cipher = aes.Cipher:new(nil, key, iv)
             msg.message = {cipher = cipher:encrypt(textutils.serialize(msg.message)), iv = iv}
