@@ -30,9 +30,12 @@ data.server.queue = {
     throttle = 0
 }
 data.server.health = {
-    interval = 60,       -- seconds between checks
+    interval = 60,
     warnThreshold = 0.8, -- 80% full -> warning
     critThreshold = 0.95 -- 95% full -> critical popup
+}
+data.server.debt = {
+    sweepInterval = 7200 -- seconds
 }
 data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "default"
@@ -46,9 +49,10 @@ data.server.identityPath = "/GuardLink/server/config/identity.conf"
 data.server.rulesPath = "/GuardLink/server/config/rules.lua"
 data.server.partitions = {
         {name = "accounts", percentage = 10},
-        {name = "logs", percentage = 60},
+        {name = "logs", percentage = 50},
         {name = "cache", percentage = 20},
-        {name = "wallets", percentage = 10}
+        {name = "wallets", percentage = 10},
+        {name = "debts", percentage = 10}
 }
 -- SERVER --------------------------------------------------------------------------
 
@@ -138,7 +142,13 @@ data.server.formulas = {
         local base = minVol + commerce * (maxVol - minVol) / 2
         local adjusted = base * (1 - (stability or 0) * 0.1)
         return math.min(maxVol, math.max(minVol, adjusted))
-    end
+    end,
+    credit_reward = function(commerce, stability)
+        return math.floor(2 + commerce * 2 + stability)
+    end,
+    credit_penalty = function(unpaidRatio, commerce, stability)
+        return math.floor((unpaidRatio * 1.5) * (0.7 * commerce + 0.3 * (1 - stability)))
+    end,
 }
 data.server.permissions = {
     -- accounts

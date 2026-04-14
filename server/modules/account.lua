@@ -40,7 +40,14 @@ local accountTemplate = {
     },
     password = "",
     salt = "",
-    wallets = {}
+    wallets = {},
+    record = {
+        debt = { total = 0, entries = {} },
+        claims = { total = 0, entries = {} }
+    },
+    credit_score = 100,
+    pending_money = 0,
+    primaryWallet = nil,
 }
 
 function accountManager:vfs()
@@ -175,6 +182,13 @@ end
 
 function accountManager:deleteAccount(name)
     if not name or not self:exists(name) then return errors.ACCOUNT_NOT_FOUND end
+    local walletList = self:getAccountValue(name, "wallets") or {}
+    local walletService = self.ctx.services["wallets"]
+    for _, wName in ipairs(walletList) do
+        walletService:removeMember(wName, name)
+    end
+    local role = self:getAccountValue(name, "role")
+    if role and role ~= "" then roles.removeMember(role, name) end
     self:vfs():deleteFile("accounts/" .. name .. ".json")
     audit.log("accounts", name, {"DELETE"}, self:vfs())
     return 0
@@ -221,7 +235,11 @@ function accountManager:getSanitizedAccountValues(name)
             creationTime = accountData.creationTime,
             ban = accountData.ban,
             role = accountData.role,
-            wallets = accountData.wallets
+            wallets = accountData.wallets,
+            primaryWallet = accountData.primaryWallet,
+            credit_score = accountData.credit_score,
+            pending_money = accountData.pending_money,
+            record = accountData.record
         }
     else
         return nil

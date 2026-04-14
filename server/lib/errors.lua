@@ -71,6 +71,10 @@ local errors = {
         client = "WALLET_MEMBER_EXISTS",
         log = "Failed to add member to wallet: Already a member!"
     },
+    WALLET_MEMBER_NOT_FOUND = {
+        client = "WALLET_MEMBER_NOT_FOUND",
+        log = "Member not found in wallet!"
+    },
     WALLET_INVALID_ROLE = {
         client = "WALLET_INVALID_ROLE",
         log = "Failed to add member to wallet: Invalid role!"
@@ -222,6 +226,30 @@ local errors = {
     INSUFFICIENT_PERMISSIONS = {
         client = "INSUFFICIENT_PERMISSIONS",
         log = "Insufficient permissions"        
+    },
+    INVALID_INPUT = {
+        client = "INVALID_INPUT",
+        log = "Entered invalid values"
+    },
+    UNKNOWN_LAW = {
+        client = "UNKNOWN_LAW",
+        log = "Unknown Law"
+    },
+    INVALID_ENTITY_TYPE = {
+        client = "INVALID_ENTITY_TYPE",
+        log = "Invalid entity type"
+    },
+    INVALID_ENTITY_NAME = {
+        client = "INVALID_ENTITY_NAME",
+        log = "Invalid entity name"
+    },
+    INVALID_AMOUNT = {
+        client = "INVALID_AMOUNT",
+        log = "Amount must be greater than zero"
+    },
+    DEBT_NOT_FOUND = {
+        client = "DEBT_NOT_FOUND",
+        log = "Debt record not found"
     }
 }
 

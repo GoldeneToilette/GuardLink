@@ -22,26 +22,31 @@ function nation:save()
     f.close()
 end
 
-function nation:initTreasury()
+function nation:initSystemWallet(key, suffix, label)
     local wallets = self.ctx.services["wallets"]
-    local treasuryName = self.identity.treasury
-    if not treasuryName or not wallets:exists(treasuryName) then
-        treasuryName = self.identity.nation_tag .. "_treasury"
-        if not wallets:exists(treasuryName) then
-            local result = wallets:createWallet(treasuryName)
+    local name = self.identity[key]
+    if not name or not wallets:exists(name) then
+        name = self.identity.nation_tag .. suffix
+        if not wallets:exists(name) then
+            local result = wallets:createWallet(name)
             if result ~= 0 then
-                log:error("Failed to create treasury wallet: " .. tostring(result.log))
+                log:error("Failed to create " .. label .. " wallet: " .. tostring(result.log))
                 return
             end
-            log:info("Treasury wallet created: " .. treasuryName)
+            log:info(label .. " wallet created: " .. name)
         else
-            log:info("Treasury wallet already exists, linking: " .. treasuryName)
+            log:info(label .. " wallet already exists, linking: " .. name)
         end
-        self.identity.treasury = treasuryName
+        self.identity[key] = name
         self:save()
     else
-        log:debug("Treasury wallet found: " .. treasuryName)
+        log:debug(label .. " wallet found: " .. name)
     end
+end
+
+function nation:initTreasury()
+    self:initSystemWallet("treasury", "_treasury", "treasury")
+    self:initSystemWallet("escrow", "_escrow", "escrow")
 end
 
 function nation:getIdentity()

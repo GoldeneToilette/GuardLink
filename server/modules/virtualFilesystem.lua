@@ -16,8 +16,84 @@ function VFS.new(diskManager)
     self.diskManager = diskManager
     self.config = self.diskManager:getConfig()
     self.criticalWarningShown = false
-
+    self.manifest = nil
     return self
+end
+
+function VFS:getManifest()
+    if not self.manifest then
+        self.manifest = self.ctx.configs["vfs_manifest"] or {}
+    end
+    return self.manifest
+end
+
+function VFS:flushManifest()
+    local f = fs.open("/GuardLink/server/config/vfs_manifest.json", "w")
+    f.write(textutils.serializeJSON(self.manifest))
+    f.close()
+    self.ctx.configs["vfs_manifest"] = self.manifest
+end
+
+function VFS:isChunked(path)
+    local _, partitionName = self:parsePath(path)
+    local m = self:getManifest()
+    return m[partitionName] ~= nil and m[partitionName][path] ~= nil
+end
+
+function VFS:deleteChunks(path)
+    local _, partitionName, partition = self:parsePath(path)
+    local m = self:getManifest()
+    if m[partitionName] and m[partitionName][path] then
+        for _, chunk in ipairs(m[partitionName][path]) do
+            fileUtils.delete(self.diskManager:getDisk(chunk.disk).path .. "/" .. chunk.path)
+        end
+        m[partitionName][path] = nil
+        if not next(m[partitionName]) then m[partitionName] = nil end
+        self:flushManifest()
+    else
+        for _, d in ipairs(partition) do
+            local diskInfo = self.diskManager:getDisk(d.disk)
+            local idx = 0
+            while true do
+                local chunkPath = diskInfo.path .. "/" .. path .. "." .. idx
+                if not fs.exists(chunkPath) then break end
+                fs.delete(chunkPath)
+                idx = idx + 1
+            end
+        end
+    end
+end
+
+function VFS:splitAndWrite(path, data)
+    local _, partitionName, partition = self:parsePath(path)
+    local remaining = data
+    local chunks = {}
+    local idx = 0
+    for _, d in ipairs(partition) do
+        if #remaining == 0 then break end
+        local diskInfo = self.diskManager:getDisk(d.disk)
+        local avail = self:getCapacity(partitionName, d.disk) - fs.getSize(diskInfo.path .. "/" .. partitionName)
+        if avail > 0 then
+            local chunkData = remaining:sub(1, avail)
+            remaining = remaining:sub(avail + 1)
+            local chunkPath = path .. "." .. idx
+            fileUtils.newFile(diskInfo.path .. "/" .. chunkPath)
+            fileUtils.write(diskInfo.path .. "/" .. chunkPath, chunkData)
+            table.insert(chunks, {disk = d.disk, path = chunkPath})
+            idx = idx + 1
+        end
+    end
+    if #remaining > 0 then
+        for _, chunk in ipairs(chunks) do
+            fileUtils.delete(self.diskManager:getDisk(chunk.disk).path .. "/" .. chunk.path)
+        end
+        return {2, errors[2]}
+    end
+    local m = self:getManifest()
+    if not m[partitionName] then m[partitionName] = {} end
+    m[partitionName][path] = chunks
+    self:flushManifest()
+    return {0}
 end
 
 function VFS:parsePath(path)
@@ -29,7 +105,7 @@ function VFS:parsePath(path)
     local partitionName = parts[1]
 
     local partition = self.config[partitionName]
-    if not partition then error("Failed to read path, partition not found: " .. partitionName) end    
+    if not partition then error("Failed to read path, partition not found: " .. partitionName) end
     return parts, partitionName, partition
 end
 
@@ -48,6 +124,7 @@ function VFS:makeDir(path)
 end
 
 function VFS:existsFile(path)
+    if self:isChunked(path) then return true end
     local parts, _, partition = self:parsePath(path)
     for _, disk in ipairs(partition) do
         local diskInfo = self.diskManager:getDisk(disk.disk)
@@ -66,7 +143,7 @@ function VFS:existsDir(path)
             return true
         end
     end
-    return false  
+    return false
 end
 
 function VFS:getCapacity(partitionName, disk)
@@ -87,17 +164,35 @@ function VFS:getTotalCapacity(name)
     end
     return nil
 end
+
 function VFS:writeFile(path, data)
-    local _, partitionName, _ = self:parsePath(path)
+    local _, partitionName, partition = self:parsePath(path)
+    if self:isChunked(path) then
+        self:deleteChunks(path)
+        local bestDisk, maxAvail = nil, 0
+        for _, d in ipairs(partition) do
+            local diskInfo = self.diskManager:getDisk(d.disk)
+            local avail = self:getCapacity(partitionName, d.disk) - fs.getSize(diskInfo.path .. "/" .. partitionName)
+            if avail > maxAvail then maxAvail = avail; bestDisk = diskInfo end
+        end
+        if bestDisk and maxAvail >= #data then
+            fileUtils.newFile(bestDisk.path .. "/" .. path)
+            fileUtils.write(bestDisk.path .. "/" .. path, data)
+            return {0}
+        end
+        return self:splitAndWrite(path, data)
+    end
     local disk = self:existsFile(path)
-    if not disk then return {1, errors[1]} end 
-
+    if not disk then return {1, errors[1]} end
     local usedBytes = fs.getSize(disk.path .. "/" .. partitionName)
+    local fileSize = fs.getSize(disk.path .. "/" .. path)
     local capacity = self:getCapacity(partitionName, disk.label)
-    if usedBytes + #data > capacity then return {2, errors[2]} end
-
-    fileUtils.write(disk.path .. "/" .. path, data)
-    return {0}
+    if (usedBytes - fileSize) + #data <= capacity then
+        fileUtils.write(disk.path .. "/" .. path, data)
+        return {0}
+    end
+    fileUtils.delete(disk.path .. "/" .. path)
+    return self:splitAndWrite(path, data)
 end
 
 function VFS:newFile(path)
@@ -123,14 +218,15 @@ function VFS:newFile(path)
 end
 
 function VFS:deleteFile(path)
+    self:deleteChunks(path)
     local disk = self:existsFile(path)
-    if disk then return fileUtils.delete(disk.path .. "/" .. path) end
+    if disk and disk ~= true then return fileUtils.delete(disk.path .. "/" .. path) end
 end
 
 function VFS:deleteDir(path)
     local parts, partitionName, partition = self:parsePath(path)
     if #parts == 1 then error(errors[3] .. partitionName .. "!") end
- 
+
     local success = true
     for _, disk in ipairs(partition) do
         local diskInfo = self.diskManager:getDisk(disk.disk)
@@ -144,35 +240,59 @@ function VFS:deleteDir(path)
 end
 
 function VFS:readFile(path)
+    if self:isChunked(path) then
+        local _, partitionName = self:parsePath(path)
+        local m = self:getManifest()
+        local result = ""
+        for _, chunk in ipairs(m[partitionName][path]) do
+            result = result .. (fileUtils.read(self.diskManager:getDisk(chunk.disk).path .. "/" .. chunk.path) or "")
+        end
+        return result
+    end
     local disk = self:existsFile(path)
     if not disk then return nil end
     return fileUtils.read(disk.path .. "/" .. path)
 end
 
 function VFS:appendFile(path, data)
+    if self:isChunked(path) then
+        local existing = self:readFile(path)
+        self:deleteChunks(path)
+        return self:splitAndWrite(path, existing .. data)
+    end
     local disk = self:existsFile(path)
-    if not disk then return {1, errors[1]} end    
-
+    if not disk then return {1, errors[1]} end
     local usedBytes = fs.getSize(disk.path .. "/" .. path)
     local _, partitionName, _ = self:parsePath(path)
     local capacity = self:getCapacity(partitionName, disk.label)
-
-    if usedBytes + #data > capacity then return {2, errors[2]} end
+    if usedBytes + #data > capacity then
+        local existing = fileUtils.read(disk.path .. "/" .. path)
+        fileUtils.delete(disk.path .. "/" .. path)
+        return self:splitAndWrite(path, existing .. data)
+    end
     fileUtils.append(disk.path .. "/" .. path, data)
-
-    return {0}    
+    return {0}
 end
 
 function VFS:listDir(path)
     local parts, partitionName, partition = self:parsePath(path)
     local results = {}
     local seen = {}
+    local chunkNames = {}
+    local m = self:getManifest()
+    if m[partitionName] then
+        for _, chunks in pairs(m[partitionName]) do
+            for _, chunk in ipairs(chunks) do
+                chunkNames[chunk.path:match("[^/]+$")] = true
+            end
+        end
+    end
     for _, disk in ipairs(partition) do
         local diskInfo = self.diskManager:getDisk(disk.disk)
         local fullPath = diskInfo.path .. "/" .. path
-        if fs.exists(fullPath) then 
+        if fs.exists(fullPath) then
             for _, name in ipairs(fs.list(fullPath)) do
-                if not seen[name] then
+                if not seen[name] and not chunkNames[name] then
                     table.insert(results, name)
                     seen[name] = true
                 end
@@ -195,6 +315,15 @@ function VFS:getUsedBytes(name)
 end
 
 function VFS:getFileSize(path)
+    if self:isChunked(path) then
+        local _, partitionName = self:parsePath(path)
+        local m = self:getManifest()
+        local total = 0
+        for _, chunk in ipairs(m[partitionName][path]) do
+            total = total + fs.getSize(self.diskManager:getDisk(chunk.disk).path .. "/" .. chunk.path)
+        end
+        return total
+    end
     local disk = self:existsFile(path)
     if not disk then return nil end
     return fs.getSize(disk.path .. "/" .. path)

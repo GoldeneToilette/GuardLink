@@ -623,7 +623,8 @@ local function finishInstall()
         starting_balance = panels[2].data.balance,
         nation_trade = panels[2].data.tradeCheck,
         roles = roles,
-        defaultRole = nil
+        defaultRole = nil,
+        credit_score = 100,
     }
     lib.fileUtils.newFile(lib.settings.server.identityPath)
     lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))

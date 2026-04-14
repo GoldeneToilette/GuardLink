@@ -14,6 +14,8 @@ local services = {
     "/GuardLink/server/modules/account.lua",
     "/GuardLink/server/modules/wallet.lua",
     "/GuardLink/server/modules/nation.lua",
+    "/GuardLink/server/modules/debt.lua",
+    "/GuardLink/server/modules/law.lua",
     "/GuardLink/server/modules/uiState.lua",
 }
 

@@ -10,17 +10,25 @@ cmds["view"] = {
         if not values then
             return {str="Error: 'Account not found: " .. name .. "'", type="fail"}
         end
+        local record = values.record or {}
+        local debt = record.debt or {total = 0}
+        local claims = record.claims or {total = 0}
         local output = {
             "\16705Name: \16706" .. values.name,
             "\16705UUID: \16706" .. values.uuid,
             "\16705Created: \16706" .. values.creationDate .. " " .. values.creationTime,
             "\16705Banned: \16706" .. tostring(values.ban.active),
-            "\16705Role: \16706" .. values.role,
-            "\16705Wallets: \16706" .. table.concat(values.wallets or {}, ", ")
+            "\16705Role: \16706" .. (values.role ~= "" and values.role or "none"),
+            "\16705Wallets: \16706" .. table.concat(values.wallets or {}, ", "),
+            "\16705Primary Wallet: \16706".. (values.primaryWallet or "none"),
+            "\16705Credit Score: \16706" .. tostring(values.credit_score or 100),
+            "\16705Debt: \16706" .. tostring(debt.total),
+            "\16705Claims: \16706" .. tostring(claims.total),
+            "\16705Pending Money: \16706" .. tostring(values.pending_money or 0)
         }
         if values.ban.active then
-            table.insert(output, "Duration: " .. values.ban.duration)
-            table.insert(output, "Reason: " .. values.ban.reason)
+            table.insert(output, "\16705Duration: \16706" .. values.ban.duration)
+            table.insert(output, "\16705Reason: \16706" .. values.ban.reason)
         end
         return {str=output, type="info"}
     end

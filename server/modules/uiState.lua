@@ -32,7 +32,7 @@ function uiState.new(framepath, manifest, settings, logger, themes)
     :setPosition(1, 1)
     :setSelectionColor(self.theme.colors.border, self.theme.colors.textprimary)
     
-    self.exitButton = self.uiHelper.newButton(self.mainframe, "X", 51, 1, 1, 1, self.theme.colors.border, self.theme.colors.error)
+    self.exitButton = self.uiHelper.newButton(self.mainframe, "x", 51, 1, 1, 1, self.theme.colors.border, self.theme.colors.error)
     self.exitButton:onClick(function(_, event, button, x, y)
         os.shutdown()
     end)

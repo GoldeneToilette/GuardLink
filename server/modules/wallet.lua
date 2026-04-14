@@ -137,6 +137,17 @@ function walletManager:addMember(name, member, role)
     local accountWallets = accounts:getAccountValue(member, "wallets") or {}
     table.insert(accountWallets, name)
     accounts:setAccountValue(member, "wallets", accountWallets)
+
+    if role == "owner" then
+        local pending = accounts:getAccountValue(member, "pending_money") or 0
+        if pending > 0 then
+            local escrow = self.ctx.services["nation"]:getIdentity().escrow
+            self:transferBalance(escrow, name, pending)
+            accounts:setAccountValue(member, "pending_money", 0)
+            log:info("Released " .. tostring(pending) .. " pending funds to " .. name .. " for " .. member)
+        end
+    end
+
     audit.log("wallets", name, {"MEMBER_ADD",member,role}, self:vfs())
     return 0
 end
@@ -163,6 +174,34 @@ function walletManager:removeMember(name, member)
     return 0
 end
 
+function walletManager:changeMemberRole(name, member, role)
+    if not self:exists(name) then return errors.WALLET_NOT_FOUND end
+    if self:isLocked(name) then return errors.WALLET_LOCKED end
+    if role ~= "owner" and role ~= "associate" then return errors.WALLET_INVALID_ROLE end
+
+    local accounts = self:accounts()
+    if not accounts:exists(member) then return errors.WALLET_ACCOUNT_NOT_FOUND end
+
+    local members = self:getWalletValue(name, "members") or {}
+    if not members[member] then return errors.WALLET_MEMBER_NOT_FOUND end
+
+    members[member] = role
+    self:setWalletValue(name, "members", members)
+
+    if role == "owner" then
+        local pending = accounts:getAccountValue(member, "pending_money") or 0
+        if pending > 0 then
+            local escrow = self.ctx.services["nation"]:getIdentity().escrow
+            self:transferBalance(escrow, name, pending)
+            accounts:setAccountValue(member, "pending_money", 0)
+            log:info("Released " .. tostring(pending) .. " pending funds to " .. name .. " for " .. member)
+        end
+    end
+
+    audit.log("wallets", name, {"MEMBER_ROLE_CHANGE", member, role}, self:vfs())
+    return 0
+end
+
 function walletManager:lockWallet(name, flag)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     self:setWalletValue(name, "locked", flag or true)
@@ -173,6 +212,7 @@ end
 function walletManager:changeBalance(operation, name, value)
     if not self:exists(name) then return errors.WALLET_NOT_FOUND end
     if self:isLocked(name) then return errors.WALLET_LOCKED end
+    if not value or not utils.isInteger(value) then return errors.INVALID_INPUT end
     local wallet = self:getWalletData(name)
     if operation == "set" then
         wallet.balance = value
@@ -227,6 +267,7 @@ local service = {
             list = function(self) return self:listWallets() end,
             add_member = function(self, args) return self:addMember(args.wallet, args.member, args.role) end,
             remove_member = function(self, args) return self:removeMember(args.wallet, args.member) end,
+            change_member_role = function(self, args) return self:changeMemberRole(args.wallet, args.member, args.role) end,
             lock = function(self, args) return self:lockWallet(args.wallet, args.flag) end,
             change_balance = function(self, args) return self:changeBalance(args.op, args.wallet, args.value) end,
             transfer = function(self, args) return self:transferBalance(args.sender, args.receiver, args.value) end,
