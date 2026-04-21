@@ -17,6 +17,17 @@ function VFS.new(diskManager)
     self.config = self.diskManager:getConfig()
     self.criticalWarningShown = false
     self.manifest = nil
+    self.degraded = {}
+    if self.config then
+        for partitionName, entries in pairs(self.config) do
+            for _, entry in ipairs(entries) do
+                if not diskManager:getDisk(entry.disk) then
+                    self.degraded[partitionName] = entry.disk
+                    break
+                end
+            end
+        end
+    end
     return self
 end
 
@@ -109,9 +120,25 @@ function VFS:parsePath(path)
     return parts, partitionName, partition
 end
 
+function VFS:reloadConfig()
+    self.config = self.diskManager:getConfig()
+    self.degraded = {}
+    if self.config then
+        for partitionName, entries in pairs(self.config) do
+            for _, entry in ipairs(entries) do
+                if not self.diskManager:getDisk(entry.disk) then
+                    self.degraded[partitionName] = entry.disk
+                    break
+                end
+            end
+        end
+    end
+end
+
 function VFS:isPartition(partition)
     return self.config[partition] ~= nil
 end
+
 
 function VFS:makeDir(path)
     local _, _, partition = self:parsePath(path)
@@ -339,6 +366,13 @@ function VFS:healthCheck(ctx)
     local crit = health and health.critThreshold or 0.95
     local issues = {}
 
+    for partitionName, missingDisk in pairs(self.degraded) do
+        local msg = "DEGRADED: partition '" .. partitionName .. "' missing disk '" .. missingDisk .. "'"
+        log:error(msg)
+        table.insert(issues, {partition = partitionName, level = "degraded"})
+        ctx:execute("ui.popup", {title = "Disk Degraded", message = msg, type = "error", canClose = true})
+    end
+
     for partitionName, _ in pairs(self.config) do
         local capacity = self:getTotalCapacity(partitionName)
         local used = self:getUsedBytes(partitionName)
@@ -396,6 +430,7 @@ local service = {
             get_size = function(self, args) return self:getUsedBytes(args) end,
             get_file_size = function(self, args) return self:getFileSize(args) end,
             health_check = function(self) return self:healthCheck(self.ctx) end,
+            reload_config = function(self) return self:reloadConfig() end,
         }
     }
 }

@@ -230,6 +230,25 @@ function walletManager:changeBalance(operation, name, value)
     return 0
 end
 
+function walletManager:getWalletEntityType(walletName)
+    local identity = self.ctx.services["nation"]:getIdentity()
+    if walletName == identity.treasury or walletName == identity.escrow then
+        return "government"
+    end
+    return "account"
+end
+
+function walletManager:getTransferCap(entityType)
+    local caps = self.ctx.configs["settings"].wallets and self.ctx.configs["settings"].wallets.transferCaps
+    if caps and caps[entityType] then return caps[entityType] end
+    return math.huge
+end
+
+function walletManager:getTransferTax()
+    local walletSettings = self.ctx.configs["settings"].wallets
+    return walletSettings and walletSettings.transferTax or 0
+end
+
 function walletManager:transferBalance(sender, receiver, value)
     if not value or value <= 0 or not utils.isInteger(value) then
         return errors.TRANSACTION_INVALID_NUMBER
@@ -238,15 +257,28 @@ function walletManager:transferBalance(sender, receiver, value)
     if not self:exists(receiver) then return errors.TRANSACTION_UNKNOWN_RECEIVER end
     if sender == receiver then return errors.TRANSACTION_TRANSFER_TO_SELF end
 
-    local senderBalance = self:getWalletValue(sender, "balance")
-    if senderBalance < value then return errors.INSUFFICIENT_FUNDS end
+    local entityType = self:getWalletEntityType(sender)
+    local cap = self:getTransferCap(entityType)
+    if value > cap then return errors.TRANSFER_LIMIT_EXCEEDED end
 
-    local a = self:changeBalance("subtract", sender, value)
-    if a ~= 0 then return a end
-    local b = self:changeBalance("add", receiver, value)
-    if b ~= 0 then return b end
-    audit.log("wallets", sender, {"TRANSFER",sender,receiver,value}, self:vfs())
-    audit.log("wallets", receiver, {"TRANSFER",sender,receiver,value}, self:vfs())
+    local taxRate = self:getTransferTax()
+    local tax = taxRate > 0 and math.floor(value * taxRate) or 0
+
+    local senderBalance = self:getWalletValue(sender, "balance")
+    if senderBalance < value + tax then return errors.INSUFFICIENT_FUNDS end
+
+    self:changeBalance("subtract", sender, value)
+    self:changeBalance("add", receiver, value)
+
+    if tax > 0 then
+        local treasury = self.ctx.services["nation"]:getIdentity().treasury
+        self:changeBalance("subtract", sender, tax)
+        self:changeBalance("add", treasury, tax)
+        audit.log("wallets", sender, {"TAX", tostring(tax)}, self:vfs())
+    end
+
+    audit.log("wallets", sender, {"TRANSFER", sender, receiver, value}, self:vfs())
+    audit.log("wallets", receiver, {"TRANSFER", sender, receiver, value}, self:vfs())
     return 0
 end
 
@@ -273,7 +305,9 @@ local service = {
             transfer = function(self, args) return self:transferBalance(args.sender, args.receiver, args.value) end,
             get = function(self, args) return self:getWalletData(args.wallet) end,
             get_value = function(self, args) return self:getWalletValue(args.wallet, args.key) end,
-            is_locked = function(self, args) return self:isLocked(args.wallet) end
+            is_locked = function(self, args) return self:isLocked(args.wallet) end,
+            get_transfer_tax = function(self) return self:getTransferTax() end,
+            get_transfer_cap = function(self, args) return self:getTransferCap(args.entity_type) end
         }
     }
 }

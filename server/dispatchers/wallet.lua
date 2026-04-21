@@ -128,7 +128,6 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         return 0
     end
 
-    -- add creator as owner and apply starting balance
     wallets:addMember(name, client.account, "owner")
     local startingBalance = tonumber(ctx.services["nation"]:getIdentity().starting_balance) or 0
     if startingBalance > 0 then
@@ -306,6 +305,22 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
         action = "audit",
         status = "success",
         data = entries
+    }, client.aesKey, false, id)
+    session:send(client.channel, msg)
+    return 0
+end
+
+function handlers.get_transfer_info(msg, client, id, ctx, fn, logger)
+    if not client then return 0 end
+    local session = ctx.services["network_session"]
+    local wallets = ctx.services["wallets"]
+    local entityType = msg.payload.entity_type or "account"
+    local msg = message.create("wallet", {
+        action = "get_transfer_info", status = "success",
+        data = {
+            tax = wallets:getTransferTax(),
+            cap = wallets:getTransferCap(entityType)
+        }
     }, client.aesKey, false, id)
     session:send(client.channel, msg)
     return 0

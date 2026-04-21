@@ -83,7 +83,7 @@ function debt:saveEntityRecord(entity, record)
     end
 end
 
-function debt:add(debtor, creditor, amount, reason, sweep)
+function debt:add(debtor, creditor, amount, reason, sweep, grace)
     local a, b = self:validateEntity(debtor), self:validateEntity(creditor)
     if a ~= 0 then return a elseif b ~= 0 then return b end
     if not amount or amount <= 0 then return errors.INVALID_AMOUNT end
@@ -99,7 +99,7 @@ function debt:add(debtor, creditor, amount, reason, sweep)
         reason      = reason or "unknown_reason",
         since       = os.epoch("utc"),
         sweep       = sweep or false,
-        persistence = 0
+        persistence = grace and -math.abs(grace) or 0
     }))
 
     local debtorRecord = self:getEntityRecord(debtor)
@@ -263,6 +263,40 @@ function debt:transferReceivable(newCreditor, debtID)
     return 0
 end
 
+function debt:settle(debtID, amount)
+    local entry = self:get(debtID)
+    if type(entry) ~= "table" then return entry end
+    if not amount or amount <= 0 then return errors.INVALID_AMOUNT end
+    if amount > entry.amount then return errors.INVALID_AMOUNT end
+
+    local v = self:nation():getEthicValues()
+    local reward = math.floor(self.rules.server.formulas.credit_reward(v.commerce, v.stability) / 2)
+
+    if amount == entry.amount then
+        self:remove(debtID)
+    else
+        entry.amount = entry.amount - amount
+        self:vfs():writeFile("debts/" .. debtID .. ".json", textutils.serializeJSON(entry))
+
+        local debtorRecord = self:getEntityRecord(entry.debtor)
+        debtorRecord.debt.total = debtorRecord.debt.total - amount
+        self:saveEntityRecord(entry.debtor, debtorRecord)
+
+        local creditorRecord = self:getEntityRecord(entry.creditor)
+        creditorRecord.claims.total = creditorRecord.claims.total - amount
+        self:saveEntityRecord(entry.creditor, creditorRecord)
+    end
+
+    if entry.debtor.type == "account" then
+        local score = self:accounts():getAccountValue(entry.debtor.name, "credit_score") or 100
+        self:accounts():setAccountValue(entry.debtor.name, "credit_score", score + reward)
+        audit.log("accounts", entry.debtor.name, {"DEBT_SETTLE", tostring(amount)}, self:vfs())
+    end
+
+    log:debug("Debt " .. debtID .. " settled for " .. tostring(amount))
+    return 0
+end
+
 function debt:resetPersistence(debtID)
     local entry = self:get(debtID)
     if type(entry) ~= "table" then return entry end
@@ -316,6 +350,12 @@ end
 function debt:collect(debtID)
     local entry = self:get(debtID)
     if type(entry) ~= "table" then return entry end
+
+    if entry.persistence < 0 then
+        entry.persistence = entry.persistence + 1
+        self:vfs():writeFile("debts/" .. debtID .. ".json", textutils.serializeJSON(entry))
+        return 0
+    end
 
     local wallets = self:wallets()
     local accounts = self:accounts()
@@ -422,7 +462,7 @@ local service = {
     end,
     runtime = nil,
     tasks = function(self)
-        local interval = self.ctx.configs["rules"].server.debt and self.ctx.configs["rules"].server.debt.sweepInterval or 7200
+        local interval = self.ctx.configs["settings"].debt and self.ctx.configs["settings"].debt.sweepInterval or 7200
         return {
             debt_sweep = {function(self) self:sweep() end, interval}
         }
@@ -431,13 +471,14 @@ local service = {
     api = {
         ["debt"] = {
             list = function(self) return self:list() end,
-            add = function(self, args) return self:add(args.debtor, args.creditor, args.amount, args.reason, args.sweep) end,
+            add = function(self, args) return self:add(args.debtor, args.creditor, args.amount, args.reason, args.sweep, args.grace) end,
             get = function(self, args) return self:get(args.id) end,
             exists = function(self, args) return self:exists(args.id) end,
             remove = function(self, args) return self:remove(args.id) end,
             set = function(self, args) return self:set(args.id, args.amount) end,
             transfer_debt = function(self, args) return self:transferDebt(args.debtor, args.id) end,
             transfer_receivable = function(self, args) return self:transferReceivable(args.creditor, args.id) end,
+            settle = function(self, args) return self:settle(args.id, args.amount) end,
             reset_persistence = function(self, args) return self:resetPersistence(args.id) end,
             collect = function(self, args) return self:collect(args.id) end,
             sweep = function(self) return self:sweep() end,

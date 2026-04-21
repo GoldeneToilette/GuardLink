@@ -587,4 +587,22 @@ cmds["size"] = {
     end
 }
 
+cmds["fsck"] = {
+    desc = "Run partition integrity check against ruleset layout: fsck [--force]",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local force = args[1] == "--force"
+        local layout = kernel:execute("kernel.get_config", "rules").server.partitions
+        if not layout then
+            return {str="Could not load partition layout from ruleset", type="fail"}
+        end
+        local result = kernel:execute("disk.integrity", {layout = layout, force = force})
+        if type(result) == "table" and result.client then
+            return {str="Error: " .. result.log, type="fail"}
+        end
+        kernel:execute("vfs.reload_config")
+        return {str="Integrity check complete. Partition config updated.", type="success"}
+    end
+}
+
 return cmds

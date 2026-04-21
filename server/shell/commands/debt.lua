@@ -138,6 +138,18 @@ cmds["transfer"] = {
     end
 }
 
+cmds["settle"] = {
+    desc = "Settle a debt out of system: debt settle <debtID> <amount>",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local id, amount = args[2], tonumber(args[3])
+        if not id or not amount then return {str="Usage: debt settle <debtID> <amount>", type="fail"} end
+        local result = kernel:execute("debt.settle", {id=id, amount=amount})
+        if result ~= 0 then return {str="Error: '" .. result.log .. "'", type="fail"} end
+        return {str="Debt " .. id .. " settled for " .. tostring(amount), type="success"}
+    end
+}
+
 cmds["reset"] = {
     desc = "Reset persistence on a debt: debt reset <debtID>",
     func = function(args, ctx)

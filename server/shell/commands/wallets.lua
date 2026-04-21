@@ -148,6 +148,20 @@ cmds["lock"] = {
     end
 }
 
+cmds["policy"] = {
+    desc = "Show transfer tax and caps: wallets policy [account|company|government]",
+    func = function(args, ctx)
+        local kernel = ctx.kernel
+        local entityType = args[2] or "account"
+        local tax = kernel:execute("wallets.get_transfer_tax")
+        local cap = kernel:execute("wallets.get_transfer_cap", {entity_type = entityType})
+        return {str={
+            "\16705Transfer Tax: \16706" .. tostring(tax * 100) .. "%",
+            "\16705Transfer Cap (" .. entityType .. "): \16706" .. (cap >= math.huge and "unlimited" or tostring(cap))
+        }, type="info"}
+    end
+}
+
 cmds["help"] = {
     func = function(args, ctx)
         local output = {"Wallet commands -------------------------"}

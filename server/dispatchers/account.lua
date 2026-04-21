@@ -32,6 +32,25 @@ function handlers.login(msg, client, id, ctx, fn, logger)
 
     local auth = accounts:authenticateUser(username, password)
     if auth == 0 then
+        if msg.payload.publicKey then
+            local keyData = aes.Cipher:new(nil, keyStr, msg.payload.publicKey.iv):decrypt(msg.payload.publicKey.cipher)
+            local pubKey = textutils.unserialize(keyData)
+            if pubKey then
+                local keys = accounts:getAccountValue(username, "publicKeys") or {}
+                local known = false
+                for _, k in ipairs(keys) do
+                    if k.shared == pubKey.shared and k.public == pubKey.public then
+                        k.timestamp = os.epoch("utc")
+                        known = true
+                        break
+                    end
+                end
+                if not known then
+                    keys[#keys + 1] = { shared = pubKey.shared, public = pubKey.public, timestamp = os.epoch("utc") }
+                end
+                accounts:setAccountValue(username, "publicKeys", keys)
+            end
+        end
         local client = clientManager:registerClient(username, keyStr)
         if not client.throttle then return client end
         local msg = message.create("account", {

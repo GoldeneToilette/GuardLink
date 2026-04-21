@@ -32,8 +32,12 @@ function eventSystem.emit(name, payload)
         error("Cant emit event '" .. name .. "': Doesnt exist!")
     end
     for _, callback in ipairs(event.callbacks) do
-        callback(payload)
+        local veto = callback(payload)
+        if veto and veto.vetoed then
+            return veto
+        end
     end
+    return nil
 end
 
 return eventSystem

@@ -1513,6 +1513,7 @@ api.active = true
 api.clientID = nil
 api.callbacks = {}
 api.keyStr = ""
+api.clientPublicKey = nil
 api.MASTER_PUBLIC_KEY = {
     shared = "203382972103938782142578567026547595413348066767490198753042107660316648686327",
     public = "799166525981580211110444390734603679907",
@@ -1582,10 +1583,25 @@ function api.send(header, payload, callback, limit, timeout)
 end
 
 -- needs to be called before listen() and before sending any messages
+local KEY_PATH = "guardlink_keys.json"
+
 function api.init()
     api.modem = peripheral.find("modem") or error("No modem found!")
     if not api.modem.isWireless() then error("Modem is not wireless!") end
     api.modem.open(api.discovery)
+
+    if fs.exists(KEY_PATH) then
+        local f = fs.open(KEY_PATH, "r")
+        local keys = textutils.unserializeJSON(f.readAll())
+        f.close()
+        api.clientPublicKey = keys.public
+    else
+        local pub, _ = generateKeyPair()
+        api.clientPublicKey = pub
+        local f = fs.open(KEY_PATH, "w")
+        f.write(textutils.serializeJSON({ public = pub }))
+        f.close()
+    end
 end
 
 -- Broadcasts on the discovery channel and collects server names & their public keys inside api.nations
@@ -1631,6 +1647,10 @@ local function sendCredentials(nation, name, password, action, id, inviteCode)
         local iv3 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
         message.message.payload.invite_code = {cipher = Cipher:new(nil, keyStr, iv3):encrypt(inviteCode), iv = iv3}
 	end
+    if api.clientPublicKey then
+        local iv4 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
+        message.message.payload.publicKey = {cipher = Cipher:new(nil, keyStr, iv4):encrypt(textutils.serialize(api.clientPublicKey)), iv = iv4}
+    end
     return message, keyStr
 end
 

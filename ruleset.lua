@@ -37,6 +37,14 @@ data.server.health = {
 data.server.debt = {
     sweepInterval = 7200 -- seconds
 }
+data.server.wallets = {
+    transferTax = 0.0, -- in %
+    transferCaps = {
+        account = 10000,
+        company = 100000,
+        government = 1000000000,
+    }
+}
 data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "default"
 data.server.debug = false
@@ -47,12 +55,13 @@ data.server.settingsPath = "/GuardLink/server/config/settings.conf"
 data.server.manifestPath = "/GuardLink/server/config/manifest.json"
 data.server.identityPath = "/GuardLink/server/config/identity.conf"
 data.server.rulesPath = "/GuardLink/server/config/rules.lua"
+data.server.lawsPath = "/GuardLink/server/config/laws.lua"
 data.server.partitions = {
         {name = "accounts", percentage = 10},
         {name = "logs", percentage = 50},
-        {name = "cache", percentage = 20},
         {name = "wallets", percentage = 10},
-        {name = "debts", percentage = 10}
+        {name = "debts", percentage = 10},
+        {name = "comms", percentage = 20}
 }
 -- SERVER --------------------------------------------------------------------------
 
@@ -79,7 +88,7 @@ data.rules.ethics = {
         values = {
             force = 1.8,
             stability = 1.2,
-            commerce = 1.0,
+            commerce = 0.9,
             autonomy = 0.6,
             consent = 0.5
         }
@@ -120,10 +129,10 @@ data.rules.ethics = {
 }
 data.server.formulas = {
     roleLimit = function(stability)
-        return math.floor(5 * stability)
+        return math.floor(6 * stability)
     end,
     lawLimit = function(stability, force)
-        return math.floor(35 * (0.8 * stability + 0.2 * force))
+        return math.floor(45 * (0.8 * stability + 0.2 * force))
     end,
     exchangeRate = function(nationA, nationB)
         local base = 1
@@ -187,6 +196,18 @@ data.server.permissions = {
     "nation.set_tag",
     "nation.set_currency",
     "nation.set_starting_balance",
+    -- law
+    "law.create",
+    "law.delete",
+    "law.toggle",
+    "law.manage_categories",
+    "law.manage_violations",
+    -- debt
+    "debt.add",
+    "debt.remove",
+    "debt.settle",
+    "debt.transfer",
+    "debt.sweep",
     -- kernel
     "kernel.stop",
     "kernel.pause_task",

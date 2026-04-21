@@ -625,6 +625,7 @@ local function finishInstall()
         roles = roles,
         defaultRole = nil,
         credit_score = 100,
+        violations = {}
     }
     lib.fileUtils.newFile(lib.settings.server.identityPath)
     lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))

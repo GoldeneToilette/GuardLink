@@ -247,6 +247,158 @@ function diskManager:partition(partitions)
     return fileUtils.write(self.configPath, json)
 end
 
+function diskManager:getPartitionUsedBytes(partitionName)
+    local config = self:getConfig() or {}
+    local entries = config[partitionName]
+    if not entries then return 0 end
+    local total = 0
+    for _, e in ipairs(entries) do
+        local diskInfo = self:getDisk(e.disk)
+        if diskInfo then
+            local dirPath = diskInfo.path .. "/" .. partitionName
+            if fs.exists(dirPath) then
+                total = total + fs.getSize(dirPath)
+            end
+        end
+    end
+    return total
+end
+
+function diskManager:integrity(newLayout, force)
+    local found = {}
+    for label, info in pairs(self.disks) do
+        if fs.exists(info.path) then
+            for _, entry in ipairs(fs.list(info.path)) do
+                if entry ~= ".cache" and fs.isDir(info.path .. "/" .. entry) then
+                    found[entry] = (found[entry] or 0) + fs.getSize(info.path .. "/" .. entry)
+                end
+            end
+        end
+    end
+
+    local newLayoutMap = {}
+    for _, p in ipairs(newLayout) do newLayoutMap[p.name] = p end
+
+    for partitionName, _ in pairs(found) do
+        if not newLayoutMap[partitionName] and not force then
+            return {client = "INTERNAL_ERROR", log = "Partition '" .. partitionName .. "' exists on disk but not in new layout. Use force=true to drop it."}
+        end
+    end
+
+    local allDisks = {}
+    for label, info in pairs(self.disks) do
+        table.insert(allDisks, {label = label, capacity = info.capacity or 125000, path = info.path})
+    end
+    local totalCapacity = 0
+    for _, d in ipairs(allDisks) do totalCapacity = totalCapacity + d.capacity end
+
+    local totalRequired = 0
+    for _, p in ipairs(newLayout) do
+        totalRequired = totalRequired + math.ceil(totalCapacity * p.percentage / 100)
+    end
+    if totalRequired > totalCapacity then
+        return {client = "INTERNAL_ERROR", log = "Not enough disk space: need " .. totalRequired .. " bytes, have " .. totalCapacity}
+    end
+
+    for _, p in ipairs(newLayout) do
+        local newBytes = math.ceil(totalCapacity * p.percentage / 100)
+        local usedBytes = found[p.name] or 0
+        if usedBytes > newBytes then
+            return {client = "INTERNAL_ERROR", log = "Partition '" .. p.name .. "' has " .. usedBytes .. " bytes of data but new layout only allocates " .. newBytes}
+        end
+    end
+
+    local newConfig = {}
+    local diskIndex = 1
+    local diskRemaining = allDisks[diskIndex].capacity
+
+    for _, p in ipairs(newLayout) do
+        local bytesNeeded = math.ceil(totalCapacity * p.percentage / 100)
+        newConfig[p.name] = {}
+        local remaining = bytesNeeded
+
+        while remaining > 0 do
+            local allocated = math.min(remaining, diskRemaining)
+            local pct = math.floor(allocated / allDisks[diskIndex].capacity * 100)
+            table.insert(newConfig[p.name], {
+                disk = allDisks[diskIndex].label,
+                bytes = allocated,
+                percentage = pct
+            })
+            fs.makeDir(allDisks[diskIndex].path .. "/" .. p.name)
+            remaining = remaining - allocated
+            diskRemaining = diskRemaining - allocated
+            if diskRemaining <= 0 then
+                diskIndex = diskIndex + 1
+                if diskIndex <= #allDisks then
+                    diskRemaining = allDisks[diskIndex].capacity
+                end
+            end
+        end
+    end
+
+    fileUtils.write(self.configPath, textutils.serializeJSON(newConfig))
+    return 0
+end
+
+function diskManager:migrate(newLayout)
+    local allDisks = {}
+    for label, info in pairs(self.disks) do
+        table.insert(allDisks, {label = label, capacity = info.capacity or 125000, path = info.path})
+    end
+
+    local totalCapacity = 0
+    for _, d in ipairs(allDisks) do totalCapacity = totalCapacity + d.capacity end
+
+    local totalRequired = 0
+    for _, p in ipairs(newLayout) do
+        totalRequired = totalRequired + math.ceil(totalCapacity * p.percentage / 100)
+    end
+    if totalRequired > totalCapacity then
+        error("Not enough disk space: need " .. totalRequired .. " bytes, have " .. totalCapacity)
+    end
+
+    for _, p in ipairs(newLayout) do
+        local newBytes = math.ceil(totalCapacity * p.percentage / 100)
+        local usedBytes = self:getPartitionUsedBytes(p.name)
+        if usedBytes > newBytes then
+            error("Partition '" .. p.name .. "' has " .. usedBytes .. " bytes of data but new layout only allocates " .. newBytes)
+        end
+    end
+
+    local newConfig = {}
+    local diskIndex = 1
+    local diskRemaining = allDisks[diskIndex].capacity
+
+    for _, p in ipairs(newLayout) do
+        local bytesNeeded = math.ceil(totalCapacity * p.percentage / 100)
+        newConfig[p.name] = {}
+        local remaining = bytesNeeded
+
+        while remaining > 0 do
+            local allocated = math.min(remaining, diskRemaining)
+            local pct = math.floor(allocated / allDisks[diskIndex].capacity * 100)
+            table.insert(newConfig[p.name], {
+                disk       = allDisks[diskIndex].label,
+                bytes      = allocated,
+                percentage = pct
+            })
+            fs.makeDir(allDisks[diskIndex].path .. "/" .. p.name)
+            remaining     = remaining - allocated
+            diskRemaining = diskRemaining - allocated
+            if diskRemaining <= 0 then
+                diskIndex = diskIndex + 1
+                if diskIndex <= #allDisks then
+                    diskRemaining = allDisks[diskIndex].capacity
+                end
+            end
+        end
+    end
+
+    fileUtils.write(self.configPath, textutils.serializeJSON(newConfig))
+    os.reboot()
+end
+
 local service = {
     name = "disk_manager",
     deps = {},
@@ -280,7 +432,10 @@ local service = {
                 return true
             end,
             count = function(self) return self:diskCount() end,
-            get_labels = function(self) return self:getDiskLabels() end
+            get_labels = function(self) return self:getDiskLabels() end,
+            migrate = function(self, args) return self:migrate(args.layout) end,
+            integrity = function(self, args) return self:integrity(args.layout, args.force) end,
+            partition_used = function(self, args) return self:getPartitionUsedBytes(args.partition) end
         }
     }
 }

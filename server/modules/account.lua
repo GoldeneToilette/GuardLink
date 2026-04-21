@@ -43,11 +43,13 @@ local accountTemplate = {
     wallets = {},
     record = {
         debt = { total = 0, entries = {} },
-        claims = { total = 0, entries = {} }
+        claims = { total = 0, entries = {} },
+        violations = {}
     },
     credit_score = 100,
     pending_money = 0,
     primaryWallet = nil,
+    publicKeys = {},
 }
 
 function accountManager:vfs()

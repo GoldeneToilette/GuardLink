@@ -121,7 +121,11 @@ local errors = {
     },
     INSUFFICIENT_FUNDS = {
         client = "INSUFFICIENT_FUNDS",
-        log = "Failed to transfer balance: Insufficient funds!"             
+        log = "Failed to transfer balance: Insufficient funds!"
+    },
+    TRANSFER_LIMIT_EXCEEDED = {
+        client = "TRANSFER_LIMIT_EXCEEDED",
+        log = "Failed to transfer balance: Amount exceeds transfer limit!"
     },
     WALLET_LIMIT_REACHED = {
         client = "WALLET_LIMIT_REACHED",
@@ -250,7 +254,51 @@ local errors = {
     DEBT_NOT_FOUND = {
         client = "DEBT_NOT_FOUND",
         log = "Debt record not found"
-    }
+    },
+    CATEGORY_EXISTS = {
+        client = "INTERNAL_ERROR",
+        log = "Category already exists"
+    },
+    UNKNOWN_CATEGORY = {
+        client = "INTERNAL_ERROR",
+        log = "Category does not exist"
+    },
+    UNRESOLVED_DEPENDENCIES = {
+        client = "INTERNAL_ERROR",
+        log = "Failed to do action: unresolved dependencies"
+    },
+    LAW_NOT_FOUND = {
+        client = "LAW_NOT_FOUND",
+        log = "Law not found"
+    },
+    LAW_EXISTS = {
+        client = "LAW_EXISTS",
+        log = "A law with that name already exists"
+    },
+    LAW_LIMIT_REACHED = {
+        client = "LAW_LIMIT_REACHED",
+        log = "Law limit reached for this nation"
+    },
+    INVALID_LAW_TYPE = {
+        client = "INVALID_LAW_TYPE",
+        log = "Invalid law type"
+    },
+    INVALID_TARGET = {
+        client = "INVALID_TARGET",
+        log = "Invalid or missing target"
+    },
+    INVALID_EFFECT = {
+        client = "INVALID_EFFECT",
+        log = "Invalid or missing effect"
+    },
+    INVALID_FORMAT = {
+        client = "INVALID_FORMAT",
+        log = "Invalid format"
+    },
+    DEGRADED_DISK = {
+        client = "INTERNAL_ERROR",
+        log = "Partition is degraded: missing disk"
+    },
 }
 
 return errors
