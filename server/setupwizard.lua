@@ -420,6 +420,13 @@ panels[3] = {
             data.debug = value
         end)
 
+        ui.cert_label = lib.uiHelper.newLabel(frame, "Trust Certificate:", 3, 11, 18, 1, colors.lightGray, colors.gray)
+        ui.cert_check = frame:addCheckbox():setPosition(21, 11):setBackground(colors.gray):setForeground(colors.white)
+        :setValue(data.enableCert)
+        :onChange(function(s, event, value)
+            data.enableCert = value
+        end)
+        ui.cert_note = lib.uiHelper.newLabel(frame, "\24 contacts external cloudflare worker", 3, 12, 19, 2, colors.lightGray, colors.gray)
 
         diskManager:scan()
         ui.pane2 = lib.uiHelper.newPane(frame, 24, 2, 27, 13, colors.lightGray)
@@ -590,6 +597,7 @@ local function finishInstall()
         theme = panels[3].data.theme,
         debug = panels[3].data.debug
     }
+    settings.session.enableCert = panels[3].data.enableCert or false
     lib.fileUtils.newFile(lib.settings.server.settingsPath)
     lib.fileUtils.write(lib.settings.server.settingsPath, textutils.serialize(settings))
     print("Settings saved under " .. lib.settings.server.settingsPath)

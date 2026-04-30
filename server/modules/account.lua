@@ -50,6 +50,15 @@ local accountTemplate = {
     pending_money = 0,
     primaryWallet = nil,
     publicKeys = {},
+    socials = {
+        pending = {
+            inc = {},
+            out = {}
+        },
+        friends = {},
+        blocked = {},
+        allowStrangerDM = true,
+    },
 }
 
 function accountManager:vfs()

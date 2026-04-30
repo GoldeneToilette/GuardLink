@@ -15,7 +15,8 @@ local data = { rules = {}, server = {}}
 -- SERVER --------------------------------------------------------------------------
 data.server.session = {
     discoveryChannel = 65535, 
-    keyPath = "/GuardLink/server/"
+    keyPath = "/GuardLink/server/",
+    enableCert = false
 }
 data.server.clients = {
     maxClients = 120,

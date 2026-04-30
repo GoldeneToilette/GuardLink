@@ -151,16 +151,24 @@ function NetworkSession:initKeys()
     addEntropy(self.privateKey.private .. self.publicKey.public)
 
     if not fs.exists(certPath) then
-        log:info("Certificate not found, requesting from CA...")
-        self:fetchCertificate(certPath)        
+        if self.settings.session.enableCert then
+            log:info("Certificate not found, requesting from CA...")
+            self:fetchCertificate(certPath)             
+        else
+            log:info("Certificate disabled, running without.")
+        end
     else
         local certData = textutils.unserializeJSON(fileUtils.read(certPath))
         if certData then
             self.certificate = certData
             log:debug("Certificate loaded from " .. certPath)            
         else
-            log:error("Certificate file is malformed, re-requesting...")
-            self:fetchCertificate(certPath)
+            if self.settings.session.enableCert then
+                log:error("Certificate file is malformed, re-requesting...")
+                self:fetchCertificate(certPath)
+            else
+                log:error("Certificate file is malformed, ignoring.")
+            end
         end
     end
 end
