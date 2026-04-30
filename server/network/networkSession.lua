@@ -37,8 +37,9 @@ function NetworkSession:shutdown(reason, code)
 end
 
 function NetworkSession:initModem()
-    self.modem = peripheral.find("modem") or log:fatal("Failed to launch server: No modems found!")
-    if not self.modem.isWireless() then log:fatal("Failed to launch server: Modem is not wireless!") end
+    self.modem = peripheral.find("modem", function(name, modem)
+        return modem.isWireless()
+    end) or log:fatal("Failed to launch server: No wireless modem found!")
     log:debug("Modem found: " .. peripheral.getName(self.modem))
 end
 
