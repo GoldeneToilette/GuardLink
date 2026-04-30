@@ -27,7 +27,14 @@ local fileUrl = "https://raw.githubusercontent.com/GoldeneToilette/GuardLink/" .
 
 local lib = {}
 for k,v in pairs(dep) do
-  lib[k] = load(http.get(v).readAll(), k, "t", env)()
+    local r = http.get(v)
+    if not r then error("Failed to fetch: " .. k .. " from " .. v) end
+    local content = r.readAll()
+    local chunk, err = load(content, k, "t", env)
+    if not chunk then error("Failed to load " .. k .. ": " .. tostring(err)) end
+    local result = chunk()
+    if not result then error("Module returned nil: " .. k) end
+    lib[k] = result
 end
 
 local diskManager = lib.disk.init(nil, lib.fileUtils) 
