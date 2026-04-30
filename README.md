@@ -28,7 +28,7 @@ For updates & questions: https://discord.gg/DXy4MNQPV2
 ### Client-API
 The client API allows you to build your own client applications that connect to a GuardLink server. Some of the networking is handled automatically under the hood.
 1. Run `pastebin get VZADGWLr <path>` or copy the [module](https://github.com/GoldeneToilette/GuardLink/blob/main/client_api.lua) manually
-2. Follow the [wiki](../../wiki)
+2. Follow the [wiki](https://github.com/GoldeneToilette/GuardLink/wiki/Client-API)
 
 ## Libraries
 

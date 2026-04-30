@@ -32,7 +32,14 @@ parallel.waitForAll(
 
 ---
 
-`broadcast(timeout, callback)` - Broadcasts on the discovery channel and collects responding servers into `api.nations`. The callback fires once per responding server with the raw response, and `timeout` controls how long to listen for responses (in seconds).
+`broadcast(timeout, callback)` - Broadcasts on the discovery channel and collects responding servers into `api.nations`. The callback fires once per responding server, and `timeout` controls how long to listen for responses (in seconds).
+
+Each response contains:
+- `payload.name` - the nation name
+- `payload.key.shared` and `payload.key.public` - the server's public key
+- `payload.certificate` - present if the server has a trust certificate
+
+Discovered servers are stored in `api.nations` keyed by name, each with `shared`, `public`, and `trusted` fields. If a server is not trusted it is up to the user/developer if they want to connect to the server anyways.
 
 ---
 
