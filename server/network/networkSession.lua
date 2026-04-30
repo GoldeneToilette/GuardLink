@@ -226,8 +226,6 @@ function NetworkSession:start()
         function()
             local startTime = os.clock()
             log:info("Launching Server with discovery channel: " .. self.discovery)
-            self:initModem()
-            self:initKeys()
             self:open(self.discovery)
             local code = self:listen()
             log:info("Server shut down! Reason: " .. (self.shutdownReason or "unknown"))
@@ -247,7 +245,10 @@ local service = {
     name = "network_session",
     deps = {"request_queue"},
     init = function(ctx)
-        return NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"], ctx.configs["identity"])
+        local instance = NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"], ctx.configs["identity"])
+        instance:initModem()
+        instance:initKeys()
+        return instance
     end,
     runtime = function(self) self:start() end,
     tasks = nil,
