@@ -552,13 +552,17 @@ local function finishInstall()
     term.setCursorPos(1,1)
     wipePC()
     print("Getting latest release...")
-    local raw = load(http.get(fileUrl).readAll(), "guardlink_server", "t", _G)()
+    local r = http.get(fileUrl)
+    if not r then error("Failed to fetch release package") end
+    local raw = r.readAll()
     local marker = "%-%-%[%[__BLOB_START__%]%]%-%-"
     local splitStart, splitEnd = raw:find(marker)
-    assert(splitStart, "Blob marker not found!")    
+    assert(splitStart, "Blob marker not found!")
     local luaPart = raw:sub(1, splitStart - 1)
     local blob = raw:sub(splitEnd + 1)
-    local package = load(luaPart)()
+    local chunk, err = load(luaPart, "guardlink_server", "t", _G)
+    if not chunk then error("Failed to load release package: " .. tostring(err)) end
+    local package = chunk()
     local indexed = {}
     for k,v in pairs(package.files) do
         indexed[v.index + 1] = {info = v, path = k}
@@ -576,10 +580,8 @@ local function finishInstall()
             if v.compression == false then
                 f.write(v.str)
             else
-                local startPos = pos
-                local endPos = pos + v.length - 1
-                f.write(blob:sub(startPos, endPos))
-                pos = endPos + 1
+                f.write(blob:sub(pos + 1, pos + v.length))
+                pos = pos + v.length
             end
             f.close()
             print("Created file: " .. k)
@@ -645,7 +647,7 @@ local function finishInstall()
     lib.fileUtils.newFile(lib.settings.server.identityPath)
     lib.fileUtils.write(lib.settings.server.identityPath, textutils.serialize(nation))
 
-    local rulesRaw = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/settings.lua").readAll()
+    local rulesRaw = http.get("https://raw.githubusercontent.com/GoldeneToilette/GuardLink/main/ruleset.lua").readAll()
     lib.fileUtils.newFile(lib.settings.server.rulesPath)
     lib.fileUtils.write(lib.settings.server.rulesPath, rulesRaw)
     print("Rules saved under " .. lib.settings.server.rulesPath)
