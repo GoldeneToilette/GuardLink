@@ -55,7 +55,7 @@ function dispatcher:register(action, func)
     self.handlers[action] = func
 end
 
-function dispatcher:dispatch(msg, client, id)
+function dispatcher:dispatch(msg, client, id, sender)
     if not msg or not msg.header or not self.handlers[msg.header] then
             log:debug("Failed to dispatch: " .. errors.UNKNOWN_DISPATCHER.log)
             return errors.UNKNOWN_DISPATCHER 
@@ -65,7 +65,7 @@ function dispatcher:dispatch(msg, client, id)
         return errors.MISSING_PAYLOAD 
     end
     if self.callbacks[id] then
-        local ok, result = pcall(self.callbacks[id], msg, client, id, self.ctx, self.addCallback, log)
+        local ok, result = pcall(self.callbacks[id], msg, client, id, self.ctx, self.addCallback, log, sender)
         self.callbacks[id] = nil
         if not ok then 
             log:debug("Failed to dispatch: " .. errors.MALFORMED_MESSAGE.log .. ":\n" .. textutils.serialize(msg))
@@ -73,7 +73,7 @@ function dispatcher:dispatch(msg, client, id)
         end
         if result ~= 0 then return result end
     else
-        local ok, result = pcall(self.handlers[msg.header], msg, client, id, self.ctx, self.addCallback, log)
+        local ok, result = pcall(self.handlers[msg.header], msg, client, id, self.ctx, self.addCallback, log, sender)
         if not ok then
             log:debug("Handler crashed: " .. tostring(result))
             return errors.MALFORMED_MESSAGE

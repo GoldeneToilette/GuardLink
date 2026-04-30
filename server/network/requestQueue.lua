@@ -46,7 +46,8 @@ function requestQueue:addRequest(message)
         message = msg.message,
         client = msg.clientID,
         timestamp = msg.timestamp,
-        isPlaintext = msg.isPlaintext ~= false
+        isPlaintext = msg.isPlaintext ~= false,
+        sender = msg.sender
     }
     table.insert(self.queue, tbl)
     return 0
@@ -55,7 +56,7 @@ end
 function requestQueue:handleUnknownClient(request)
     if request.isPlaintext then
         log:debug("Received plaintext message: " .. textutils.serialize(request.message))
-        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id)
+        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id, request.sender)
         if result ~= 0 then log:debug(result.log) return false end
     else
         local privateKey = self.ctx["network_session"].privateKey
@@ -63,7 +64,7 @@ function requestQueue:handleUnknownClient(request)
         local ok, data = pcall(function() return rsa.rsaDecrypt(request.message.cipher, privateKey) end)
         if ok then
             log:debug("Received RSA-encrypted message: " .. data)
-            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id)
+            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id, request.sender)
             if result ~= 0 then log:debug(result.log) return false end
         else
             log:debug("RSA decryption failed for unknown client!")

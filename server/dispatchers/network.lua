@@ -3,16 +3,18 @@ local message = requireC("/GuardLink/server/network/message.lua")
 
 local handlers = {}
 
-function handlers.discovery(msg, client, id, ctx, fn, logger)
-    local session = ctx.services["network_session"]
-    local identity = ctx.configs["identity"]
-    local msg = message.create("network", {
-        action = "discovery",
-        key = session.publicKey,
-        name = identity.nation_name,
-        certificate = session.certificate or nil
-    }, nil, false, id)
-    session:send(session.discovery, msg)
+function handlers.discovery(msg, client, id, ctx, fn, logger, sender)
+    if sender == "client" then
+        local session = ctx.services["network_session"]
+        local identity = ctx.configs["identity"]
+        local msg = message.create("network", {
+            action = "discovery",
+            key = session.publicKey,
+            name = identity.nation_name,
+            certificate = session.certificate or nil
+        }, nil, false, id)
+        session:send(session.discovery, msg)        
+    end
     return 0
 end
 
@@ -40,9 +42,9 @@ function handlers.ping(msg, client, id, ctx, fn, logger)
     return 0
 end
 
-local function func(msg, client, id, ctx, fn, logger)
+local function func(msg, client, id, ctx, fn, logger, sender)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
-    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger)
+    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger, sender)
 end
 
 return func

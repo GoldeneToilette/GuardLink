@@ -135,6 +135,7 @@ function NetworkSession:initKeys()
     if not fs.exists(privatePath) then
         local start = os.clock()
         log:info("Couldnt find keypair, generating... ")
+        term.clear()
         local publicKey, privateKey = rsa.generateKeyPair()
         self.privateKey, self.publicKey = privateKey, publicKey
         fileUtils.newFile(privatePath)
