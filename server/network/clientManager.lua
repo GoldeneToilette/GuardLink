@@ -55,7 +55,7 @@ end
 function clientManager:disconnectClient(id, reason)
     local client = self.clients[id]
     if client then
-        local msg = message.create("network", {action = "disconnect", reason = reason or "unknown_reason"}, client.aesKey, false)
+        local msg = message.create("network", {action = "disconnect", reason = reason or "unknown_reason"}, client.aesKey, false, nil, client.senderID)
         self.ctx["network_session"]:send(client.channel, msg)
         self.ctx["network_session"]:close(client.channel)
         self.clients[id] = nil
@@ -70,7 +70,7 @@ function clientManager:disconnectAll(reason)
     local payload = {action = "disconnect", reason = reason or "unknown_reason"}
     local i = 0
     for _, client in pairs(self.clients) do
-        local msg = message.create("network", payload, client.aesKey, false)
+        local msg = message.create("network", payload, client.aesKey, false, nil, client.senderID)
         self.ctx["network_session"]:send(client.channel, msg)
         self.ctx["network_session"]:close(client.channel)
         i = i + 1
@@ -94,7 +94,7 @@ function clientManager:computeChannel(sessionToken)
     return (seed % 65534) + 1
 end
 
-function clientManager:registerClient(account, aesKey)
+function clientManager:registerClient(account, aesKey, senderID)
     if self:count() + 1 > self.maxClients then return errors.SERVER_FULL end
     local clientID
     local sessionToken
@@ -124,7 +124,8 @@ function clientManager:registerClient(account, aesKey)
         avgPacketSize = 0,
         packetsSent = 0,
         totalPacketSize = 0,
-        isServer = false
+        isServer = false,
+        senderID = senderID
     }
     log:debug("Registering client with ID " .. clientID)
     return self.clients[clientID]
@@ -164,7 +165,7 @@ function clientManager:heartbeats()
             table.insert(toDisconnect, v.id)
         elseif os.epoch("utc") - v.lastActivityTime > self.max_idle then
             v.sleepy = true
-            local msg = message.create("network", {action = "heartbeat"}, v.aesKey, false)
+            local msg = message.create("network", {action = "heartbeat"}, v.aesKey, false, nil, v.senderID)
             self.ctx["network_session"]:send(v.channel, msg)
             log:debug("Awaiting heartbeat response from client " .. v.id)
         end
@@ -183,7 +184,7 @@ function clientManager:updateChannels()
             log:debug("Skipping rotation for client " .. v.id .. ": awaiting heartbeat")
         else
             local newchannel = self:computeChannel(v.token)
-            local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false)
+            local msg = message.create("network", {action = "update_channel", channel = newchannel}, v.aesKey, false, nil, v.senderID)
             self.ctx["network_session"]:send(v.channel, msg)
             self.ctx["network_session"]:close(v.channel)
             log:debug("Client: " .. v.id .. ", Old channel: " .. v.channel .. ", New Channel: " .. newchannel)

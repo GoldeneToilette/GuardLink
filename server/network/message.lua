@@ -4,7 +4,7 @@ local aes = requireC("/GuardLink/server/lib/aes.lua")
 
 local message = {}
 -- Types: response, request, notification
-function message.create(header, payload, key, rsaFlag, id)
+function message.create(header, payload, key, rsaFlag, id, senderID)
     if not header then return nil end
     local msg = {
         message = {
@@ -13,7 +13,8 @@ function message.create(header, payload, key, rsaFlag, id)
         },
         timestamp = os.epoch("utc"),
         id = id or utils.randomString(16, "generic"),
-        isPlaintext = false
+        isPlaintext = false,
+        senderID = senderID
     }
     if key then 
         if rsaFlag then

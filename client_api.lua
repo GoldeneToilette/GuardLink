@@ -1514,6 +1514,8 @@ api.clientID = nil
 api.callbacks = {}
 api.keyStr = ""
 api.clientPublicKey = nil
+api.nationName = ""
+api.senderID = nil
 api.MASTER_PUBLIC_KEY = {
     shared = "203382972103938782142578567026547595413348066767490198753042107660316648686327",
     public = "799166525981580211110444390734603679907",
@@ -1544,7 +1546,7 @@ local function registerCallback(id, func, limit, timeout)
     }
 end
 
-local function createMessage(header, payload, key, rsaFlag, id)
+local function createMessage(header, payload, key, rsaFlag, id, receiver)
     if not header then return nil end
     local msg = {
         message = {
@@ -1553,7 +1555,9 @@ local function createMessage(header, payload, key, rsaFlag, id)
         },
         timestamp = os.epoch("utc"),
         id = id or randomString(16, "generic"),
-        isPlaintext = false
+        isPlaintext = false,
+		sender = "client",
+		senderID = api.senderID
     }
     if key then 
         if rsaFlag then
@@ -1569,14 +1573,14 @@ local function createMessage(header, payload, key, rsaFlag, id)
 	if api.clientID ~= nil then
 		msg.clientID = api.clientID
 	end
-	msg.sender = "client"
+	if receiver then msg.receiver = receiver end
     return textutils.serialize(msg), msg.id
 end
 
 function api.send(header, payload, callback, limit, timeout)
 	if not api.keyStr then error("Failed to send message: Not authenticated") end
 	payload.token = api.sessionToken
-	local message, id = createMessage(header, payload, api.keyStr, false)
+	local message, id = createMessage(header, payload, api.keyStr, false, nil, api.nationName)
 	if callback then registerCallback(id, callback, limit, timeout) end
 	api.modem.transmit(api.channel, api.channel, message)
 	return id
@@ -1586,8 +1590,9 @@ end
 local KEY_PATH = "guardlink_keys.json"
 
 function api.init()
-    api.modem = peripheral.find("modem") or error("No modem found!")
-    if not api.modem.isWireless() then error("Modem is not wireless!") end
+    api.modem = peripheral.find("modem", function(name, modem)
+        return modem.isWireless()
+    end) or error("No wireless modem found!")
     api.modem.open(api.discovery)
 
     if fs.exists(KEY_PATH) then
@@ -1602,6 +1607,7 @@ function api.init()
         f.write(textutils.serializeJSON({ public = pub }))
         f.close()
     end
+	api.senderID = sha256.digest(api.clientPublicKey):toHex()
 end
 
 -- Broadcasts on the discovery channel and collects server names & their public keys inside api.nations
@@ -1641,7 +1647,10 @@ local function sendCredentials(nation, name, password, action, id, inviteCode)
         },
         timestamp = os.epoch("utc"),
         id = id,
-        isPlaintext = true
+        isPlaintext = true,
+		receiver = nation,
+		sender = "client",
+		senderID = api.senderID
     }
 	if inviteCode then
         local iv3 = {math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff), math.random(0, 0xffffffff)}
@@ -1658,7 +1667,7 @@ function api.auth(nation, name, password, callback)
     if not api.nations[nation] then error("Unknown nation: " .. nation) end
     if not name or not password then error("Missing fields: name or password") end
     local id = randomString(16, "generic")
-    local message, keyStr = sendCredentials(nation, name, password, "login", id)
+    local message, keyStr = sendCredentials(nation, name, password, "login", id, nation)
     registerCallback(id, function(response)
         if response.payload.status == "success" then
             api.sessionToken = response.payload.token
@@ -1667,6 +1676,7 @@ function api.auth(nation, name, password, callback)
             api.keyStr = keyStr
             api.modem.open(api.channel)
             api._pendingKeyStr = nil
+			api.nationName = nation
         end
         if callback then callback(response) end
     end, 1, 30)
@@ -1693,7 +1703,7 @@ local function handleChannelRotation(newChannel)
 end
 
 local function handleHeartbeat()
-	local message = createMessage("network", {action = "heartbeat"}, api.keyStr, false)
+	local message = createMessage("network", {action = "heartbeat"}, api.keyStr, false, nil, api.nationName)
 	api.modem.transmit(api.channel, api.channel, message)
 end
 
@@ -1709,6 +1719,7 @@ function api.listen(onEvent)
         if channel == api.discovery or channel == api.channel then
 			local msg = textutils.unserialize(raw)
 			if msg then
+				if not msg.senderID or msg.senderID ~= api.senderID then goto skip end
 				local time = os.epoch("utc")
 				for id, cb in pairs(api.callbacks) do
 					if cb.timeout and time >= cb.timeout then
@@ -1753,7 +1764,7 @@ function api.listen(onEvent)
 end
 
 function api.disconnect()
-	local message = createMessage("network", {action = "disconnect"}, api.keyStr, false)
+	local message = createMessage("network", {action = "disconnect"}, api.keyStr, false, nil, api.nationName)
 	api.modem.transmit(api.channel, api.channel, message)	
 
     api.active = false
@@ -1764,6 +1775,7 @@ function api.disconnect()
 	api.clientID = nil
 	api.callbacks = {}
 	api.keyStr = nil
+	api.nationName = ""
 
 	api.modem.closeAll()
 end

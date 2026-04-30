@@ -40,23 +40,27 @@ function requestQueue:addRequest(message)
     self.avgPacketSize = self.totalPacketSize / self.packetsSent
     local msg = textutils.unserialize(message)
     if not msg then return errors.MALFORMED_MESSAGE end
-    if msg.clientID and not self.ctx["client_manager"]:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
-    local tbl = {
-        id = msg.id,
-        message = msg.message,
-        client = msg.clientID,
-        timestamp = msg.timestamp,
-        isPlaintext = msg.isPlaintext ~= false,
-        sender = msg.sender
-    }
-    table.insert(self.queue, tbl)
+    if msg.sender == "server" or not msg.sender or not msg.senderID then return 0 end
+    if not msg.receiver or msg.receiver == self.ctx.configs["identity"].nation_name then
+        if msg.clientID and not self.ctx["client_manager"]:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
+        local tbl = {
+            id = msg.id,
+            message = msg.message,
+            client = msg.clientID,
+            timestamp = msg.timestamp,
+            isPlaintext = msg.isPlaintext ~= false,
+            sender = msg.sender,
+            senderID = msg.senderID
+        }
+        table.insert(self.queue, tbl)
+    end
     return 0
 end
 
 function requestQueue:handleUnknownClient(request)
     if request.isPlaintext then
         log:debug("Received plaintext message: " .. textutils.serialize(request.message))
-        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id, request.sender)
+        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id, request.sender, request.senderID)
         if result ~= 0 then log:debug(result.log) return false end
     else
         local privateKey = self.ctx["network_session"].privateKey
@@ -64,12 +68,11 @@ function requestQueue:handleUnknownClient(request)
         local ok, data = pcall(function() return rsa.rsaDecrypt(request.message.cipher, privateKey) end)
         if ok then
             log:debug("Received RSA-encrypted message: " .. data)
-            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id, request.sender)
+            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id, request.sender, request.senderID)
             if result ~= 0 then log:debug(result.log) return false end
         else
             log:debug("RSA decryption failed for unknown client!")
             log:debug("Message: " .. request.message)
-            log:debug("Private key: " .. textutils.serialize(privateKey))
         end
     end
     return true

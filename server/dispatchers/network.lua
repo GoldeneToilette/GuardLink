@@ -3,7 +3,7 @@ local message = requireC("/GuardLink/server/network/message.lua")
 
 local handlers = {}
 
-function handlers.discovery(msg, client, id, ctx, fn, logger, sender)
+function handlers.discovery(msg, client, id, ctx, fn, logger, sender, senderID)
     if sender == "client" then
         local session = ctx.services["network_session"]
         local identity = ctx.configs["identity"]
@@ -12,7 +12,7 @@ function handlers.discovery(msg, client, id, ctx, fn, logger, sender)
             key = session.publicKey,
             name = identity.nation_name,
             certificate = session.certificate or nil
-        }, nil, false, id)
+        }, nil, false, id, senderID)
         session:send(session.discovery, msg)        
     end
     return 0
@@ -30,21 +30,23 @@ function handlers.disconnect(msg, client, id, ctx, fn, logger)
     return 0
 end
 
-function handlers.ping(msg, client, id, ctx, fn, logger)
-    local session = ctx.services["network_session"]
-    local channel = client and client.channel or session.discovery
-    local key = client and client.aesKey or nil
-    local msg = message.create("network", {
-        action = "ping",
-        timestamp = os.epoch("utc")
-    }, key, false, id)
-    session:send(channel, msg)
+function handlers.ping(msg, client, id, ctx, fn, logger, sender, senderID)
+    if sender == "client" then
+        local session = ctx.services["network_session"]
+        local channel = client and client.channel or session.discovery
+        local key = client and client.aesKey or nil
+        local msg = message.create("network", {
+            action = "ping",
+            timestamp = os.epoch("utc")
+        }, key, false, id, senderID)
+        session:send(channel, msg)        
+    end
     return 0
 end
 
-local function func(msg, client, id, ctx, fn, logger, sender)
+local function func(msg, client, id, ctx, fn, logger, sender, senderID)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
-    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger, sender)
+    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger, sender, senderID)
 end
 
 return func

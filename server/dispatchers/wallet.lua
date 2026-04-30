@@ -16,7 +16,7 @@ local function isOwner(wallet, account)
     return wallet.members and wallet.members[account] == "owner"
 end
 
-function handlers.info(msg, client, id, ctx, fn, logger)
+function handlers.info(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -28,7 +28,7 @@ function handlers.info(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "info", status = "failure",
             error = errors.WALLET_NOT_FOUND.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -38,7 +38,7 @@ function handlers.info(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "info", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -46,12 +46,12 @@ function handlers.info(msg, client, id, ctx, fn, logger)
     local msg = message.create("wallet", {
         action = "info", status = "success",
         data = wallet
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.transfer(msg, client, id, ctx, fn, logger)
+function handlers.transfer(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -63,7 +63,7 @@ function handlers.transfer(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "transfer", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -73,19 +73,19 @@ function handlers.transfer(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "transfer", status = "failure",
             error = result.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
 
     local msg = message.create("wallet", {
         action = "transfer", status = "success"
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.create(msg, client, id, ctx, fn, logger)
+function handlers.create(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -94,7 +94,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "create", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -109,7 +109,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "create", status = "failure",
             error = errors.WALLET_LIMIT_REACHED.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -123,7 +123,7 @@ function handlers.create(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "create", status = "failure",
             error = result.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -136,12 +136,12 @@ function handlers.create(msg, client, id, ctx, fn, logger)
 
     local msg = message.create("wallet", {
         action = "create", status = "success"
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.delete(msg, client, id, ctx, fn, logger)
+function handlers.delete(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -153,7 +153,7 @@ function handlers.delete(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "delete", status = "failure",
             error = errors.WALLET_NOT_FOUND.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -162,7 +162,7 @@ function handlers.delete(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "delete", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -172,19 +172,19 @@ function handlers.delete(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "delete", status = "failure",
             error = result.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
 
     local msg = message.create("wallet", {
         action = "delete", status = "success"
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.add_member(msg, client, id, ctx, fn, logger)
+function handlers.add_member(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -196,7 +196,7 @@ function handlers.add_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "add_member", status = "failure",
             error = errors.WALLET_NOT_FOUND.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -205,7 +205,7 @@ function handlers.add_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "add_member", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -215,19 +215,19 @@ function handlers.add_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "add_member", status = "failure",
             error = result.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
 
     local msg = message.create("wallet", {
         action = "add_member", status = "success"
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.remove_member(msg, client, id, ctx, fn, logger)
+function handlers.remove_member(msg, client, id, ctx, fn, logger, sender, senderID)
     local session = ctx.services["network_session"]
     if not client then return 0 end
 
@@ -239,7 +239,7 @@ function handlers.remove_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "remove_member", status = "failure",
             error = errors.WALLET_NOT_FOUND.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -248,7 +248,7 @@ function handlers.remove_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "remove_member", status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -258,19 +258,19 @@ function handlers.remove_member(msg, client, id, ctx, fn, logger)
         local msg = message.create("wallet", {
             action = "remove_member", status = "failure",
             error = result.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
 
     local msg = message.create("wallet", {
         action = "remove_member", status = "success"
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.audit(msg, client, id, ctx, fn, logger)
+function handlers.audit(msg, client, id, ctx, fn, logger, sender, senderID)
     if not client then return 0 end
     local session = ctx.services["network_session"]
 
@@ -283,7 +283,7 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
             action = "audit",
             status = "failure",
             error = errors.WALLET_NOT_FOUND.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -295,7 +295,7 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
             action = "audit",
             status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         session:send(client.channel, msg)
         return 0
     end
@@ -305,12 +305,12 @@ function handlers.audit(msg, client, id, ctx, fn, logger)
         action = "audit",
         status = "success",
         data = entries
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-function handlers.get_transfer_info(msg, client, id, ctx, fn, logger)
+function handlers.get_transfer_info(msg, client, id, ctx, fn, logger, sender, senderID)
     if not client then return 0 end
     local session = ctx.services["network_session"]
     local wallets = ctx.services["wallets"]
@@ -321,17 +321,17 @@ function handlers.get_transfer_info(msg, client, id, ctx, fn, logger)
             tax = wallets:getTransferTax(),
             cap = wallets:getTransferCap(entityType)
         }
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     session:send(client.channel, msg)
     return 0
 end
 
-local function func(msg, client, id, ctx, fn, logger)
+local function func(msg, client, id, ctx, fn, logger, sender, senderID)
     if not handlers[msg.payload.action] then return errors.MALFORMED_MESSAGE end
     if client and msg.payload.token ~= client.token then
         return errors.TOKEN_MISMATCH
     end
-    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger)
+    return handlers[msg.payload.action](msg, client, id, ctx, fn, logger, sender, senderID)
 end
 
 return func

@@ -1,7 +1,7 @@
 local errors = requireC("/GuardLink/server/lib/errors.lua")
 local message = requireC("/GuardLink/server/network/message.lua")
 
-local function func(msg, client, id, ctx, fn, logger)
+local function func(msg, client, id, ctx, fn, logger, sender, senderID)
     if not client then return errors.UNKNOWN_CLIENT end
     if msg.payload.token ~= client.token then return errors.TOKEN_MISMATCH end
 
@@ -18,7 +18,7 @@ local function func(msg, client, id, ctx, fn, logger)
             command = command,
             status = "failure",
             error = errors.INSUFFICIENT_PERMISSIONS.client
-        }, client.aesKey, false, id)
+        }, client.aesKey, false, id, senderID)
         ctx.services["network_session"]:send(client.channel, msg)
         return 0
     end
@@ -29,7 +29,7 @@ local function func(msg, client, id, ctx, fn, logger)
         command = command,
         status = "success",
         data = result
-    }, client.aesKey, false, id)
+    }, client.aesKey, false, id, senderID)
     ctx.services["network_session"]:send(client.channel, msg)
     return 0
 end
