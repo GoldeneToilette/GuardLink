@@ -13,7 +13,7 @@ function requestQueue.new(ctx, settings)
     self.queue = {}
 
     local loglevel = settings.debug and "DEBUG" or "INFO"
-    log = ctx.logger:createInstance("queue", {timestamp = true, level = loglevel, clear = true})
+    log = ctx.services.logger:createInstance("queue", {timestamp = true, level = loglevel, clear = true})
 
     self.queueSize = settings.queue.queueSize or 40
     self.paused = false
@@ -42,7 +42,7 @@ function requestQueue:addRequest(message)
     if not msg then return errors.MALFORMED_MESSAGE end
     if msg.sender == "server" or not msg.sender or not msg.senderID then return 0 end
     if not msg.receiver or msg.receiver == self.ctx.configs["identity"].nation_name then
-        if msg.clientID and not self.ctx["client_manager"]:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
+        if msg.clientID and not self.ctx.services["client_manager"]:exists(msg.clientID) then return errors.UNKNOWN_CLIENT end
         local tbl = {
             id = msg.id,
             message = msg.message,
@@ -60,15 +60,15 @@ end
 function requestQueue:handleUnknownClient(request)
     if request.isPlaintext then
         log:debug("Received plaintext message: " .. textutils.serialize(request.message))
-        local result = self.ctx["dispatcher"]:dispatch(request.message, nil, request.id, request.sender, request.senderID)
+        local result = self.ctx.services["dispatcher"]:dispatch(request.message, nil, request.id, request.sender, request.senderID)
         if result ~= 0 then log:debug(result.log) return false end
     else
-        local privateKey = self.ctx["network_session"].privateKey
+        local privateKey = self.ctx.services["network_session"].privateKey
         if not request.message or not request.message.cipher then return true end
         local ok, data = pcall(function() return rsa.rsaDecrypt(request.message.cipher, privateKey) end)
         if ok then
             log:debug("Received RSA-encrypted message: " .. data)
-            local result = self.ctx["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id, request.sender, request.senderID)
+            local result = self.ctx.services["dispatcher"]:dispatch(textutils.unserialize(data), nil, request.id, request.sender, request.senderID)
             if result ~= 0 then log:debug(result.log) return false end
         else
             log:debug("RSA decryption failed for unknown client!")
@@ -97,7 +97,7 @@ function requestQueue:handleKnownClient(request, client, time)
         log:debug("Received AES-encrypted message: " .. plaintext)
         local data = textutils.unserialize(plaintext)
         if not data then return true end
-        local result = self.ctx["dispatcher"]:dispatch(data, client, request.id)
+        local result = self.ctx.services["dispatcher"]:dispatch(data, client, request.id)
         client.lastActivityTime = time
         if result ~= 0 then log:debug(result.log) end
         return true
@@ -114,7 +114,7 @@ function requestQueue:processQueue()
                 self.lastProcessed = time
                 for i, request in ipairs(self.queue) do
                     local clientID = request.client
-                    local client = self.ctx["client_manager"]:getClient(clientID)
+                    local client = self.ctx.services["client_manager"]:getClient(clientID)
                     local success
                     if not client then
                         success = self:handleUnknownClient(request)
@@ -136,7 +136,7 @@ local service = {
     name = "request_queue",
     deps = {"client_manager", "network_session", "dispatcher"},
     init = function(ctx)
-        return requestQueue.new(ctx.services, ctx.configs["settings"])
+        return requestQueue.new(ctx, ctx.configs["settings"])
     end,
     runtime = function(self) self:processQueue() end,
     tasks = nil,
