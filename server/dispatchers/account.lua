@@ -103,7 +103,9 @@ function handlers.register(msg, client, id, ctx, fn, logger, sender, senderID)
 
         local invite_code
         if settings.inviteOnly then
-            invite_code = aes.Cipher:new(nil, keyStr, msg.payload.invite_code.iv):decrypt(msg.payload.invite_code.cipher)
+            if msg.payload.invite_code then
+                invite_code = aes.Cipher:new(nil, keyStr, msg.payload.invite_code.iv):decrypt(msg.payload.invite_code.cipher)
+            end
             if not invite_code then
                 local msg = message.create("account", {
                     action = "register",
