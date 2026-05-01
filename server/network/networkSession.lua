@@ -214,7 +214,6 @@ function NetworkSession:listen()
     while not self.stopped do
         local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
         if self.channels[channel] then
-            log:debug("Message received on channel " .. channel)
             local status = self.ctx["request_queue"]:addRequest(message)
             if status ~= 0 then log:error(status[2]) end
         end

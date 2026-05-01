@@ -1601,6 +1601,7 @@ function api.init()
         f.close()
         api.clientPublicKey = keys.public
     else
+		term.clear()
         local pub, _ = generateKeyPair()
         api.clientPublicKey = pub
         local f = fs.open(KEY_PATH, "w")
