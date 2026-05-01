@@ -126,7 +126,7 @@ function handlers.register(msg, client, id, ctx, fn, logger, sender, senderID)
             end
         end
 
-        local success = accounts:createAccount(username, password, nil)
+        local success = accounts:createAccount(username, password)
         registrationCount = registrationCount + 1
 
         if success ~= 0 then

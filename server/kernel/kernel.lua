@@ -39,7 +39,7 @@ kernel.ctx = {
     configs = {},
     _cfgExt = {}
 }
-kernel.ctx.execute = function(cmd, args) return kernel:execute(cmd, args) end
+kernel.ctx.execute = function(self, cmd, args) return kernel:execute(cmd, args) end
 kernel.cmds = {}
 
 function kernel:addCommand(prefix, suffix, func)
