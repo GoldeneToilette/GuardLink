@@ -97,7 +97,7 @@ function requestQueue:handleKnownClient(request, client, time)
         log:debug("Received AES-encrypted message: " .. plaintext)
         local data = textutils.unserialize(plaintext)
         if not data then return true end
-        local result = self.ctx.services["dispatcher"]:dispatch(data, client, request.id, request.senderID)
+        local result = self.ctx.services["dispatcher"]:dispatch(data, client, request.id, request.sender, request.senderID)
         client.lastActivityTime = time
         if result ~= 0 then log:debug(result.log) end
         return true
