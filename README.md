@@ -19,7 +19,7 @@ For updates & questions: https://discord.gg/DXy4MNQPV2
 1. Run `pastebin run zypekhWp`
 2. Follow the setup wizard — nation name, tag, ethic, currency, roles
 3. If the setup wizard can't detect GPS, follow this [guide](https://tweaked.cc/guide/gps_setup.html)
-4. Wait for the server to generate an RSA keypair and register with the certificate authority (this may take a few minutes)
+4. Wait for the server to generate an RSA keypair and optionally register with the certificate authority (this may take a few minutes)
 5. Optionally configure roles, permissions, and settings via the shell or UI
 
 ### Client
