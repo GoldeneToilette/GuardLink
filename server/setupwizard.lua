@@ -604,7 +604,7 @@ local function finishInstall()
         clients = lib.settings.server.clients,
         queue = lib.settings.server.queue,
         theme = panels[3].data.theme,
-        debug = panels[3].data.debug,
+        debug = panels[3].data.debug or false,
         inviteOnly = lib.settings.server.inviteOnly,
         registrationsPerHour = lib.settings.server.registrationsPerHour,
         walletsPerHour = lib.settings.server.walletsPerHour,
