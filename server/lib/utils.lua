@@ -38,7 +38,7 @@ function utils.tryCatch(tryBlock, catchBlock)
     local success = xpcall(tryBlock, errorHandler)
     
     if not success then
-        -- put something here
+        -- if you see this you lost the game
     end
 end
 

@@ -26,18 +26,18 @@ function Logger:createInstance(name, settings)
         timestamp = settings.timestamp ~= false,
         level = (settings.level or "INFO"):upper(),
         vfs = self.vfs,
-        clear = settings.clear or false -- if it should be cleared when created, ONLY HAPPENS ONCE
+        clear = settings.clear or false
     }
     instance.path = instance.dir .. "/" .. instance.fileName .. ".log"
     self.vfs:makeDir(instance.dir)
     self.vfs:newFile(instance.path)
     if instance.clear then
-        if not self.cleared[name] then
-            self.vfs:writeFile(instance.path, "")     
-            self.cleared[name] = true
+        if not self.cleared[instance.path] then
+            self.vfs:writeFile(instance.path, "")
+            self.cleared[instance.path] = true
         end
     end
-    return setmetatable(instance, { __index = Logger.Instance })    
+    return setmetatable(instance, { __index = Logger.Instance })
 end
 
 Logger.Instance = {}

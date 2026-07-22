@@ -10,7 +10,7 @@ local log
 function walletManager.new(ctx)
     local self = setmetatable({}, walletManager)
     self.ctx = ctx
-    log = ctx.services["logger"]:createInstance("wallet", {timestamp = true, level = "INFO", clear = true})
+    log = ctx.services["logger"]:createInstance("wallet", {timestamp = true, level = "INFO", clear = false})
     return self
 end
 
@@ -284,7 +284,7 @@ end
 
 local service = {
     name = "wallets",
-    deps = {"vfs", "accounts"},
+    deps = {"vfs", "accounts", "logger"},
     init = function(ctx)
         return walletManager.new(ctx)
     end,

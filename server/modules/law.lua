@@ -24,7 +24,7 @@ function law.new(ctx)
     end
 
     self.lastRun = {}
-    log = ctx.services["logger"]:createInstance("law", {timestamp = true, level = "INFO", clear = true})
+    log = ctx.services["logger"]:createInstance("law", {timestamp = true, level = "INFO", clear = false})
     return self
 end
 

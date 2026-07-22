@@ -23,7 +23,7 @@ function uiState.new(framepath, manifest, settings, logger, themes)
     self.frames = {}
     self.activeFrame = nil
 
-    log = logger:createInstance("uiState", {timestamp = true, level = "INFO", clear = true})
+    log = logger:createInstance("uiState", {timestamp = true, level = "INFO", clear = false})
 
     self.titleBar = self.uiHelper.newLabel(self.mainframe, "", 1, 1, 51, 1, self.theme.colors.border, self.theme.colors.textprimary, 1)
     self.dropdown = self.mainframe:addDropdown()
@@ -52,7 +52,7 @@ function uiState.new(framepath, manifest, settings, logger, themes)
         end
     end)
 
-    local result = self:setFrame("shell")
+    local result = self:setFrame(settings.defaultFrame or "shell")
     if result ~= 0 then self.uiHelper.newPopup(self.mainframe, 25, 5, "Error", "error", "UI not found! :(", true) end
     return self
 end

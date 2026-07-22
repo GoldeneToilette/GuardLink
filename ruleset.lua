@@ -48,6 +48,7 @@ data.server.wallets = {
 }
 data.server.inviteOnly = false -- if set to true, any client registering needs an invite code
 data.server.theme = "darkmode"
+data.server.defaultFrame = "shell"
 data.server.debug = false
 data.server.registrationsPerHour = 30
 data.server.walletsPerHour = 30

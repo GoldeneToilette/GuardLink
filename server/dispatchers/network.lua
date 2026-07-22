@@ -11,7 +11,8 @@ function handlers.discovery(msg, client, id, ctx, fn, logger, sender, senderID)
             action = "discovery",
             key = session.publicKey,
             name = identity.nation_name,
-            certificate = session.certificate or nil
+            certificate = session.certificate or nil,
+            namespace = identity.cert_namespace
         }, nil, false, id, senderID)
         session:send(session.discovery, msg)        
     end

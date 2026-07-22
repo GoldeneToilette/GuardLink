@@ -3,5 +3,6 @@
     "default_dir": "/",
     "use_theme": true,
     "logging": "INFO",
-    "history_length": 20
+    "history_length": 20,
+    "persist": true
 }

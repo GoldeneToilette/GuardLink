@@ -13,7 +13,7 @@ function requestQueue.new(ctx, settings)
     self.queue = {}
 
     local loglevel = settings.debug and "DEBUG" or "INFO"
-    log = ctx.services.logger:createInstance("queue", {timestamp = true, level = loglevel, clear = true})
+    log = ctx.services.logger:createInstance("queue", {timestamp = true, level = loglevel, clear = false})
 
     self.queueSize = settings.queue.queueSize or 40
     self.paused = false

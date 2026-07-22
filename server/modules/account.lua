@@ -13,7 +13,7 @@ local invitePath = "/GuardLink/server/config/invite_codes.json"
 function accountManager.new(ctx)
     local self = setmetatable({}, accountManager)
     self.ctx = ctx
-    log = ctx.services["logger"]:createInstance("accounts", {timestamp = true, level = "INFO", clear = true})
+    log = ctx.services["logger"]:createInstance("accounts", {timestamp = true, level = "INFO", clear = false})
 
     if not fs.exists(invitePath) then
         log:info("invite_codes config not found! Generating...")

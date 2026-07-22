@@ -77,7 +77,7 @@ cmds["ls"] = {
 }
 
 cmds["theme"] = {
-    desc = "Usage: theme <get/list>, theme <set> <name>",
+    desc = "Usage: theme <get/list>, theme <set> <name>, theme <print>",
     func = function(args, ctx)
         local kernel = ctx.kernel
         if not args[1] then return {str=kernel:execute("ui.get_theme"), type="info"} end

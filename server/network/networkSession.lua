@@ -16,8 +16,9 @@ function NetworkSession.new(ctx, settings, logger, identity)
     self.ctx = ctx
     self.settings = settings
     self.identity = identity
+    self.modem = nil
 
-    log = logger:createInstance("session", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = true})
+    log = logger:createInstance("session", {timestamp = true, level = settings.debug and "DEBUG" or "INFO", clear = false})
 
     self.discovery = settings.session.discoveryChannel or 65535
     self.keyPath = settings.session.keyPath
@@ -60,7 +61,13 @@ local function deserializeKey(str)
 end
 
 function NetworkSession:fetchCertificate(certPath)
-    local keyString = self.identity.nation_name .. ":" .. self.publicKey.shared .. ":" .. self.publicKey.public
+    local namespace = self.identity.cert_namespace
+    if not namespace then
+        log:info("Certificate signing is enabled but no cert_namespace is set in identity config, skipping certificate request.")
+        return
+    end
+
+    local keyString = namespace .. ":" .. self.identity.nation_name .. ":" .. self.publicKey.shared .. ":" .. self.publicKey.public
     local keyHash = sha256.digest(keyString):toHex():sub(1, 30)
 
     local r1 = http.post(
@@ -69,7 +76,8 @@ function NetworkSession:fetchCertificate(certPath)
             step = "challenge",
             shared = self.publicKey.shared,
             public = self.publicKey.public,
-            name = self.identity.nation_name
+            name = self.identity.nation_name,
+            namespace = namespace
         }),
         {["Content-Type"] = "application/json"}
     )
@@ -94,6 +102,7 @@ function NetworkSession:fetchCertificate(certPath)
             shared = self.publicKey.shared,
             public = self.publicKey.public,
             name = self.identity.nation_name,
+            namespace = namespace,
             signature = signature
         }),
         {["Content-Type"] = "application/json"}
@@ -243,7 +252,7 @@ end
 
 local service = {
     name = "network_session",
-    deps = {"request_queue"},
+    deps = {"request_queue", "logger"},
     init = function(ctx)
         local instance = NetworkSession.new(ctx.services, ctx.configs["settings"], ctx.services["logger"], ctx.configs["identity"])
         instance:initModem()

@@ -130,7 +130,6 @@ end
 
 local function remove()
     frame:setVisible(false)
-    frame:remove()
 end
 
 local function setContext(ui)
@@ -141,5 +140,6 @@ return {
     displayName = "Shell",
     add = add,
     remove = remove,
-    setContext = setContext
+    setContext = setContext,
+    persist = engine.cfg.persist
 }

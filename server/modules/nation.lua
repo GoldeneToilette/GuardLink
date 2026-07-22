@@ -10,7 +10,7 @@ function nation.new(ctx)
     self.identity = ctx.configs["identity"]
     self.rules = ctx.configs["rules"]
 
-    log = ctx.services["logger"]:createInstance("nation", {timestamp = true, level = "INFO", clear = true})
+    log = ctx.services["logger"]:createInstance("nation", {timestamp = true, level = "INFO", clear = false})
 
     self:initTreasury()
     return self

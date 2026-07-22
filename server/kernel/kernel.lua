@@ -209,7 +209,7 @@ function kernel:run()
     log = self.ctx.services["logger"]:createInstance("kernel", {
         timestamp = true,
         level = self.ctx.configs["settings"].debug and "DEBUG" or "INFO",
-        clear = true
+        clear = false
     })
     log:debug("Starting processes and tasks...")
     utils.tryCatch(

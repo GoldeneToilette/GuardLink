@@ -17,7 +17,7 @@ function debt.new(ctx)
         government = true,
         company = true
     }
-    log = ctx.services["logger"]:createInstance("debt", {timestamp = true, level = "INFO", clear = true})
+    log = ctx.services["logger"]:createInstance("debt", {timestamp = true, level = "INFO", clear = false})
 
     return self
 end

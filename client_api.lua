@@ -1616,14 +1616,15 @@ function api.broadcast(timeout, callback)
     local message, id = createMessage("network", {action = "discovery"}, nil, false)
 	registerCallback(id, function(response)
 		local trusted = false
-		if response.payload.certificate then
-			local keyString = response.payload.name .. ":" .. response.payload.key.shared .. ":" .. response.payload.key.public
+		if response.payload.certificate and response.payload.namespace then
+			local keyString = response.payload.namespace .. ":" .. response.payload.name .. ":" .. response.payload.key.shared .. ":" .. response.payload.key.public
 			local keyHash = sha256.digest(keyString):toHex():sub(1, 30)
 			trusted = rsaVerify(keyHash, response.payload.certificate.signature, api.MASTER_PUBLIC_KEY)
 		end
 		api.nations[response.payload.name] = {
 			shared = response.payload.key.shared,
 			public = response.payload.key.public,
+			namespace = response.payload.namespace,
 			trusted = trusted
 		}
 		if callback then callback(response) end
