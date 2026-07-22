@@ -182,7 +182,12 @@ function accountManager:createAccount(name, password, role)
 
     local startingBalance = tonumber(self.ctx.services["nation"]:getIdentity().starting_balance) or 0
     if startingBalance > 0 then
-        template.pending_money = startingBalance
+        local transferred = self.ctx.services["wallets"]:transferBalance(self.ctx.configs["identity"].treasury, self.ctx.configs["identity"].escrow, startingBalance)
+        if transferred == 0 then
+            template.pending_money = template.pending_money + startingBalance
+        else
+            log:info("Failed to reserve starting balance for " ..  name .. ": treasury has insufficient funds!")
+        end
     end
 
     self:vfs():newFile(filePath)
@@ -203,6 +208,11 @@ function accountManager:deleteAccount(name)
     local walletService = self.ctx.services["wallets"]
     for _, wName in ipairs(walletList) do
         walletService:removeMember(wName, name)
+    end
+    local pending = self:getAccountValue(name, "pending_money") or 0
+    if pending > 0 then
+        walletService:transferBalance(self.ctx.configs["identity"].escrow, self.ctx.configs["identity"].treasury, pending)
+        log:info("Refunded " .. tostring(pending) .. " unclaimed pending funds from escrow to treasury for deleted account " .. name)
     end
     local role = self:getAccountValue(name, "role")
     if role and role ~= "" then roles.removeMember(role, name) end
