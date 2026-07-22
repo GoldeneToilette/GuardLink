@@ -40,7 +40,7 @@ function dispatcher.new(ctx)
     self.path = "/GuardLink/server/dispatchers/"
     self.ctx = ctx
 
-    log = ctx.services.logger:createInstance("dispatcher", {timestamp = true, level = "DEBUG", clear = false})
+    log = ctx.services.logger:createInstance("dispatcher", {timestamp = true, level = ctx.configs["settings"].debug and "DEBUG" or "INFO", clear = false})
     
     local list = fs.list(self.path)
     for _, v in ipairs(list) do
