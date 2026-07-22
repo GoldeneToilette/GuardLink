@@ -1773,13 +1773,13 @@ function api.disconnect()
 	api.nations = {}
 	api.sessionToken = ""
 	api.channel = 0
-	api.modem = nil
 	api.clientID = nil
 	api.callbacks = {}
 	api.keyStr = nil
 	api.nationName = ""
 
 	api.modem.closeAll()
+	api.modem = nil	
 end
 
 return api
