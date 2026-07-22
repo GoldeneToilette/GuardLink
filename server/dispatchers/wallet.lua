@@ -129,10 +129,6 @@ function handlers.create(msg, client, id, ctx, fn, logger, sender, senderID)
     end
 
     wallets:addMember(name, client.account, "owner")
-    local startingBalance = tonumber(ctx.services["nation"]:getIdentity().starting_balance) or 0
-    if startingBalance > 0 then
-        wallets:changeBalance("add", name, startingBalance)
-    end
 
     local msg = message.create("wallet", {
         action = "create", status = "success"

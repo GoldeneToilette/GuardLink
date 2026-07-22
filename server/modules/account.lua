@@ -180,6 +180,11 @@ function accountManager:createAccount(name, password, role)
     template.salt = salt
     template.password = sha256.digest(salt .. password):toHex()
 
+    local startingBalance = tonumber(self.ctx.services["nation"]:getIdentity().starting_balance) or 0
+    if startingBalance > 0 then
+        template.pending_money = startingBalance
+    end
+
     self:vfs():newFile(filePath)
     self:vfs():writeFile(filePath, textutils.serializeJSON(template))
 
@@ -187,6 +192,7 @@ function accountManager:createAccount(name, password, role)
     if defaultRole then
         self:assignRole(name, defaultRole)
     end
+
     audit.log("accounts", name, {"CREATE"}, self:vfs())
     return 0
 end
